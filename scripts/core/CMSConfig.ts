@@ -17,13 +17,13 @@ var fs = require('fs');
 class CMSConfig {
 
     /**
-     * JWT Secret key.
+     * Base Url.
      *
-     * @property jwtSecret
+     * @property baseUrl
      * @type string
      * @static
      */
-    static jwtSecret : string = "";
+    static baseUrl : string = "";
 
 	/**
 	 * Upload directory path.
@@ -41,11 +41,11 @@ class CMSConfig {
      * @static
      */
     static retrieveConfigurationInformation() {
-        if(CMSConfig.jwtSecret == "" && CMSConfig.uploadDir == "") {
+        if(CMSConfig.baseUrl == "" && CMSConfig.uploadDir == "") {
             var file = __dirname + '/cms_config.json';
 			try {
 				var configInfos = JSON.parse(fs.readFileSync(file, 'utf8'));
-				CMSConfig.jwtSecret = configInfos.jwtSecret;
+				CMSConfig.baseUrl = configInfos.baseUrl;
 				CMSConfig.uploadDir = configInfos.uploadDir;
 			} catch (e) {
 				Logger.error("CMS configuration file can't be read.");
@@ -55,15 +55,15 @@ class CMSConfig {
     }
 
     /**
-     * Return JWT Secret key.
+     * Return Base Url.
      *
-     * @method getJWTSecret
+     * @method getBaseUrl
      * @static
-     * @return {string} - JWT Secret key.
+     * @return {string} - Base Url.
      */
-    static getJWTSecret() : string {
+    static getBaseUrl() : string {
         CMSConfig.retrieveConfigurationInformation();
-        return CMSConfig.jwtSecret;
+        return CMSConfig.baseUrl;
     }
 
 	/**

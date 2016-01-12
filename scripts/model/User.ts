@@ -242,11 +242,22 @@ class User extends ModelItf {
 		var self = this;
 
 		if(this.getId() != null) {
-			self.getSequelizeModel().updateAttributes(self.toJSONObject())
+
+			var newUserJSON = self.toJSONObject();
+			delete(newUserJSON["id"]);
+			delete(newUserJSON["createdAt"]);
+			delete(newUserJSON["updatedAt"]);
+
+			self.getSequelizeModel().updateAttributes(newUserJSON)
 				.then(function () {
 
 					self.getSequelizeModel().save()
-						.then(function () {
+						.then(function (sequelizeInstance) {
+							if(sequelizeInstance.getDataValue("updatedAt") == "now()") {
+								self.setUpdatedAt(moment().format());
+							} else {
+								self.setUpdatedAt(sequelizeInstance.getDataValue("updatedAt"));
+							}
 							successCallback(self);
 						})
 						.catch(function (error) {

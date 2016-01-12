@@ -14,7 +14,7 @@ var bodyParser : any = require("body-parser");
 var multer : any = require('multer');
 
 var db : any = require('./database/models/index.js');
-var epilogue : any = require("epilogue");
+var moment : any = require('moment');
 
 /**
  * Represents a Server managing Namespaces.
@@ -73,12 +73,6 @@ class Server {
 	private _buildDatabase() {
 		var self = this;
 
-		// Initialize epilogue
-		epilogue.initialize({
-			app: self.app,
-			sequelize: db.sequelize
-		});
-
 		// Link to database and listen
 		db.sequelize
 			.sync()
@@ -109,13 +103,14 @@ class Server {
 		this.app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 		this.app.use(multer({ dest: uploadDir })); // for parsing multipart/form-data
 
-
 		this.app.use(function(req, res, next) {
 			res.header("Access-Control-Allow-Origin", "*");
 			res.header("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
 			res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
 			next();
 		});
+
+
 		this.httpServer = http.createServer(this.app);
 
 		this.app.get('/', function(req, res){
@@ -170,6 +165,14 @@ class Server {
 	 */
 	run() {
 		var self = this;
+
+		//Define errorHandler function.
+		this.app.use(function(err, req, res, next) {
+			if (res.headersSent) {
+				return next(err);
+			}
+			res.status(500).send({ 'error': err.message });
+		});
 
 		this.httpServer.listen(this.listeningPort, function() {
 			self.onListen();

@@ -55,6 +55,7 @@ class ModelItf {
 		if (!id && id !== null) {
 			throw new ModelException("The ID cannot be undefined");
 		}
+
 		this._id = id;
 		this._createdAt = createdAt;
 		this._updatedAt = updatedAt;
@@ -92,21 +93,31 @@ class ModelItf {
 	/**
 	 * Returns CreatedAt property of model.
 	 *
-	 * @method getCreatedAt
+	 * @method createdAt
 	 * @return {string} The model's CreatedAt property.
 	 */
-	getCreatedAt() : string {
+	createdAt() : string {
 		return this._createdAt;
 	}
 
 	/**
 	 * Returns UpdatedAt property of model.
 	 *
-	 * @method getUpdatedAt
+	 * @method updatedAt
 	 * @return {string} The model's UpdatedAt property.
 	 */
-	getUpdatedAt() : string {
+	updatedAt() : string {
 		return this._updatedAt;
+	}
+
+	/**
+	 * Set UpdatedAt property of model.
+	 *
+	 * @method setUpdatedAt
+	 * @param {string} updatedAt - New updatedAt date.
+	 */
+	setUpdatedAt(updatedAt : string) {
+		this._updatedAt = updatedAt;
 	}
 
 	/**
@@ -180,8 +191,8 @@ class ModelItf {
 	toJSONObject() : Object {
 		var data = {
 			"id": this.getId(),
-			"createdAt" : this.getCreatedAt(),
-			"updatedAt" : this.getUpdatedAt()
+			"createdAt" : this.createdAt(),
+			"updatedAt" : this.updatedAt()
 		};
 		return data;
 	}

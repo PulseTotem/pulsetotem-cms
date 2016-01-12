@@ -1,3 +1,4 @@
 {
-    "uploadDir" : "uploads/"
+  "baseUrl" : "/",
+  "uploadDir" : "uploads/"
 }

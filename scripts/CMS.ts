@@ -4,6 +4,7 @@
 
 /// <reference path="./core/Server.ts" />
 /// <reference path="./core/CMSConfig.ts" />
+/// <reference path="./auth/CMSAuth.ts" />
 /// <reference path="./api/UsersRouter.ts" />
 
 declare var require : any;
@@ -52,6 +53,8 @@ class CMS extends Server {
 	 * @method databaseReady
 	 */
 	databaseReady() {
+		CMSAuth.init();
+
 		this.buildAPI();
 
 		this.run();
@@ -63,7 +66,7 @@ class CMS extends Server {
 	 * @method buildAPI
 	 */
 	buildAPI() {
-		this.app.use("/users", (new UsersRouter()).getRouter());
+		this.app.use(CMSConfig.getBaseUrl() + "users", (new UsersRouter()).getRouter());
 	}
 }
 
