@@ -50,25 +50,54 @@ class User extends ModelItf {
 	 */
 	private _isAdmin : boolean;
 
+	/**
+	 * Hash property.
+	 *
+	 * @property _hash
+	 * @type string
+	 */
+	private _hash : string;
+
 
 	/**
 	 * Constructor.
 	 *
 	 * @constructor
 	 * @param {string} username - The User's username.
+	 * @param {string} hash - The User's hash.
 	 * @param {string} email - The User's email.
 	 * @param {string} authkey - The User's authkey.
 	 * @param {boolean} isAdmin - The User's 'isAdmin' status.
 	 * @param {string} createdAt - The User's createdAt.
 	 * @param {string} updatedAt - The User's updatedAt.
 	 */
-	constructor(username : string = "", email : string = "", authkey : string = "", isAdmin : boolean = false, id : number = null, createdAt : string = null, updatedAt : string = null) {
+	constructor(hash : string = "", username : string = "", email : string = "", authkey : string = "", isAdmin : boolean = false, id : number = null, createdAt : string = null, updatedAt : string = null) {
 		super(id, createdAt, updatedAt);
 
+		this.setHash(hash);
 		this.setUsername(username);
 		this.setEmail(email);
 		this.setAuthKey(authkey);
 		this.setIsAdmin(isAdmin);
+	}
+
+	/**
+	 * Set the User's hash.
+	 *
+	 * @method setHash
+	 * @param {string} hash - New hash
+	 */
+	setHash(hash : string) {
+		this._hash = hash;
+	}
+
+	/**
+	 * Return the User's hash.
+	 *
+	 * @method hash
+	 */
+	hash() {
+		return this._hash;
 	}
 
 	/**
@@ -159,6 +188,7 @@ class User extends ModelItf {
 		var data = super.toJSONObject();
 
 		var newData = {
+			"hash" : this.hash(),
 			"username": this.username(),
 			"email": this.email(),
 			"authkey": this.authKey(),
@@ -174,7 +204,6 @@ class User extends ModelItf {
 	 * @method create
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
-
 	 */
 	create(successCallback : Function, failCallback : Function) {
 		var self = this;
@@ -211,7 +240,6 @@ class User extends ModelItf {
 	 * @param {number} id - The model instance's id.
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
-
 	 */
 	static read(id : number, successCallback : Function, failCallback : Function) {
 		// search for known ids
@@ -236,7 +264,6 @@ class User extends ModelItf {
 	 * @method update
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
-
 	 */
 	update(successCallback : Function, failCallback : Function) {
 		var self = this;
@@ -279,7 +306,6 @@ class User extends ModelItf {
 	 * @method delete
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
-
 	 */
 	delete(successCallback : Function, failCallback : Function) {
 		var self = this;
@@ -306,7 +332,6 @@ class User extends ModelItf {
 	 * @method all
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
-
 	 */
 	static all(successCallback : Function, failCallback : Function) {
 		UserSchema.all()
@@ -320,6 +345,30 @@ class User extends ModelItf {
 				});
 
 				successCallback(allUsers);
+			})
+			.catch(function(e) {
+				failCallback(e);
+			});
+	}
+
+	/**
+	 * Find One User by hash.
+	 *
+	 * @method findOneByHash
+	 * @param {string} hash - The User's hash
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	static findOneByHash(hash : string, successCallback : Function, failCallback : Function) {
+		UserSchema.findOne({ where: {"hash": hash} })
+			.then(function(user) {
+				if(user != null) {
+					var uObject = User.fromJSONObject(user.dataValues);
+					uObject.setSequelizeModel(user);
+					successCallback(uObject);
+				} else {
+					failCallback(new ModelException("User with given Hash was not found."));
+				}
 			})
 			.catch(function(e) {
 				failCallback(e);
@@ -404,11 +453,11 @@ class User extends ModelItf {
 	 *
 	 * @method fromJSONObject
 	 * @static
-	 * @param {JSONObject} json - The JSON Object
+	 * @param {JSONObject} jsonObject - The JSON Object
 	 * @return {SDI} The model instance.
 	 */
 	static fromJSONObject(jsonObject : any) : User {
-		var user = new User(jsonObject.username, jsonObject.email, jsonObject.authkey, jsonObject.isAdmin, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
+		var user = new User(jsonObject.hash, jsonObject.username, jsonObject.email, jsonObject.authkey, jsonObject.isAdmin, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
 
 		return user;
 	}

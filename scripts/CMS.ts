@@ -9,6 +9,9 @@
 
 declare var require : any;
 
+var fs : any = require("fs");
+var mkdirp : any = require('mkdirp');
+
 //////////////// BEGIN: MANAGE COLORS LIB FOR LOGGER ///////////////////
 
 var colors : any;
@@ -55,9 +58,54 @@ class CMS extends Server {
 	databaseReady() {
 		CMSAuth.init();
 
+		this.checkOrCreateUploadsDir();
+
 		this.buildAPI();
 
 		this.run();
+	}
+
+	/**
+	 * Method to check or create Uploads Dir architecture.
+	 *
+	 * @method checkOrCreateUploadsDir
+	 */
+	checkOrCreateUploadsDir() {
+		fs.stat(CMSConfig.getUploadDir(), function(err, stats) {
+			if(err) {
+				mkdirp(CMSConfig.getUploadDir(), function(err2) {
+					if(err2) {
+						throw new Error(err2);
+					}
+				});
+			} else {
+				if(! stats.isDirectory()) {
+					mkdirp(CMSConfig.getUploadDir(), function(err2) {
+						if(err2) {
+							throw new Error(err2);
+						}
+					});
+				}
+			}
+		});
+
+		fs.stat(CMSConfig.getUploadDir() + "users/", function(err, stats) {
+			if(err) {
+				mkdirp(CMSConfig.getUploadDir() + "users/", function(err2) {
+					if(err2) {
+						throw new Error(err2);
+					}
+				});
+			} else {
+				if(! stats.isDirectory()) {
+					mkdirp(CMSConfig.getUploadDir() + "users/", function(err2) {
+						if(err2) {
+							throw new Error(err2);
+						}
+					});
+				}
+			}
+		});
 	}
 
 	/**
