@@ -1,0 +1,15 @@
+build/*
+buildDBInit/*
+dist/*
+tmp/*
+node_modules/*
+src/**~
+*~
+.idea
+database/connection_infos.json
+doc/
+scripts/core/cms_config.json
+package-bak.json
+package-tmp.json
+database/config/config.json
+uploads
