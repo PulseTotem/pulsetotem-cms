@@ -98,9 +98,9 @@ class UsersRouter extends RouterItf {
 		if(typeof(req.body.username) == "undefined" || req.body.username == "" || typeof(req.body.email) == "undefined" || req.body.email == "") {
 			res.status(500).send({ 'error': 'Missing some information to create new User.' });
 		} else {
-			var hash = uuid.v1();
+			var hashid = uuid.v1();
 			var authKey = uuid.v1();
-			var newUser = new User(hash, req.body.username, req.body.email, authKey);
+			var newUser = new User(hashid, req.body.username, req.body.email, authKey);
 
 			if(typeof(req.body.isAdmin) != "undefined") {
 				if(req.body.isAdmin == true || req.body.isAdmin == false) {
@@ -110,9 +110,9 @@ class UsersRouter extends RouterItf {
 
 			var success = function(user) {
 
-				fs.stat(CMSConfig.getUploadDir() + "users/" + hash + "/", function(err, stats) {
+				fs.stat(CMSConfig.getUploadDir() + "users/" + hashid + "/", function(err, stats) {
 					if(err) {
-						mkdirp(CMSConfig.getUploadDir() + "users/" + hash + "/", function(err2) {
+						mkdirp(CMSConfig.getUploadDir() + "users/" + hashid + "/", function(err2) {
 							if(err2) {
 								res.status(500).send({ 'error': JSON.stringify(err2) });
 							} else {
@@ -121,7 +121,7 @@ class UsersRouter extends RouterItf {
 						});
 					} else {
 						if(! stats.isDirectory()) {
-							mkdirp(CMSConfig.getUploadDir() + "users/" + hash + "/", function(err2) {
+							mkdirp(CMSConfig.getUploadDir() + "users/" + hashid + "/", function(err2) {
 								if(err2) {
 									res.status(500).send({ 'error': JSON.stringify(err2) });
 								} else {

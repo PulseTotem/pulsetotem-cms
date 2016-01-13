@@ -6,6 +6,11 @@ module.exports = {
           primaryKey: true,
           autoIncrement: true
         },
+        hashid: {
+          type: DataTypes.STRING,
+          unique: true,
+          allowNull: false
+        },
         authkey: {
           type: DataTypes.STRING(500),
           unique: true,

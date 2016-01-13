@@ -51,12 +51,12 @@ class User extends ModelItf {
 	private _isAdmin : boolean;
 
 	/**
-	 * Hash property.
+	 * Hashid property.
 	 *
-	 * @property _hash
+	 * @property _hashid
 	 * @type string
 	 */
-	private _hash : string;
+	private _hashid : string;
 
 
 	/**
@@ -64,17 +64,17 @@ class User extends ModelItf {
 	 *
 	 * @constructor
 	 * @param {string} username - The User's username.
-	 * @param {string} hash - The User's hash.
+	 * @param {string} hashid - The User's hashid.
 	 * @param {string} email - The User's email.
 	 * @param {string} authkey - The User's authkey.
 	 * @param {boolean} isAdmin - The User's 'isAdmin' status.
 	 * @param {string} createdAt - The User's createdAt.
 	 * @param {string} updatedAt - The User's updatedAt.
 	 */
-	constructor(hash : string = "", username : string = "", email : string = "", authkey : string = "", isAdmin : boolean = false, id : number = null, createdAt : string = null, updatedAt : string = null) {
+	constructor(hashid : string = "", username : string = "", email : string = "", authkey : string = "", isAdmin : boolean = false, id : number = null, createdAt : string = null, updatedAt : string = null) {
 		super(id, createdAt, updatedAt);
 
-		this.setHash(hash);
+		this.setHashid(hashid);
 		this.setUsername(username);
 		this.setEmail(email);
 		this.setAuthKey(authkey);
@@ -82,22 +82,22 @@ class User extends ModelItf {
 	}
 
 	/**
-	 * Set the User's hash.
+	 * Set the User's hashid.
 	 *
-	 * @method setHash
-	 * @param {string} hash - New hash
+	 * @method setHashid
+	 * @param {string} hashid - New hashid
 	 */
-	setHash(hash : string) {
-		this._hash = hash;
+	setHashid(hashid : string) {
+		this._hashid = hashid;
 	}
 
 	/**
-	 * Return the User's hash.
+	 * Return the User's hashid.
 	 *
-	 * @method hash
+	 * @method hashid
 	 */
-	hash() {
-		return this._hash;
+	hashid() {
+		return this._hashid;
 	}
 
 	/**
@@ -188,7 +188,7 @@ class User extends ModelItf {
 		var data = super.toJSONObject();
 
 		var newData = {
-			"hash" : this.hash(),
+			"hashid" : this.hashid(),
 			"username": this.username(),
 			"email": this.email(),
 			"authkey": this.authKey(),
@@ -352,22 +352,22 @@ class User extends ModelItf {
 	}
 
 	/**
-	 * Find One User by hash.
+	 * Find One User by hashid.
 	 *
-	 * @method findOneByHash
-	 * @param {string} hash - The User's hash
+	 * @method findOneByHashid
+	 * @param {string} hashid - The User's hashid
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
-	static findOneByHash(hash : string, successCallback : Function, failCallback : Function) {
-		UserSchema.findOne({ where: {"hash": hash} })
+	static findOneByHashid(hashid : string, successCallback : Function, failCallback : Function) {
+		UserSchema.findOne({ where: {"hashid": hashid} })
 			.then(function(user) {
 				if(user != null) {
 					var uObject = User.fromJSONObject(user.dataValues);
 					uObject.setSequelizeModel(user);
 					successCallback(uObject);
 				} else {
-					failCallback(new ModelException("User with given Hash was not found."));
+					failCallback(new ModelException("User with given Hashid was not found."));
 				}
 			})
 			.catch(function(e) {
@@ -457,7 +457,7 @@ class User extends ModelItf {
 	 * @return {SDI} The model instance.
 	 */
 	static fromJSONObject(jsonObject : any) : User {
-		var user = new User(jsonObject.hash, jsonObject.username, jsonObject.email, jsonObject.authkey, jsonObject.isAdmin, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
+		var user = new User(jsonObject.hashid, jsonObject.username, jsonObject.email, jsonObject.authkey, jsonObject.isAdmin, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
 
 		return user;
 	}

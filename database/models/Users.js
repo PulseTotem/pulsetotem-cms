@@ -1,22 +1,31 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('Users', { 
+  return sequelize.define('Users', {
     id: {
       type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    hashid: {
+      type: DataTypes.STRING,
+      allowNull: false,
       primaryKey: true
     },
     authkey: {
       type: DataTypes.STRING,
       allowNull: false,
+      primaryKey: true
     },
     username: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: true
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
+      primaryKey: true
     },
     isAdmin: {
       type: DataTypes.BOOLEAN,
@@ -33,5 +42,8 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       defaultValue: 'now()'
     }
+  }, {
+    tableName: 'Users',
+    freezeTableName: true
   });
 };
