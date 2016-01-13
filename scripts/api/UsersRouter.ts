@@ -11,6 +11,7 @@ declare var require : any;
 
 var fs : any = require("fs");
 var mkdirp : any = require('mkdirp');
+var rmdir : any = require( 'rmdir' );
 
 var uuid : any = require('node-uuid');
 
@@ -224,17 +225,27 @@ class UsersRouter extends RouterItf {
 	 */
 	deleteUser(req : any, res : any) {
 
-		var success = function(deleteUserId) {
+		var originUserFolder = CMSConfig.getUploadDir() + "users/" + req.user.hashid();
+		var tmpUserFolder = CMSConfig.getUploadDir() + "deletetmp/users/" + req.user.hashid();
 
-			//TODO : Delete his folder and all his files !!!!!
+		fs.rename(originUserFolder, tmpUserFolder, function(err) {
+			if(err) {
+				res.status(500).send({ 'error': "Error during deleting User." });
+			} else {
+				var success = function(deleteUserId) {
+					rmdir(tmpUserFolder, function ( err, dirs, files ){
+						res.json(deleteUserId);
+					});
+				};
 
-			res.json(deleteUserId);
-		};
+				var fail = function(error) {
+					fs.rename(tmpUserFolder, originUserFolder , function(err) {
+						res.status(500).send({ 'error': JSON.stringify(error) });
+					});
+				};
 
-		var fail = function(error) {
-			res.status(500).send({ 'error': JSON.stringify(error) });
-		};
-
-		req.user.delete(success, fail);
+				req.user.delete(success, fail);
+			}
+		});
 	}
 }
