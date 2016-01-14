@@ -63,11 +63,12 @@ class User extends ModelItf {
 	 * Constructor.
 	 *
 	 * @constructor
-	 * @param {string} username - The User's username.
 	 * @param {string} hashid - The User's hashid.
+	 * @param {string} username - The User's username.
 	 * @param {string} email - The User's email.
 	 * @param {string} authkey - The User's authkey.
 	 * @param {boolean} isAdmin - The User's 'isAdmin' status.
+	 * @param {number} id - The User's id.
 	 * @param {string} createdAt - The User's createdAt.
 	 * @param {string} updatedAt - The User's updatedAt.
 	 */
@@ -179,6 +180,18 @@ class User extends ModelItf {
 	//////////////////// Methods managing model. ///////////////////////////
 
 	/**
+	 * Load model associations.
+	 *
+	 * @method loadAssociations
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	loadAssociations(successCallback : Function, failCallback : Function) {
+		//Nothing to do.
+		successCallback();
+	}
+
+	/**
 	 * Return a User instance as a JSON Object
 	 *
 	 * @method toJSONObject
@@ -220,9 +233,11 @@ class User extends ModelItf {
 					var uObject = User.fromJSONObject(user.dataValues);
 					self._id = uObject.getId();
 
-					self.setSequelizeModel(user);
-					
-					successCallback(self);
+					self.setSequelizeModel(user, function() {
+						successCallback(self);
+					}, function(error) {
+						failCallback(error);
+					});
 				})
 				.catch(function (error) {
 					failCallback(error);
@@ -247,8 +262,11 @@ class User extends ModelItf {
 			.then(function(user) {
 				if(user != null) {
 					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user);
-					successCallback(uObject);
+					uObject.setSequelizeModel(user, function() {
+						successCallback(uObject);
+					}, function(error) {
+						failCallback(error);
+					});
 				} else {
 					failCallback(new ModelException("User with given Id was not found."));
 				}
@@ -340,11 +358,16 @@ class User extends ModelItf {
 
 				users.forEach(function(user : any) {
 					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user);
-					allUsers.push(uObject);
-				});
+					uObject.setSequelizeModel(user, function() {
+						allUsers.push(uObject);
+						if(allUsers.length == users.length) {
+							successCallback(allUsers);
+						}
+					}, function(error) {
+						failCallback(error);
+					});
 
-				successCallback(allUsers);
+				});
 			})
 			.catch(function(e) {
 				failCallback(e);
@@ -364,8 +387,11 @@ class User extends ModelItf {
 			.then(function(user) {
 				if(user != null) {
 					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user);
-					successCallback(uObject);
+					uObject.setSequelizeModel(user, function() {
+						successCallback(uObject);
+					}, function(error) {
+						failCallback(error);
+					});
 				} else {
 					failCallback(new ModelException("User with given Hashid was not found."));
 				}
@@ -389,8 +415,11 @@ class User extends ModelItf {
 
 				if(user != null) {
 					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user);
-					successCallback(uObject);
+					uObject.setSequelizeModel(user, function() {
+						successCallback(uObject);
+					}, function(error) {
+						failCallback(error);
+					});
 				} else {
 					failCallback(new ModelException("User with given Username was not found."));
 				}
@@ -413,8 +442,11 @@ class User extends ModelItf {
 			.then(function(user) {
 				if(user != null) {
 					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user);
-					successCallback(uObject);
+					uObject.setSequelizeModel(user, function() {
+						successCallback(uObject);
+					}, function(error) {
+						failCallback(error);
+					});
 				} else {
 					failCallback(new ModelException("User with given Email was not found."));
 				}
@@ -437,8 +469,11 @@ class User extends ModelItf {
 			.then(function(user) {
 				if(user != null) {
 					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user);
-					successCallback(uObject);
+					uObject.setSequelizeModel(user, function() {
+						successCallback(uObject);
+					}, function(error) {
+						failCallback(error);
+					});
 				} else {
 					failCallback(new ModelException("User with given Authorization Key was not found."));
 				}
