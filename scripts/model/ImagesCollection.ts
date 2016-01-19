@@ -452,8 +452,90 @@ class ImagesCollection extends ModelItf {
 			});
 	}
 
+	/**
+	 * Add an Image to ImageCollection.
+	 *
+	 * @method addImage
+	 * @param {Image} image - Image to add to collection.
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	addImage(image : Image, successCallback : Function, failCallback : Function) {
+		var self = this;
 
-	//TODO : AddImage, removeImage
+		if(this.getId() != null) {
+
+			if(image.getId() != null) {
+				self.getSequelizeModel().addImage(image.getSequelizeModel())
+					.then(function () {
+
+						if(self._images == null) {
+							self._images = new Array<Image>();
+						}
+
+						self._images.push(image);
+						successCallback(self);
+					})
+					.catch(function (error) {
+						failCallback(error);
+					});
+			} else {
+				failCallback(new ModelException("You need to create the Image before to add to ImageCollection."));
+			}
+		} else {
+			failCallback(new ModelException("You need to create ImagesCollection before to add an Image."));
+		}
+	}
+
+	/**
+	 * Remove an Image from ImageCollection.
+	 *
+	 * @method removeImage
+	 * @param {Image} image - Image to add to collection.
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	removeImage(image : Image, successCallback : Function, failCallback : Function) {
+		var self = this;
+
+		if(this.getId() != null) {
+
+			if(image.getId() != null) {
+
+				if(self._images == null) {
+					failCallback(new ModelException("Image doesn't belong to this ImageCollection."));
+				} else {
+					var imageToDelete = null;
+
+					self._images = self._images.filter(function(obj) {
+						var comp = obj.getId() != image.getId();
+						if(!comp) {
+							imageToDelete = obj;
+						}
+
+						return comp;
+					});
+
+					if(imageToDelete == null) {
+						failCallback(new ModelException("Image doesn't belong to this ImageCollection."));
+					} else {
+						self.getSequelizeModel().removeImage(image.getSequelizeModel())
+							.then(function () {
+								successCallback(self);
+							})
+							.catch(function (error) {
+								self._images.push(imageToDelete);
+								failCallback(error);
+							});
+					}
+				}
+			} else {
+				failCallback(new ModelException("Image does'nt exist. You can't remove an Image that doesn't exist from an ImageCollection."));
+			}
+		} else {
+			failCallback(new ModelException("ImagesCollection doesn't exist. ImageCollection must to exist before to remove something from it."));
+		}
+	}
 
 	/**
 	 * Find One ImagesCollection by hashid.
