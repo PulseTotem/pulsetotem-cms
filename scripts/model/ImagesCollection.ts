@@ -180,17 +180,24 @@ class ImagesCollection extends ModelItf {
 
 			this.getSequelizeModel().getUser()
 				.then(function(user) {
-					var icObject = User.fromJSONObject(user.dataValues);
-					icObject.setSequelizeModel(user, function() {
+					if(user != null) {
+						var icObject = User.fromJSONObject(user.dataValues);
+						icObject.setSequelizeModel(user, function () {
+							self._user_loaded = true;
+							successCallback();
+						}, function (error) {
+							failCallback(error);
+						}, false);
+					} else {
 						self._user_loaded = true;
 						successCallback();
-					}, function(error) {
-						failCallback(error);
-					}, false);
+					}
 				})
 				.catch(function(error) {
 					failCallback(error);
 				});
+		} else {
+			successCallback();
 		}
 	}
 
@@ -219,22 +226,33 @@ class ImagesCollection extends ModelItf {
 
 					var allImages : Array<Image> = new Array<Image>();
 
-					images.forEach(function(image : any) {
-						var uObject = Image.fromJSONObject(image.dataValues);
-						uObject.setSequelizeModel(image, function() {
-							allImages.push(uObject);
-							if(allImages.length == images.length) {
-								self._images = allImages;
-								successCallback();
-							}
-						}, function(error) {
-							failCallback(error);
+					if(images.length > 0) {
+
+						images.forEach(function (image:any) {
+							var uObject = Image.fromJSONObject(image.dataValues);
+							uObject.setSequelizeModel(image, function () {
+								allImages.push(uObject);
+								if (allImages.length == images.length) {
+									self._images_loaded = true;
+									self._images = allImages;
+									successCallback();
+								}
+							}, function (error) {
+								failCallback(error);
+							});
 						});
-					});
+
+					} else {
+						self._images_loaded = true;
+						self._images = allImages;
+						successCallback();
+					}
 				})
 				.catch(function(error) {
 					failCallback(error);
 				});
+		} else {
+			successCallback();
 		}
 	}
 
@@ -313,7 +331,7 @@ class ImagesCollection extends ModelItf {
 					self._id = uObject.getId();
 
 					self.setSequelizeModel(imagesCollection, function() {
-						successCallback(self);
+						successCallback(uObject);
 					}, function(error) {
 						failCallback(error);
 					});
@@ -435,17 +453,22 @@ class ImagesCollection extends ModelItf {
 			.then(function(imagesCollections) {
 				var allImagesCollections : Array<ImagesCollection> = new Array<ImagesCollection>();
 
-				imagesCollections.forEach(function(imagesCollection : any) {
-					var uObject = ImagesCollection.fromJSONObject(imagesCollection.dataValues);
-					uObject.setSequelizeModel(imagesCollection, function() {
-						allImagesCollections.push(uObject);
-						if(allImagesCollections.length == imagesCollections.length) {
-							successCallback(allImagesCollections);
-						}
-					}, function(error) {
-						failCallback(error);
+				if(imagesCollections.length > 0) {
+
+					imagesCollections.forEach(function (imagesCollection:any) {
+						var uObject = ImagesCollection.fromJSONObject(imagesCollection.dataValues);
+						uObject.setSequelizeModel(imagesCollection, function () {
+							allImagesCollections.push(uObject);
+							if (allImagesCollections.length == imagesCollections.length) {
+								successCallback(allImagesCollections);
+							}
+						}, function (error) {
+							failCallback(error);
+						});
 					});
-				});
+				} else {
+					successCallback(allImagesCollections);
+				}
 			})
 			.catch(function(e) {
 				failCallback(e);

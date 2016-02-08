@@ -190,17 +190,24 @@ class Image extends ModelItf {
 
 			this.getSequelizeModel().getImagesCollection()
 				.then(function(imagesCollection) {
-					var icObject = ImagesCollection.fromJSONObject(imagesCollection.dataValues);
-					icObject.setSequelizeModel(imagesCollection, function() {
+					if(imagesCollection != null) {
+						var icObject = ImagesCollection.fromJSONObject(imagesCollection.dataValues);
+						icObject.setSequelizeModel(imagesCollection, function () {
+							self._collection_loaded = true;
+							successCallback();
+						}, function (error) {
+							failCallback(error);
+						}, false);
+					} else {
 						self._collection_loaded = true;
 						successCallback();
-					}, function(error) {
-						failCallback(error);
-					}, false);
+					}
 				})
 				.catch(function(error) {
 					failCallback(error);
 				});
+		} else {
+			successCallback();
 		}
 	}
 
@@ -278,7 +285,7 @@ class Image extends ModelItf {
 					self._id = uObject.getId();
 
 					self.setSequelizeModel(image, function() {
-						successCallback(self);
+						successCallback(uObject);
 					}, function(error) {
 						failCallback(error);
 					});
@@ -400,17 +407,21 @@ class Image extends ModelItf {
 			.then(function(images) {
 				var allImages : Array<Image> = new Array<Image>();
 
-				images.forEach(function(image : any) {
-					var uObject = Image.fromJSONObject(image.dataValues);
-					uObject.setSequelizeModel(image, function() {
-						allImages.push(uObject);
-						if(allImages.length == images.length) {
-							successCallback(allImages);
-						}
-					}, function(error) {
-						failCallback(error);
+				if(images.length > 0) {
+					images.forEach(function (image:any) {
+						var uObject = Image.fromJSONObject(image.dataValues);
+						uObject.setSequelizeModel(image, function () {
+							allImages.push(uObject);
+							if (allImages.length == images.length) {
+								successCallback(allImages);
+							}
+						}, function (error) {
+							failCallback(error);
+						});
 					});
-				});
+				} else {
+					successCallback(allImages);
+				}
 			})
 			.catch(function(e) {
 				failCallback(e);
