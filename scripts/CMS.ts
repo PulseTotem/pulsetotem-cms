@@ -6,6 +6,7 @@
 /// <reference path="./core/CMSConfig.ts" />
 /// <reference path="./auth/CMSAuth.ts" />
 /// <reference path="./api/UsersRouter.ts" />
+/// <reference path="./api/ImagesRouter.ts" />
 
 declare var require : any;
 
@@ -151,6 +152,7 @@ class CMS extends Server {
 	 */
 	buildAPI() {
 		this.app.use(CMSConfig.getBaseUrl() + "users", (new UsersRouter()).getRouter());
+		this.app.use(CMSConfig.getBaseUrl() + "images", (new ImagesRouter()).getRouter());
 	}
 }
 

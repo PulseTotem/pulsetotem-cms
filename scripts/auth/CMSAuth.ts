@@ -104,16 +104,34 @@ class CMSAuth extends AuthManager {
 		});
 
 		this.addRole("Image.Owner", function(req, res, done) {
-			self.can("manage user images collections")(req, res, function(error) {
+			self.can("manage user information")(req, res, function(error) {
 				if (typeof(error) == "undefined" || error == null) { // All is ok.
 					if(!req.image) {
 						done(new Error('Image was not found.'));
 					} else {
-						if(req.user.getId() == req.imagesCollection.user().getId() == req.image.) {
-							done();
-						} else {
+
+						var successLoadUser = function() {
+							if(req.user.getId() == req.image.collection().user().getId()) {
+
+								if(!req.imagesCollection) {
+									done();
+								} else {
+									if(req.imagesCollection.getId() == req.image.collection().getId()) {
+										done();
+									} else {
+										done(new Error('Image doesn\'t belong to this ImagesCollection.'));
+									}
+								}
+							} else {
+								done(new Error('Unauthorized.'));
+							}
+						};
+
+						var fail = function() {
 							done(new Error('Unauthorized.'));
-						}
+						};
+
+						req.image.collection().loadUser(successLoadUser, fail);
 					}
 				} else { // An error occured.
 					done(error);

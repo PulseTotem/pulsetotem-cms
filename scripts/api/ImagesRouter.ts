@@ -142,7 +142,7 @@ class ImagesRouter extends RouterItf {
 	 * @param {Express.Response} res - Response object.
 	 */
 	rawImage(req : any, res : any) {
-		var imagePath = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid() + "/" + req.image.hashid();
+		var imagePath = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.image.collection().hashid() + "/" + req.image.hashid();
 
 		var img = fs.readFileSync(imagePath);
 		res.set('Content-Type', 'image/jpeg');
@@ -190,8 +190,8 @@ class ImagesRouter extends RouterItf {
 	 */
 	deleteImage(req : any, res : any) {
 
-		var originImageFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid() + "/" + req.image.hashid();
-		var tmpImageFile = CMSConfig.getUploadDir() + "deletetmp/users_" + req.user.hashid() + "_images_" + req.imagesCollection.hashid() + "_" + req.image.hashid();
+		var originImageFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.image.collection().hashid() + "/" + req.image.hashid();
+		var tmpImageFile = CMSConfig.getUploadDir() + "deletetmp/users_" + req.user.hashid() + "_images_" + req.image.collection().hashid() + "_" + req.image.hashid();
 
 		fs.rename(originImageFile, tmpImageFile, function(err) {
 			if(err) {
