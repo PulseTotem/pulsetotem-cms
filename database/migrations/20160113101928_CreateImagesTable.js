@@ -19,10 +19,6 @@ module.exports = {
           type: DataTypes.STRING,
           allowNull: true
         },
-        relDirPath: {
-          type: DataTypes.STRING,
-          allowNull: false
-        },
         createdAt: {
           type: DataTypes.DATE,
           defaultValue: DataTypes.fn('NOW'),

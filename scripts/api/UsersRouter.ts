@@ -13,7 +13,7 @@ declare var require : any;
 
 var fs : any = require("fs");
 var mkdirp : any = require('mkdirp');
-var rmdir : any = require( 'rmdir' );
+var rmdir : any = require('rmdir');
 
 var uuid : any = require('node-uuid');
 

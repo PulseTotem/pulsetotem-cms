@@ -102,6 +102,24 @@ class CMSAuth extends AuthManager {
 				}
 			});
 		});
+
+		this.addRole("Image.Owner", function(req, res, done) {
+			self.can("manage user images collections")(req, res, function(error) {
+				if (typeof(error) == "undefined" || error == null) { // All is ok.
+					if(!req.image) {
+						done(new Error('Image was not found.'));
+					} else {
+						if(req.user.getId() == req.imagesCollection.user().getId() == req.image.) {
+							done();
+						} else {
+							done(new Error('Unauthorized.'));
+						}
+					}
+				} else { // An error occured.
+					done(error);
+				}
+			});
+		});
 	}
 
 	/**
@@ -115,5 +133,6 @@ class CMSAuth extends AuthManager {
 		this.addAction("perform admin action", "Admin");
 		this.addAction("manage user information", ["Admin", "Profil.Owner"]);
 		this.addAction("manage user images collections", ["Admin", "ImagesCollection.Owner"]);
+		this.addAction("manage user images", ["Admin", "Image.Owner"]);
 	}
 }

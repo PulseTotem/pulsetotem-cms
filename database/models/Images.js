@@ -21,10 +21,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true
     },
-    relDirPath: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,

@@ -5,14 +5,15 @@
 /// <reference path="../core/RouterItf.ts" />
 /// <reference path="../auth/CMSAuth.ts" />
 
-/// <reference path="../model/User.ts" />
 /// <reference path="../model/ImagesCollection.ts" />
+
+/// <reference path="./ImagesRouter.ts" />
 
 declare var require : any;
 
 var fs : any = require("fs");
 var mkdirp : any = require('mkdirp');
-var rmdir : any = require( 'rmdir' );
+var rmdir : any = require('rmdir');
 
 var uuid : any = require('node-uuid');
 
@@ -63,7 +64,7 @@ class ImagesCollectionsRouter extends RouterItf {
 		this.router.delete('/:imagescollection_id', CMSAuth.can('manage user images collections'), function(req, res) { self.deleteImagesCollection(req, res); });
 
 		// Define '/:imagescollection_id/images' route.
-		//this.router.use('/:imagescollection_id/images', (new ImagesRouter()).getRouter());
+		this.router.use('/:imagescollection_id/images', (new ImagesRouter()).getRouter());
 	}
 
 	/**
@@ -109,17 +110,34 @@ class ImagesCollectionsRouter extends RouterItf {
 			var success = function(imageCollection : ImagesCollection) {
 
 				var successUserLink = function() {
-					fs.stat(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/" + hashid + "/", function (err, stats) {
-						if (err || !stats.isDirectory()) {
-							mkdirp(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/" + hashid + "/", function (err2) {
-								if (err2) {
-									res.status(500).send({'error': JSON.stringify(err2)});
+
+					var createImagesCollectionFolder = function() {
+						fs.stat(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + hashid + "/", function (err, stats) {
+							if (err || !stats.isDirectory()) {
+								mkdirp(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + hashid + "/", function (err2) {
+									if (err2) {
+										res.status(500).send({'error': JSON.stringify(err2)});
+									} else {
+										res.json(imageCollection.toJSONObject());
+									}
+								});
+							} else {
+								res.json(imageCollection.toJSONObject());
+							}
+						});
+					};
+
+					fs.stat(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/", function (errImagesFolder, stats) {
+						if (errImagesFolder || !stats.isDirectory()) {
+							mkdirp(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/", function (errImagesFolderCreation) {
+								if (errImagesFolderCreation) {
+									res.status(500).send({'error': JSON.stringify(errImagesFolderCreation)});
 								} else {
-									res.json(imageCollection.toJSONObject());
+									createImagesCollectionFolder();
 								}
 							});
 						} else {
-							res.json(imageCollection.toJSONObject());
+							createImagesCollectionFolder();
 						}
 					});
 				};
@@ -183,7 +201,7 @@ class ImagesCollectionsRouter extends RouterItf {
 	 */
 	deleteImagesCollection(req : any, res : any) {
 
-		var originImagesCollectionFolder = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/" + req.imagesCollection.hashid();
+		var originImagesCollectionFolder = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid();
 		var tmpImagesCollectionFolder = CMSConfig.getUploadDir() + "deletetmp/users_" + req.user.hashid() + "_" + req.imagesCollection.hashid();
 
 		fs.rename(originImagesCollectionFolder, tmpImagesCollectionFolder, function(err) {

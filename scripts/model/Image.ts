@@ -37,14 +37,6 @@ class Image extends ModelItf {
 	private _description : string;
 
 	/**
-	 * Relative directory path property.
-	 *
-	 * @property _relDirPath
-	 * @type string
-	 */
-	private _relDirPath : string;
-
-	/**
 	 * Hashid property.
 	 *
 	 * @property _hashid
@@ -75,18 +67,16 @@ class Image extends ModelItf {
 	 * @param {string} hashid - The Image's hashid.
 	 * @param {string} name - The Image's name.
 	 * @param {string} description - The Image's description.
-	 * @param {string} relDirPath - The Image's relative directory path.
 	 * @param {number} id - The Image's id.
 	 * @param {string} createdAt - The Image's createdAt.
 	 * @param {string} updatedAt - The Image's updatedAt.
 	 */
-	constructor(hashid : string = "", name : string = "", description : string = "", relDirPath : string = "", id : number = null, createdAt : string = null, updatedAt : string = null) {
+	constructor(hashid : string = "", name : string = "", description : string = "", id : number = null, createdAt : string = null, updatedAt : string = null) {
 		super(id, createdAt, updatedAt);
 
 		this.setHashid(hashid);
 		this.setName(name);
 		this.setDescription(description);
-		this.setRelDirPath(relDirPath);
 
 		this._collection = null;
 		this._collection_loaded = false;
@@ -147,25 +137,6 @@ class Image extends ModelItf {
 	 */
 	description() {
 		return this._description;
-	}
-
-	/**
-	 * Set the Image's relative directory path.
-	 *
-	 * @method setRelDirPath
-	 * @param {string} relDirPath - New relative directory path
-	 */
-	setRelDirPath(relDirPath : string) {
-		this._relDirPath = relDirPath;
-	}
-
-	/**
-	 * Return the Image's relative directory path.
-	 *
-	 * @method relDirPath
-	 */
-	relDirPath() {
-		return this._relDirPath;
 	}
 
 	/**
@@ -254,8 +225,7 @@ class Image extends ModelItf {
 		var newData = {
 			"hashid" : this.hashid(),
 			"name": this.name(),
-			"description": this.description(),
-			"relDirPath": this.relDirPath()
+			"description": this.description()
 		};
 		newData["collection"] = (this.collection() !== null) ? this.collection().toJSONObject() : null;
 
@@ -464,7 +434,7 @@ class Image extends ModelItf {
 	 * @return {SDI} The model instance.
 	 */
 	static fromJSONObject(jsonObject : any) : Image {
-		var image = new Image(jsonObject.hashid, jsonObject.name, jsonObject.description, jsonObject.relDirPath, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
+		var image = new Image(jsonObject.hashid, jsonObject.name, jsonObject.description, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
 
 		return image;
 	}
