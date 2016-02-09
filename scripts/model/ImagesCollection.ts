@@ -298,7 +298,7 @@ class ImagesCollection extends ModelItf {
 		var data = super.toJSONObject();
 
 		var newData = {
-			"hashid" : this.hashid(),
+			"id" : this.hashid(),
 			"name": this.name(),
 			"description": this.description()
 		};

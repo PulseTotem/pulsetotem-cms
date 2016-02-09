@@ -212,7 +212,6 @@ class ModelItf {
 	 */
 	toJSONObject() : Object {
 		var data = {
-			"id": this.getId(),
 			"createdAt" : this.createdAt(),
 			"updatedAt" : this.updatedAt()
 		};

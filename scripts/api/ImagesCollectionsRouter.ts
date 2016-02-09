@@ -51,7 +51,7 @@ class ImagesCollectionsRouter extends RouterItf {
 				next(error);
 			};
 
-			ImagesCollection.read(id, success, fail);
+			ImagesCollection.findOneByHashid(id, success, fail);
 		});
 
 		// Define '/' route.

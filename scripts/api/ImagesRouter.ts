@@ -49,7 +49,7 @@ class ImagesRouter extends RouterItf {
 				next(error);
 			};
 
-			Image.read(id, success, fail);
+			Image.findOneByHashid(id, success, fail);
 		});
 
 		// Define '/' route.

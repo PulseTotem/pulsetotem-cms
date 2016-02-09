@@ -295,7 +295,7 @@ class User extends ModelItf {
 		var data = super.toJSONObject();
 
 		var newData = {
-			"hashid" : this.hashid(),
+			"id" : this.hashid(),
 			"username": this.username(),
 			"email": this.email(),
 			"authkey": this.authKey(),

@@ -51,7 +51,7 @@ class UsersRouter extends RouterItf {
 				next(error);
 			};
 
-			User.read(id, success, fail);
+			User.findOneByHashid(id, success, fail);
 		});
 
 		// Define '/' route.
