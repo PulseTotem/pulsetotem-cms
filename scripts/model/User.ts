@@ -302,7 +302,9 @@ class User extends ModelItf {
 			"isAdmin": this.isAdmin()
 		};
 
-		newData["imagesCollections"] = (this.imagesCollections() !== null) ? this.serializeArray(this.imagesCollections()) : null;
+		if(this._imagesCollections_loaded) {
+			newData["imagesCollections"] = (this.imagesCollections() !== null) ? this.serializeArray(this.imagesCollections()) : null;
+		}
 
 		return Helper.mergeObjects(data, newData);
 	}
@@ -362,7 +364,7 @@ class User extends ModelItf {
 						successCallback(uObject);
 					}, function(error) {
 						failCallback(error);
-					});
+					}, false);
 				} else {
 					failCallback(new ModelException("User with given Id was not found."));
 				}
@@ -546,7 +548,7 @@ class User extends ModelItf {
 						}
 					}, function(error) {
 						failCallback(error);
-					});
+					}, false);
 
 				});
 			})
@@ -572,7 +574,7 @@ class User extends ModelItf {
 						successCallback(uObject);
 					}, function(error) {
 						failCallback(error);
-					});
+					}, false);
 				} else {
 					failCallback(new ModelException("User with given Hashid was not found."));
 				}
@@ -600,7 +602,7 @@ class User extends ModelItf {
 						successCallback(uObject);
 					}, function(error) {
 						failCallback(error);
-					});
+					}, false);
 				} else {
 					failCallback(new ModelException("User with given Username was not found."));
 				}
@@ -627,7 +629,7 @@ class User extends ModelItf {
 						successCallback(uObject);
 					}, function(error) {
 						failCallback(error);
-					});
+					}, false);
 				} else {
 					failCallback(new ModelException("User with given Email was not found."));
 				}
@@ -654,7 +656,7 @@ class User extends ModelItf {
 						successCallback(uObject);
 					}, function(error) {
 						failCallback(error);
-					});
+					}, false);
 				} else {
 					failCallback(new ModelException("User with given Authorization Key was not found."));
 				}

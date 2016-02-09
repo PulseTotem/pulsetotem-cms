@@ -302,8 +302,14 @@ class ImagesCollection extends ModelItf {
 			"name": this.name(),
 			"description": this.description()
 		};
-		newData["user"] = (this.user() !== null) ? this.user().toJSONObject() : null;
-		newData["images"] = (this.images() !== null) ? this.serializeArray(this.images()) : null;
+
+		if(this._user_loaded) {
+			newData["user"] = (this.user() !== null) ? this.user().toJSONObject() : null;
+		}
+
+		if(this._images_loaded) {
+			newData["images"] = (this.images() !== null) ? this.serializeArray(this.images()) : null;
+		}
 
 		return Helper.mergeObjects(data, newData);
 	}

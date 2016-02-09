@@ -7,6 +7,8 @@
 
 /// <reference path="../model/User.ts" />
 
+/// <reference path="./ImagesCollectionsRouter.ts" />
+
 declare var require : any;
 
 var fs : any = require("fs");
@@ -61,6 +63,9 @@ class UsersRouter extends RouterItf {
 		this.router.put('/:user_id', CMSAuth.can('manage user information'), function(req, res) { self.updateUser(req, res); });
 		this.router.put('/:user_id/status', CMSAuth.can('perform admin action'), function(req, res) { self.updateUserAdminStatus(req, res); });
 		this.router.delete('/:user_id', CMSAuth.can('perform admin action'), function(req, res) { self.deleteUser(req, res); });
+
+		// Define '/:user_id/images_collections' route.
+		this.router.use('/:user_id/images_collections', (new ImagesCollectionsRouter()).getRouter());
 	}
 
 	/**
@@ -110,9 +115,8 @@ class UsersRouter extends RouterItf {
 			}
 
 			var success = function(user) {
-
 				fs.stat(CMSConfig.getUploadDir() + "users/" + hashid + "/", function(err, stats) {
-					if(err) {
+					if(err || !stats.isDirectory()) {
 						mkdirp(CMSConfig.getUploadDir() + "users/" + hashid + "/", function(err2) {
 							if(err2) {
 								res.status(500).send({ 'error': JSON.stringify(err2) });
@@ -121,17 +125,7 @@ class UsersRouter extends RouterItf {
 							}
 						});
 					} else {
-						if(! stats.isDirectory()) {
-							mkdirp(CMSConfig.getUploadDir() + "users/" + hashid + "/", function(err2) {
-								if(err2) {
-									res.status(500).send({ 'error': JSON.stringify(err2) });
-								} else {
-									res.json(user.toJSONObject());
-								}
-							});
-						} else {
-							res.json(user.toJSONObject());
-						}
+						res.json(user.toJSONObject());
 					}
 				});
 			};
