@@ -5,7 +5,6 @@
 /// <reference path="../core/ModelItf.ts" />
 
 /// <reference path="../core/Helper.ts" />
-/// <reference path="../core/CMSConfig.ts" />
 /// <reference path="../exceptions/ModelException.ts" />
 
 /// <reference path="./ImagesCollection.ts" />

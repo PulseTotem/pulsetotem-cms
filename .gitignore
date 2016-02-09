@@ -1,4 +1,5 @@
 build/*
+buildTests/*
 buildDBInit/*
 dist/*
 tmp/*

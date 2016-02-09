@@ -79,9 +79,13 @@ module.exports = function (grunt) {
 
       test: {
         src: [
-          'tests/**/*.ts'
+          'tests/<%= grunt.option("testFile") %>'
         ],
-        dest: 'buildTests/Test.js'
+        dest: 'buildTests/scripts/<%= grunt.option("testResultFile") %>',
+        options: {
+          module: 'commonjs',
+          basePath: 'tests'
+        }
       }
     },
 
@@ -149,9 +153,10 @@ module.exports = function (grunt) {
       test: {
         options: {
           reporter: 'spec',
-          colors: true
+          colors: true,
+          captureFile: 'buildTests/result.txt'
         },
-        src: ['buildTests/Test.js']
+        src: ['buildTests/**/*.js']
       }
     },
 // ---------------------------------------------
@@ -190,10 +195,69 @@ module.exports = function (grunt) {
     grunt.task.run(['copy:distDatabase', 'copy:distCMSConfigInfosFile', 'typescript:dist']);
   });
 
-  grunt.registerTask('test', function() {
+/*  grunt.registerTask('test', function() {
     grunt.task.run(['clean:test']);
 
     grunt.task.run(['copy:testDatabase', 'copy:testCMSConfigInfosFile', 'typescript:test', 'mochaTest:test']);
+  });
+*/
+
+  var testNames = [];
+  var testId = null;
+
+  grunt.registerTask('nextTest', function() {
+    if(testId == null) {
+      testId = 0;
+    } else {
+      testId++;
+    }
+
+    if(testId < testNames.length) {
+      var testFileNames = testNames[testId];
+      grunt.option('testFile', testFileNames[0]);
+      grunt.option('testResultFile', testFileNames[1]);
+      grunt.task.run(['typescript:test']);
+      grunt.task.run(['nextTest']);
+    } else {
+      grunt.task.run(['mochaTest:test']);
+    }
+  });
+
+  grunt.registerTask('test', function(name) {
+    grunt.task.run(['clean:test', 'copy:testDatabase', 'copy:testCMSConfigInfosFile']);
+
+    if(arguments.length == 0) {
+      var tests = grunt.file.expand('tests/**/*.ts');
+      tests.forEach(function (testFile) {
+        var testNameSplitted = testFile.split('/');
+
+        var testTSName = testNameSplitted[testNameSplitted.length - 1];
+
+        var testName = testTSName.substr(0, testTSName.length - 3);
+
+        var testFileTS = testNameSplitted.slice(1).join('/');
+        var testFileJS = testNameSplitted.slice(1, -1).join('_') + '_' + testName + '.js';
+
+        if (testName != "BaseTest") {
+          testNames.push([testFileTS, testFileJS]);
+        }
+      });
+    } else {
+      var testNameSplitted = ('tests/' + name).split('/');
+
+      var testTSName = testNameSplitted[testNameSplitted.length - 1];
+
+      var testName = testTSName.substr(0, testTSName.length - 3);
+
+      var testFileTS = testNameSplitted.slice(1).join('/');
+      var testFileJS = testNameSplitted.slice(1, -1).join('_') + '_' + testName + '.js';
+
+      if (testName != "BaseTest") {
+        testNames.push([testFileTS, testFileJS]);
+      }
+    }
+
+    grunt.task.run(['nextTest']);
   });
 
   grunt.registerTask('migration', 'Task to manage database migration.', function(arg, arg2) {
