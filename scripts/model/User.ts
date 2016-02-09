@@ -8,6 +8,8 @@
 /// <reference path="../core/CMSConfig.ts" />
 /// <reference path="../exceptions/ModelException.ts" />
 
+/// <reference path="./ImagesCollection.ts" />
+
 var UserSchema : any = db["Users"];
 
 /**
@@ -58,6 +60,22 @@ class User extends ModelItf {
 	 */
 	private _hashid : string;
 
+	/**
+	 * ImagesCollections property.
+	 *
+	 * @property _imagesCollections
+	 * @type Array<ImagesCollection>
+	 */
+	private _imagesCollections : Array<ImagesCollection>;
+
+	/**
+	 * Lazy loading for _imagesCollections property.
+	 *
+	 * @property _imagesCollections_loaded
+	 * @type boolean
+	 */
+	private _imagesCollections_loaded : boolean;
+
 
 	/**
 	 * Constructor.
@@ -80,6 +98,10 @@ class User extends ModelItf {
 		this.setEmail(email);
 		this.setAuthKey(authkey);
 		this.setIsAdmin(isAdmin);
+
+
+		this._imagesCollections = null;
+		this._imagesCollections_loaded = false;
 	}
 
 	/**
@@ -177,6 +199,61 @@ class User extends ModelItf {
 		return this._isAdmin;
 	}
 
+	/**
+	 * Return the User's ImagesCollections.
+	 *
+	 * @method imagesCollections
+	 */
+	imagesCollections() {
+		return this._imagesCollections;
+	}
+
+	/**
+	 * Load the User's ImagesCollections.
+	 *
+	 * @method loadImagesCollections
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	loadImagesCollections(successCallback : Function, failCallback : Function) {
+		if(! this._imagesCollections_loaded) {
+			var self = this;
+
+			this.getSequelizeModel().getImagesCollections()
+				.then(function(imagesCollections) {
+
+					var allImagesCollections : Array<ImagesCollection> = new Array<ImagesCollection>();
+
+					if(imagesCollections.length > 0) {
+
+						imagesCollections.forEach(function (imagesCollection : any) {
+							var uObject = ImagesCollection.fromJSONObject(imagesCollection.dataValues);
+							uObject.setSequelizeModel(imagesCollection, function () {
+								allImagesCollections.push(uObject);
+								if (allImagesCollections.length == imagesCollections.length) {
+									self._imagesCollections_loaded = true;
+									self._imagesCollections = allImagesCollections;
+									successCallback();
+								}
+							}, function (error) {
+								failCallback(error);
+							}, false);
+						});
+
+					} else {
+						self._imagesCollections_loaded = true;
+						self._imagesCollections = allImagesCollections;
+						successCallback();
+					}
+				})
+				.catch(function(error) {
+					failCallback(error);
+				});
+		} else {
+			successCallback();
+		}
+	}
+
 	//////////////////// Methods managing model. ///////////////////////////
 
 	/**
@@ -187,8 +264,25 @@ class User extends ModelItf {
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
 	loadAssociations(successCallback : Function, failCallback : Function) {
-		//Nothing to do.
-		successCallback();
+		var self = this;
+
+		var success : Function = function(models) {
+			if(self._imagesCollections_loaded) {
+				if (successCallback != null) {
+					successCallback();
+				} // else //Nothing to do ?
+			}
+		};
+
+		var fail : Function = function(error) {
+			if(failCallback != null) {
+				failCallback(error);
+			} else {
+				Logger.error(JSON.stringify(error));
+			}
+		};
+
+		this.loadImagesCollections(success, fail);
 	}
 
 	/**
@@ -207,6 +301,8 @@ class User extends ModelItf {
 			"authkey": this.authKey(),
 			"isAdmin": this.isAdmin()
 		};
+
+		newData["imagesCollections"] = (this.imagesCollections() !== null) ? this.serializeArray(this.imagesCollections()) : null;
 
 		return Helper.mergeObjects(data, newData);
 	}
@@ -341,6 +437,91 @@ class User extends ModelItf {
 				});
 		} else {
 			failCallback(new ModelException("You need to create User before to delete it..."));
+		}
+	}
+
+	/**
+	 * Add an ImagesCollection to User.
+	 *
+	 * @method addImagesCollection
+	 * @param {ImagesCollection} imagesCollection - ImagesCollection to add to user.
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	addImagesCollection(imagesCollection : ImagesCollection, successCallback : Function, failCallback : Function) {
+		var self = this;
+
+		if(this.getId() != null) {
+
+			if(imagesCollection.getId() != null) {
+				self.getSequelizeModel().addImagesCollection(imagesCollection.getSequelizeModel())
+					.then(function () {
+
+						if(self._imagesCollections == null) {
+							self._imagesCollections = new Array<ImagesCollection>();
+						}
+
+						self._imagesCollections.push(imagesCollection);
+						successCallback(self);
+					})
+					.catch(function (error) {
+						failCallback(error);
+					});
+			} else {
+				failCallback(new ModelException("You need to create the ImagesCollection before to add to User."));
+			}
+		} else {
+			failCallback(new ModelException("You need to create User before to add an ImagesCollection."));
+		}
+	}
+
+	/**
+	 * Remove an ImagesCollection from User.
+	 *
+	 * @method removeImagesCollection
+	 * @param {ImagesCollection} imagesCollection - ImagesCollection to add to user.
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	removeImagesCollection(imagesCollection : ImagesCollection, successCallback : Function, failCallback : Function) {
+		var self = this;
+
+		if(this.getId() != null) {
+
+			if(imagesCollection.getId() != null) {
+
+				if(self._imagesCollections == null) {
+					failCallback(new ModelException("ImagesCollection doesn't belong to this User."));
+				} else {
+					var imagesCollectionToDelete = null;
+
+					self._imagesCollections = self._imagesCollections.filter(function(obj) {
+						var comp = obj.getId() != imagesCollection.getId();
+						if(!comp) {
+							imagesCollectionToDelete = obj;
+						}
+
+						return comp;
+					});
+
+					if(imagesCollectionToDelete == null) {
+						failCallback(new ModelException("ImagesCollection doesn't belong to this User."));
+					} else {
+						self.getSequelizeModel().removeImagesCollection(imagesCollection.getSequelizeModel())
+							.then(function () {
+								successCallback(self);
+							})
+							.catch(function (error) {
+								self._imagesCollections.push(imagesCollectionToDelete);
+								failCallback(error);
+							});
+					}
+				}
+			} else {
+				failCallback(new ModelException("ImagesCollection doesn't exist. You can't remove an ImagesCollection that doesn't exist from a User."));
+			}
+		} else {
+			failCallback(new ModelException("User doesn't exist. User must to exist before to remove something from it."));
 		}
 	}
 

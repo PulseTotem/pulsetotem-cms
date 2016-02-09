@@ -239,7 +239,7 @@ class ImagesCollection extends ModelItf {
 								}
 							}, function (error) {
 								failCallback(error);
-							});
+							}, false);
 						});
 
 					} else {
@@ -476,7 +476,7 @@ class ImagesCollection extends ModelItf {
 	}
 
 	/**
-	 * Add an Image to ImageCollection.
+	 * Add an Image to ImagesCollection.
 	 *
 	 * @method addImage
 	 * @param {Image} image - Image to add to collection.
@@ -511,7 +511,7 @@ class ImagesCollection extends ModelItf {
 	}
 
 	/**
-	 * Remove an Image from ImageCollection.
+	 * Remove an Image from ImagesCollection.
 	 *
 	 * @method removeImage
 	 * @param {Image} image - Image to add to collection.
@@ -553,7 +553,7 @@ class ImagesCollection extends ModelItf {
 					}
 				}
 			} else {
-				failCallback(new ModelException("Image does'nt exist. You can't remove an Image that doesn't exist from an ImageCollection."));
+				failCallback(new ModelException("Image doesn't exist. You can't remove an Image that doesn't exist from an ImageCollection."));
 			}
 		} else {
 			failCallback(new ModelException("ImagesCollection doesn't exist. ImageCollection must to exist before to remove something from it."));
