@@ -316,21 +316,13 @@ class ImageObject extends ModelItf {
 			delete(newImageJSON["updatedAt"]);
 
 			self.getSequelizeModel().updateAttributes(newImageJSON)
-				.then(function () {
-
-					self.getSequelizeModel().save()
-						.then(function (sequelizeInstance) {
-							if(sequelizeInstance.getDataValue("updatedAt") == "now()") {
-								self.setUpdatedAt(moment().format());
-							} else {
-								self.setUpdatedAt(sequelizeInstance.getDataValue("updatedAt"));
-							}
-							successCallback(self);
-						})
-						.catch(function (error) {
-							failCallback(error);
-						});
-
+				.then(function(sequelizeInstance) {
+					if(sequelizeInstance.getDataValue("updatedAt") == "now()") {
+						self.setUpdatedAt(moment().format());
+					} else {
+						self.setUpdatedAt(sequelizeInstance.getDataValue("updatedAt"));
+					}
+					successCallback(self);
 				})
 				.catch(function (error) {
 					failCallback(error);

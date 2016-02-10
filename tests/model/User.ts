@@ -146,4 +146,125 @@ describe('User', function() {
 			user.create(success, fail);
 		});
 	});
+
+	describe('#update(successCallback, failCallback)', function() {
+		it('should fail if the object has a null id', function(done) {
+			var user = new User("", "", "", "", false, null);
+
+			var success = function() {
+				done(new Error("Test failed."));
+			};
+
+			var fail = function(err) {
+				assert.throws(function() {
+						if(err) {
+							throw err;
+						}
+					},
+					ModelException, "The ModelException has not been thrown.");
+				done();
+			};
+
+			user.update(success, fail);
+
+		});
+
+		it('should use Sequelize to update the object', function(done) {
+
+			var hashid = uuid.v1();
+			var username = "usernameTest";
+			var newUsername = "newUsernameTest";
+			var email = uuid.v1() + "@pulsetotem.fr";
+			var authkey = uuid.v1();
+			var user = new User(hashid, username, email, authkey);
+
+			var fail = function(err) {
+				done(err);
+			};
+
+			var success = function() {
+
+				user.setUsername(newUsername);
+
+				var userJSON = {
+					"hashid" : hashid,
+					"username": newUsername,
+					"email": email,
+					"authkey": authkey,
+					"isAdmin": false
+				};
+
+				var userSequelizeModel = user.getSequelizeModel();
+				var spyUpdateAttributes = sinon.spy(userSequelizeModel, "updateAttributes");
+
+				var successUpdate = function() {
+					assert.equal(user.username(), newUsername, "User is not updated.");
+					assert(spyUpdateAttributes.calledOnce, "Sequelize update method is not called or more than once.");
+					assert(spyUpdateAttributes.calledWith(userJSON), "Sequelize update method is not called with right params.");
+
+					done();
+				};
+
+				user.update(successUpdate, fail);
+			};
+
+			user.create(success, fail);
+		});
+	});
+
+	describe('#delete(successCallback, failCallback)', function() {
+		it('should fail if the object has a null id', function(done) {
+			var user = new User("", "", "", "", false, null);
+
+			var success = function() {
+				done(new Error("Test failed."));
+			};
+
+			var fail = function(err) {
+				assert.throws(function() {
+						if(err) {
+							throw err;
+						}
+					},
+					ModelException, "The ModelException has not been thrown.");
+				done();
+			};
+
+			user.delete(success, fail);
+
+		});
+
+		it('should use Sequelize to delete the object', function(done) {
+
+			var hashid = uuid.v1();
+			var username = "usernameTest";
+			var email = uuid.v1() + "@pulsetotem.fr";
+			var authkey = uuid.v1();
+			var user = new User(hashid, username, email, authkey);
+
+			var fail = function(err) {
+				done(err);
+			};
+
+			var success = function() {
+
+				var userId = user.getId();
+
+				var userSequelizeModel = user.getSequelizeModel();
+				var spyDestroyAttributes = sinon.spy(userSequelizeModel, "destroy");
+
+				var successDelete = function(deleteId) {
+					assert.equal(user.getId(), null, "User Id is not null.");
+					assert.equal(userId, deleteId.id, "Delete Id is not right one.");
+					assert(spyDestroyAttributes.calledOnce, "Sequelize update method is not called or more than once.");
+
+					done();
+				};
+
+				user.delete(successDelete, fail);
+			};
+
+			user.create(success, fail);
+		});
+	});
 });

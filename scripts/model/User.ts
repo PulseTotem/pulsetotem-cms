@@ -336,7 +336,7 @@ class User extends ModelItf {
 						successCallback(self);
 					}, function(error) {
 						failCallback(error);
-					});
+					}, false);
 				})
 				.catch(function (error) {
 					failCallback(error);
@@ -394,21 +394,13 @@ class User extends ModelItf {
 			delete(newUserJSON["updatedAt"]);
 
 			self.getSequelizeModel().updateAttributes(newUserJSON)
-				.then(function () {
-
-					self.getSequelizeModel().save()
-						.then(function (sequelizeInstance) {
-							if(sequelizeInstance.getDataValue("updatedAt") == "now()") {
-								self.setUpdatedAt(moment().format());
-							} else {
-								self.setUpdatedAt(sequelizeInstance.getDataValue("updatedAt"));
-							}
-							successCallback(self);
-						})
-						.catch(function (error) {
-							failCallback(error);
-						});
-
+				.then(function (sequelizeInstance) {
+					if(sequelizeInstance.getDataValue("updatedAt") == "now()") {
+						self.setUpdatedAt(moment().format());
+					} else {
+						self.setUpdatedAt(sequelizeInstance.getDataValue("updatedAt"));
+					}
+					successCallback(self);
 				})
 				.catch(function (error) {
 					failCallback(error);

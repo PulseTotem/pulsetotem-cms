@@ -51,7 +51,7 @@ if(process.env.DATABASE_URL) {
     logging: false
   });
 } else {
-  var options = {omitNull: true};
+  var options = {omitNull: true, logging: false};
   for (var attrname in config) {
     if(attrname != "database" && attrname != "username" && attrname != "password") {
       options[attrname] = config[attrname];
