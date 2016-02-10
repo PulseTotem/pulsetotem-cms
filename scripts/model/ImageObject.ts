@@ -12,12 +12,12 @@
 var ImageSchema : any = db["Images"];
 
 /**
- * Model : Image
+ * Model : ImageObject
  *
- * @class Image
+ * @class ImageObject
  * @extends ModelItf
  */
-class Image extends ModelItf {
+class ImageObject extends ModelItf {
 
 	/**
 	 * Name property.
@@ -63,12 +63,12 @@ class Image extends ModelItf {
 	 * Constructor.
 	 *
 	 * @constructor
-	 * @param {string} hashid - The Image's hashid.
-	 * @param {string} name - The Image's name.
-	 * @param {string} description - The Image's description.
-	 * @param {number} id - The Image's id.
-	 * @param {string} createdAt - The Image's createdAt.
-	 * @param {string} updatedAt - The Image's updatedAt.
+	 * @param {string} hashid - The ImageObject's hashid.
+	 * @param {string} name - The ImageObject's name.
+	 * @param {string} description - The ImageObject's description.
+	 * @param {number} id - The ImageObject's id.
+	 * @param {string} createdAt - The ImageObject's createdAt.
+	 * @param {string} updatedAt - The ImageObject's updatedAt.
 	 */
 	constructor(hashid : string = "", name : string = "", description : string = "", id : number = null, createdAt : string = null, updatedAt : string = null) {
 		super(id, createdAt, updatedAt);
@@ -82,7 +82,7 @@ class Image extends ModelItf {
 	}
 
 	/**
-	 * Set the Image's hashid.
+	 * Set the ImageObject's hashid.
 	 *
 	 * @method setHashid
 	 * @param {string} hashid - New hashid
@@ -92,7 +92,7 @@ class Image extends ModelItf {
 	}
 
 	/**
-	 * Return the Image's hashid.
+	 * Return the ImageObject's hashid.
 	 *
 	 * @method hashid
 	 */
@@ -101,7 +101,7 @@ class Image extends ModelItf {
 	}
 
 	/**
-	 * Set the Image's name.
+	 * Set the ImageObject's name.
 	 *
 	 * @method setName
 	 * @param {string} name - New name
@@ -111,7 +111,7 @@ class Image extends ModelItf {
 	}
 
 	/**
-	 * Return the Image's name.
+	 * Return the ImageObject's name.
 	 *
 	 * @method name
 	 */
@@ -120,7 +120,7 @@ class Image extends ModelItf {
 	}
 
 	/**
-	 * Set the Image's description.
+	 * Set the ImageObject's description.
 	 *
 	 * @method setDescription
 	 * @param {string} description - New description
@@ -130,7 +130,7 @@ class Image extends ModelItf {
 	}
 
 	/**
-	 * Return the Image's description.
+	 * Return the ImageObject's description.
 	 *
 	 * @method description
 	 */
@@ -139,7 +139,7 @@ class Image extends ModelItf {
 	}
 
 	/**
-	 * Return the Image's ImagesCollection.
+	 * Return the ImageObject's ImagesCollection.
 	 *
 	 * @method collection
 	 */
@@ -148,7 +148,7 @@ class Image extends ModelItf {
 	}
 
 	/**
-	 * Load the Image's ImagesCollection.
+	 * Load the ImageObject's ImagesCollection.
 	 *
 	 * @method loadCollection
 	 * @param {Function} successCallback - The callback function when success.
@@ -213,7 +213,7 @@ class Image extends ModelItf {
 	}
 
 	/**
-	 * Return a Image instance as a JSON Object
+	 * Return a ImageObject instance as a JSON Object
 	 *
 	 * @method toJSONObject
 	 * @returns {Object} a JSON Object representing the instance
@@ -250,7 +250,7 @@ class Image extends ModelItf {
 
 			ImageSchema.create(newImageJSON)
 				.then(function (image) {
-					var uObject = Image.fromJSONObject(image.dataValues);
+					var uObject = ImageObject.fromJSONObject(image.dataValues);
 					self._id = uObject.getId();
 
 					self.setSequelizeModel(image, function() {
@@ -263,7 +263,7 @@ class Image extends ModelItf {
 					failCallback(error);
 				});
 		} else {
-			failCallback(new ModelException("Image already exists."));
+			failCallback(new ModelException("ImageObject already exists."));
 		}
 	}
 
@@ -281,14 +281,14 @@ class Image extends ModelItf {
 		ImageSchema.findById(id)
 			.then(function(image) {
 				if(image != null) {
-					var uObject = Image.fromJSONObject(image.dataValues);
+					var uObject = ImageObject.fromJSONObject(image.dataValues);
 					uObject.setSequelizeModel(image, function() {
 						successCallback(uObject);
 					}, function(error) {
 						failCallback(error);
 					});
 				} else {
-					failCallback(new ModelException("Image with given Id was not found."));
+					failCallback(new ModelException("ImageObject with given Id was not found."));
 				}
 			})
 			.catch(function(error) {
@@ -334,7 +334,7 @@ class Image extends ModelItf {
 					failCallback(error);
 				});
 		} else {
-			failCallback(new ModelException("You need to create Image before to update it."));
+			failCallback(new ModelException("You need to create ImageObject before to update it."));
 		}
 	}
 
@@ -360,7 +360,7 @@ class Image extends ModelItf {
 					failCallback(error);
 				});
 		} else {
-			failCallback(new ModelException("You need to create Image before to delete it..."));
+			failCallback(new ModelException("You need to create ImageObject before to delete it..."));
 		}
 	}
 
@@ -374,11 +374,11 @@ class Image extends ModelItf {
 	static all(successCallback : Function, failCallback : Function) {
 		ImageSchema.all()
 			.then(function(images) {
-				var allImages : Array<Image> = new Array<Image>();
+				var allImages : Array<ImageObject> = new Array<ImageObject>();
 
 				if(images.length > 0) {
 					images.forEach(function (image:any) {
-						var uObject = Image.fromJSONObject(image.dataValues);
+						var uObject = ImageObject.fromJSONObject(image.dataValues);
 						uObject.setSequelizeModel(image, function () {
 							allImages.push(uObject);
 							if (allImages.length == images.length) {
@@ -398,10 +398,10 @@ class Image extends ModelItf {
 	}
 
 	/**
-	 * Find One Image by hashid.
+	 * Find One ImageObject by hashid.
 	 *
 	 * @method findOneByHashid
-	 * @param {string} hashid - The Image's hashid
+	 * @param {string} hashid - The ImageObject's hashid
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
@@ -409,14 +409,14 @@ class Image extends ModelItf {
 		ImageSchema.findOne({ where: {"hashid": hashid} })
 			.then(function(image) {
 				if(image != null) {
-					var uObject = Image.fromJSONObject(image.dataValues);
+					var uObject = ImageObject.fromJSONObject(image.dataValues);
 					uObject.setSequelizeModel(image, function() {
 						successCallback(uObject);
 					}, function(error) {
 						failCallback(error);
 					});
 				} else {
-					failCallback(new ModelException("Image with given Hashid was not found."));
+					failCallback(new ModelException("ImageObject with given Hashid was not found."));
 				}
 			})
 			.catch(function(e) {
@@ -425,15 +425,15 @@ class Image extends ModelItf {
 	}
 
 	/**
-	 * Return a Image instance from a JSON Object.
+	 * Return a ImageObject instance from a JSON Object.
 	 *
 	 * @method fromJSONObject
 	 * @static
 	 * @param {JSONObject} jsonObject - The JSON Object
 	 * @return {SDI} The model instance.
 	 */
-	static fromJSONObject(jsonObject : any) : Image {
-		var image = new Image(jsonObject.hashid, jsonObject.name, jsonObject.description, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
+	static fromJSONObject(jsonObject : any) : ImageObject {
+		var image = new ImageObject(jsonObject.hashid, jsonObject.name, jsonObject.description, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
 
 		return image;
 	}

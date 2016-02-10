@@ -9,6 +9,7 @@
 
 /// <reference path="./ImagesCollection.ts" />
 
+
 var UserSchema : any = db["Users"];
 
 /**

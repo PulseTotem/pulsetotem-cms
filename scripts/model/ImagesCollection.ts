@@ -7,7 +7,7 @@
 /// <reference path="../core/Helper.ts" />
 /// <reference path="../exceptions/ModelException.ts" />
 
-/// <reference path="./Image.ts" />
+/// <reference path="./ImageObject.ts" />
 
 var ImagesCollectionSchema : any = db["ImagesCollections"];
 
@@ -63,9 +63,9 @@ class ImagesCollection extends ModelItf {
 	 * Images property.
 	 *
 	 * @property _images
-	 * @type Array<Image>
+	 * @type Array<ImageObject>
 	 */
-	private _images : Array<Image>;
+	private _images : Array<ImageObject>;
 
 	/**
 	 * Lazy loading for _images property.
@@ -223,12 +223,12 @@ class ImagesCollection extends ModelItf {
 			this.getSequelizeModel().getImages()
 				.then(function(images) {
 
-					var allImages : Array<Image> = new Array<Image>();
+					var allImages : Array<ImageObject> = new Array<ImageObject>();
 
 					if(images.length > 0) {
 
 						images.forEach(function (image:any) {
-							var uObject = Image.fromJSONObject(image.dataValues);
+							var uObject = ImageObject.fromJSONObject(image.dataValues);
 							uObject.setSequelizeModel(image, function () {
 								allImages.push(uObject);
 								if (allImages.length == images.length) {
@@ -484,11 +484,11 @@ class ImagesCollection extends ModelItf {
 	 * Add an Image to ImagesCollection.
 	 *
 	 * @method addImage
-	 * @param {Image} image - Image to add to collection.
+	 * @param {ImageObject} image - Image to add to collection.
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
-	addImage(image : Image, successCallback : Function, failCallback : Function) {
+	addImage(image : ImageObject, successCallback : Function, failCallback : Function) {
 		var self = this;
 
 		if(this.getId() != null) {
@@ -498,7 +498,7 @@ class ImagesCollection extends ModelItf {
 					.then(function () {
 
 						if(self._images == null) {
-							self._images = new Array<Image>();
+							self._images = new Array<ImageObject>();
 						}
 
 						self._images.push(image);
@@ -508,22 +508,22 @@ class ImagesCollection extends ModelItf {
 						failCallback(error);
 					});
 			} else {
-				failCallback(new ModelException("You need to create the Image before to add to ImageCollection."));
+				failCallback(new ModelException("You need to create the ImageObject before to add to ImageCollection."));
 			}
 		} else {
-			failCallback(new ModelException("You need to create ImagesCollection before to add an Image."));
+			failCallback(new ModelException("You need to create ImagesCollection before to add an ImageObject."));
 		}
 	}
 
 	/**
-	 * Remove an Image from ImagesCollection.
+	 * Remove an ImageObject from ImagesCollection.
 	 *
 	 * @method removeImage
-	 * @param {Image} image - Image to add to collection.
+	 * @param {ImageObject} image - Image to add to collection.
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
-	removeImage(image : Image, successCallback : Function, failCallback : Function) {
+	removeImage(image : ImageObject, successCallback : Function, failCallback : Function) {
 		var self = this;
 
 		if(this.getId() != null) {
@@ -531,7 +531,7 @@ class ImagesCollection extends ModelItf {
 			if(image.getId() != null) {
 
 				if(self._images == null) {
-					failCallback(new ModelException("Image doesn't belong to this ImageCollection."));
+					failCallback(new ModelException("ImageObject doesn't belong to this ImageCollection."));
 				} else {
 					var imageToDelete = null;
 
@@ -545,7 +545,7 @@ class ImagesCollection extends ModelItf {
 					});
 
 					if(imageToDelete == null) {
-						failCallback(new ModelException("Image doesn't belong to this ImageCollection."));
+						failCallback(new ModelException("ImageObject doesn't belong to this ImageCollection."));
 					} else {
 						self.getSequelizeModel().removeImage(image.getSequelizeModel())
 							.then(function () {
@@ -558,7 +558,7 @@ class ImagesCollection extends ModelItf {
 					}
 				}
 			} else {
-				failCallback(new ModelException("Image doesn't exist. You can't remove an Image that doesn't exist from an ImageCollection."));
+				failCallback(new ModelException("ImageObject doesn't exist. You can't remove an ImageObject that doesn't exist from an ImageCollection."));
 			}
 		} else {
 			failCallback(new ModelException("ImagesCollection doesn't exist. ImageCollection must to exist before to remove something from it."));

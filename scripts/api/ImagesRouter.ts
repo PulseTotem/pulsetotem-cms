@@ -3,11 +3,10 @@
  */
 
 /// <reference path="../core/RouterItf.ts" />
+/// <reference path="../core/CMSConfig.ts" />
 /// <reference path="../auth/CMSAuth.ts" />
 
-/// <reference path="../model/Image.ts" />
-
-/// <reference path="./ImagesRouter.ts" />
+/// <reference path="../model/ImageObject.ts" />
 
 declare var require : any;
 
@@ -49,7 +48,7 @@ class ImagesRouter extends RouterItf {
 				next(error);
 			};
 
-			Image.findOneByHashid(id, success, fail);
+			ImageObject.findOneByHashid(id, success, fail);
 		});
 
 		// Define '/' route.
@@ -94,13 +93,13 @@ class ImagesRouter extends RouterItf {
 				imageName = hashid;
 			}
 
-			var newImage = new Image(hashid, imageName, req.body.description);
+			var newImage = new ImageObject(hashid, imageName, req.body.description);
 
 			var fail = function(error) {
 				res.status(500).send({ 'error': JSON.stringify(error) });
 			};
 
-			var success = function(image : Image) {
+			var success = function(image : ImageObject) {
 
 				var successImagesCollectionLink = function() {
 

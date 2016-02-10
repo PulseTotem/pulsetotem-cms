@@ -4,7 +4,7 @@
 
 /// <reference path="../core/AuthManager.ts" />
 
-/// <reference path="../core/AuthManager.ts" />
+/// <reference path="../model/User.ts" />
 
 /**
  * CMSAuth class.
