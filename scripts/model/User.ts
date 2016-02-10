@@ -322,6 +322,7 @@ class User extends ModelItf {
 		if(this.getId() == null) {
 
 			var newUserJSON = this.toJSONObject();
+			newUserJSON["hashid"] = this.hashid();
 			delete(newUserJSON["id"]);
 			delete(newUserJSON["createdAt"]);
 			delete(newUserJSON["updatedAt"]);
@@ -387,6 +388,7 @@ class User extends ModelItf {
 		if(this.getId() != null) {
 
 			var newUserJSON = self.toJSONObject();
+			newUserJSON["hashid"] = this.hashid();
 			delete(newUserJSON["id"]);
 			delete(newUserJSON["createdAt"]);
 			delete(newUserJSON["updatedAt"]);

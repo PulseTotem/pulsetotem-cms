@@ -12,5 +12,6 @@ var sinon : any = require("sinon");
 var nock : any = require("nock");
 
 var moment : any = require('moment');
+var uuid : any = require('node-uuid');
 
 var db : any = require('../database/models/index.js');

@@ -244,6 +244,7 @@ class ImageObject extends ModelItf {
 		if(this.getId() == null) {
 
 			var newImageJSON = this.toJSONObject();
+			newImageJSON["hashid"] = this.hashid();
 			delete(newImageJSON["id"]);
 			delete(newImageJSON["createdAt"]);
 			delete(newImageJSON["updatedAt"]);
@@ -309,6 +310,7 @@ class ImageObject extends ModelItf {
 		if(this.getId() != null) {
 
 			var newImageJSON = self.toJSONObject();
+			newImageJSON["hashid"] = this.hashid();
 			delete(newImageJSON["id"]);
 			delete(newImageJSON["createdAt"]);
 			delete(newImageJSON["updatedAt"]);

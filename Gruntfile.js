@@ -39,8 +39,11 @@ module.exports = function (grunt) {
       testDatabase : {
         files: 	[{expand: true, cwd: 'database', src: ['**'], dest: 'buildTests/database/'}]
       },
+      testConfigDatabaseFile : {
+        files: 	[{'buildTests/database/config/config.json': 'database/config/configTests.json'}]
+      },
       testCMSConfigInfosFile: {
-        files: 	[{'buildTests/cms_config.json': 'scripts/core/cms_config.json'}]
+        files: 	[{'buildTests/cms_config.json': 'scripts/core/cms_config_tests.json'}]
       },
 
       migrationFile: {
@@ -50,6 +53,7 @@ module.exports = function (grunt) {
 
     exec: {
       doMigration: './node_modules/sequelize-cli/bin/sequelize db:migrate --config="./database/config/config.json" --migrations-path="./database/migrations"',
+      doMigrationTests: './node_modules/sequelize-cli/bin/sequelize db:migrate --config="./buildTests/database/config/config.json" --migrations-path="./buildTests/database/migrations"',
       undoMigration: './node_modules/sequelize-cli/bin/sequelize db:migrate:undo --config="./database/config/config.json" --migrations-path="./database/migrations"',
       generateModels: './node_modules/sequelize-auto/bin/sequelize-auto -o "./database/models" -d <%= config.development.database %> -h <%= config.development.host %> -u <%= config.development.username %> -p <%= config.development.port %> -x <%= config.development.password %> -e <%= config.development.dialect %>'
     },
@@ -224,7 +228,8 @@ module.exports = function (grunt) {
   });
 
   grunt.registerTask('test', function(name) {
-    grunt.task.run(['clean:test', 'copy:testDatabase', 'copy:testCMSConfigInfosFile']);
+    grunt.task.run(['clean:test', 'copy:testDatabase', 'copy:testConfigDatabaseFile', 'copy:testCMSConfigInfosFile']);
+    grunt.task.run(['exec:doMigrationTests']);
 
     if(arguments.length == 0) {
       var tests = grunt.file.expand('tests/**/*.ts');
