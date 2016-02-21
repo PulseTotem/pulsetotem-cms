@@ -4,7 +4,7 @@
 
 /// <reference path="../core/AuthManager.ts" />
 
-/// <reference path="../core/AuthManager.ts" />
+/// <reference path="../model/User.ts" />
 
 /**
  * CMSAuth class.
@@ -84,6 +84,60 @@ class CMSAuth extends AuthManager {
 				}
 			});
 		});
+
+		this.addRole("ImagesCollection.Owner", function(req, res, done) {
+			self.can("manage user information")(req, res, function(error) {
+				if (typeof(error) == "undefined" || error == null) { // All is ok.
+					if(!req.imagesCollection) {
+						done(new Error('ImagesCollection was not found.'));
+					} else {
+						if(req.user.getId() == req.imagesCollection.user().getId()) {
+							done();
+						} else {
+							done(new Error('Unauthorized.'));
+						}
+					}
+				} else { // An error occured.
+					done(error);
+				}
+			});
+		});
+
+		this.addRole("Image.Owner", function(req, res, done) {
+			self.can("manage user information")(req, res, function(error) {
+				if (typeof(error) == "undefined" || error == null) { // All is ok.
+					if(!req.image) {
+						done(new Error('Image was not found.'));
+					} else {
+
+						var successLoadUser = function() {
+							if(req.user.getId() == req.image.collection().user().getId()) {
+
+								if(!req.imagesCollection) {
+									done();
+								} else {
+									if(req.imagesCollection.getId() == req.image.collection().getId()) {
+										done();
+									} else {
+										done(new Error('Image doesn\'t belong to this ImagesCollection.'));
+									}
+								}
+							} else {
+								done(new Error('Unauthorized.'));
+							}
+						};
+
+						var fail = function() {
+							done(new Error('Unauthorized.'));
+						};
+
+						req.image.collection().loadUser(successLoadUser, fail);
+					}
+				} else { // An error occured.
+					done(error);
+				}
+			});
+		});
 	}
 
 	/**
@@ -96,5 +150,7 @@ class CMSAuth extends AuthManager {
 		this.addAction("perform action needing authentication", "Authenticated");
 		this.addAction("perform admin action", "Admin");
 		this.addAction("manage user information", ["Admin", "Profil.Owner"]);
+		this.addAction("manage user images collections", ["Admin", "ImagesCollection.Owner"]);
+		this.addAction("manage user images", ["Admin", "Image.Owner"]);
 	}
 }

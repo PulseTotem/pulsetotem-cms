@@ -7,6 +7,14 @@
 
 /// <reference path="../model/User.ts" />
 
+/// <reference path="./ImagesCollectionsRouter.ts" />
+
+declare var require : any;
+
+var fs : any = require("fs");
+var mkdirp : any = require('mkdirp');
+var rmdir : any = require('rmdir');
+
 var uuid : any = require('node-uuid');
 
 /**
@@ -43,7 +51,7 @@ class UsersRouter extends RouterItf {
 				next(error);
 			};
 
-			User.read(id, success, fail);
+			User.findOneByHashid(id, success, fail);
 		});
 
 		// Define '/' route.
@@ -55,6 +63,9 @@ class UsersRouter extends RouterItf {
 		this.router.put('/:user_id', CMSAuth.can('manage user information'), function(req, res) { self.updateUser(req, res); });
 		this.router.put('/:user_id/status', CMSAuth.can('perform admin action'), function(req, res) { self.updateUserAdminStatus(req, res); });
 		this.router.delete('/:user_id', CMSAuth.can('perform admin action'), function(req, res) { self.deleteUser(req, res); });
+
+		// Define '/:user_id/images_collections' route.
+		this.router.use('/:user_id/images_collections', (new ImagesCollectionsRouter()).getRouter());
 	}
 
 	/**
@@ -93,8 +104,9 @@ class UsersRouter extends RouterItf {
 		if(typeof(req.body.username) == "undefined" || req.body.username == "" || typeof(req.body.email) == "undefined" || req.body.email == "") {
 			res.status(500).send({ 'error': 'Missing some information to create new User.' });
 		} else {
+			var hashid = uuid.v1();
 			var authKey = uuid.v1();
-			var newUser = new User(req.body.username, req.body.email, authKey);
+			var newUser = new User(hashid, req.body.username, req.body.email, authKey);
 
 			if(typeof(req.body.isAdmin) != "undefined") {
 				if(req.body.isAdmin == true || req.body.isAdmin == false) {
@@ -103,7 +115,19 @@ class UsersRouter extends RouterItf {
 			}
 
 			var success = function(user) {
-				res.json(user.toJSONObject());
+				fs.stat(CMSConfig.getUploadDir() + "users/" + hashid + "/", function(err, stats) {
+					if(err || !stats.isDirectory()) {
+						mkdirp(CMSConfig.getUploadDir() + "users/" + hashid + "/", function(err2) {
+							if(err2) {
+								res.status(500).send({ 'error': JSON.stringify(err2) });
+							} else {
+								res.json(user.toJSONObject());
+							}
+						});
+					} else {
+						res.json(user.toJSONObject());
+					}
+				});
 			};
 
 			var fail = function(error) {
@@ -195,14 +219,27 @@ class UsersRouter extends RouterItf {
 	 */
 	deleteUser(req : any, res : any) {
 
-		var success = function(deleteUserId) {
-			res.json(deleteUserId);
-		};
+		var originUserFolder = CMSConfig.getUploadDir() + "users/" + req.user.hashid();
+		var tmpUserFolder = CMSConfig.getUploadDir() + "deletetmp/users/" + req.user.hashid();
 
-		var fail = function(error) {
-			res.status(500).send({ 'error': JSON.stringify(error) });
-		};
+		fs.rename(originUserFolder, tmpUserFolder, function(err) {
+			if(err) {
+				res.status(500).send({ 'error': "Error during deleting User." });
+			} else {
+				var success = function(deleteUserId) {
+					rmdir(tmpUserFolder, function ( err, dirs, files ){
+						res.json(deleteUserId);
+					});
+				};
 
-		req.user.delete(success, fail);
+				var fail = function(error) {
+					fs.rename(tmpUserFolder, originUserFolder , function(err) {
+						res.status(500).send({ 'error': JSON.stringify(error) });
+					});
+				};
+
+				req.user.delete(success, fail);
+			}
+		});
 	}
 }

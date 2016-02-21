@@ -5,9 +5,16 @@
 /// <reference path="./core/Server.ts" />
 /// <reference path="./core/CMSConfig.ts" />
 /// <reference path="./auth/CMSAuth.ts" />
+
 /// <reference path="./api/UsersRouter.ts" />
+/// <reference path="./api/ImagesRouter.ts" />
+
+
 
 declare var require : any;
+
+var fs : any = require("fs");
+var mkdirp : any = require('mkdirp');
 
 //////////////// BEGIN: MANAGE COLORS LIB FOR LOGGER ///////////////////
 
@@ -55,9 +62,90 @@ class CMS extends Server {
 	databaseReady() {
 		CMSAuth.init();
 
+		this.checkOrCreateUploadsDir();
+
 		this.buildAPI();
 
 		this.run();
+	}
+
+	/**
+	 * Method to check or create Uploads Dir architecture.
+	 *
+	 * @method checkOrCreateUploadsDir
+	 */
+	checkOrCreateUploadsDir() {
+		fs.stat(CMSConfig.getUploadDir(), function(err, stats) {
+			if(err) {
+				mkdirp(CMSConfig.getUploadDir(), function(err2) {
+					if(err2) {
+						throw new Error(err2);
+					}
+				});
+			} else {
+				if(! stats.isDirectory()) {
+					mkdirp(CMSConfig.getUploadDir(), function(err2) {
+						if(err2) {
+							throw new Error(err2);
+						}
+					});
+				}
+			}
+		});
+
+		fs.stat(CMSConfig.getUploadDir() + "deletetmp/", function(err, stats) {
+			if(err) {
+				mkdirp(CMSConfig.getUploadDir() + "deletetmp/", function(err2) {
+					if(err2) {
+						throw new Error(err2);
+					}
+				});
+			} else {
+				if(! stats.isDirectory()) {
+					mkdirp(CMSConfig.getUploadDir() + "deletetmp/", function(err2) {
+						if(err2) {
+							throw new Error(err2);
+						}
+					});
+				}
+			}
+		});
+
+		fs.stat(CMSConfig.getUploadDir() + "users/", function(err, stats) {
+			if(err) {
+				mkdirp(CMSConfig.getUploadDir() + "users/", function(err2) {
+					if(err2) {
+						throw new Error(err2);
+					}
+				});
+			} else {
+				if(! stats.isDirectory()) {
+					mkdirp(CMSConfig.getUploadDir() + "users/", function(err2) {
+						if(err2) {
+							throw new Error(err2);
+						}
+					});
+				}
+			}
+		});
+
+		fs.stat(CMSConfig.getUploadDir() + "deletetmp/users/", function(err, stats) {
+			if(err) {
+				mkdirp(CMSConfig.getUploadDir() + "deletetmp/users/", function(err2) {
+					if(err2) {
+						throw new Error(err2);
+					}
+				});
+			} else {
+				if(! stats.isDirectory()) {
+					mkdirp(CMSConfig.getUploadDir() + "deletetmp/users/", function(err2) {
+						if(err2) {
+							throw new Error(err2);
+						}
+					});
+				}
+			}
+		});
 	}
 
 	/**
@@ -67,6 +155,7 @@ class CMS extends Server {
 	 */
 	buildAPI() {
 		this.app.use(CMSConfig.getBaseUrl() + "users", (new UsersRouter()).getRouter());
+		this.app.use(CMSConfig.getBaseUrl() + "images", (new ImagesRouter()).getRouter());
 	}
 }
 

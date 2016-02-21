@@ -5,8 +5,10 @@
 /// <reference path="../core/ModelItf.ts" />
 
 /// <reference path="../core/Helper.ts" />
-/// <reference path="../core/CMSConfig.ts" />
 /// <reference path="../exceptions/ModelException.ts" />
+
+/// <reference path="./ImagesCollection.ts" />
+
 
 var UserSchema : any = db["Users"];
 
@@ -50,25 +52,75 @@ class User extends ModelItf {
 	 */
 	private _isAdmin : boolean;
 
+	/**
+	 * Hashid property.
+	 *
+	 * @property _hashid
+	 * @type string
+	 */
+	private _hashid : string;
+
+	/**
+	 * ImagesCollections property.
+	 *
+	 * @property _imagesCollections
+	 * @type Array<ImagesCollection>
+	 */
+	private _imagesCollections : Array<ImagesCollection>;
+
+	/**
+	 * Lazy loading for _imagesCollections property.
+	 *
+	 * @property _imagesCollections_loaded
+	 * @type boolean
+	 */
+	private _imagesCollections_loaded : boolean;
+
 
 	/**
 	 * Constructor.
 	 *
 	 * @constructor
+	 * @param {string} hashid - The User's hashid.
 	 * @param {string} username - The User's username.
 	 * @param {string} email - The User's email.
 	 * @param {string} authkey - The User's authkey.
 	 * @param {boolean} isAdmin - The User's 'isAdmin' status.
+	 * @param {number} id - The User's id.
 	 * @param {string} createdAt - The User's createdAt.
 	 * @param {string} updatedAt - The User's updatedAt.
 	 */
-	constructor(username : string = "", email : string = "", authkey : string = "", isAdmin : boolean = false, id : number = null, createdAt : string = null, updatedAt : string = null) {
+	constructor(hashid : string = "", username : string = "", email : string = "", authkey : string = "", isAdmin : boolean = false, id : number = null, createdAt : string = null, updatedAt : string = null) {
 		super(id, createdAt, updatedAt);
 
+		this.setHashid(hashid);
 		this.setUsername(username);
 		this.setEmail(email);
 		this.setAuthKey(authkey);
 		this.setIsAdmin(isAdmin);
+
+
+		this._imagesCollections = null;
+		this._imagesCollections_loaded = false;
+	}
+
+	/**
+	 * Set the User's hashid.
+	 *
+	 * @method setHashid
+	 * @param {string} hashid - New hashid
+	 */
+	setHashid(hashid : string) {
+		this._hashid = hashid;
+	}
+
+	/**
+	 * Return the User's hashid.
+	 *
+	 * @method hashid
+	 */
+	hashid() {
+		return this._hashid;
 	}
 
 	/**
@@ -147,7 +199,91 @@ class User extends ModelItf {
 		return this._isAdmin;
 	}
 
+	/**
+	 * Return the User's ImagesCollections.
+	 *
+	 * @method imagesCollections
+	 */
+	imagesCollections() {
+		return this._imagesCollections;
+	}
+
+	/**
+	 * Load the User's ImagesCollections.
+	 *
+	 * @method loadImagesCollections
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	loadImagesCollections(successCallback : Function, failCallback : Function) {
+		if(! this._imagesCollections_loaded) {
+			var self = this;
+
+			this.getSequelizeModel().getImagesCollections()
+				.then(function(imagesCollections) {
+
+					var allImagesCollections : Array<ImagesCollection> = new Array<ImagesCollection>();
+
+					if(imagesCollections.length > 0) {
+
+						imagesCollections.forEach(function (imagesCollection : any) {
+							var uObject = ImagesCollection.fromJSONObject(imagesCollection.dataValues);
+							uObject.setSequelizeModel(imagesCollection, function () {
+								allImagesCollections.push(uObject);
+								if (allImagesCollections.length == imagesCollections.length) {
+									self._imagesCollections_loaded = true;
+									self._imagesCollections = allImagesCollections;
+									successCallback();
+								}
+							}, function (error) {
+								failCallback(error);
+							}, false);
+						});
+
+					} else {
+						self._imagesCollections_loaded = true;
+						self._imagesCollections = allImagesCollections;
+						successCallback();
+					}
+				})
+				.catch(function(error) {
+					failCallback(error);
+				});
+		} else {
+			successCallback();
+		}
+	}
+
 	//////////////////// Methods managing model. ///////////////////////////
+
+	/**
+	 * Load model associations.
+	 *
+	 * @method loadAssociations
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	loadAssociations(successCallback : Function, failCallback : Function) {
+		var self = this;
+
+		var success : Function = function(models) {
+			if(self._imagesCollections_loaded) {
+				if (successCallback != null) {
+					successCallback();
+				} // else //Nothing to do ?
+			}
+		};
+
+		var fail : Function = function(error) {
+			if(failCallback != null) {
+				failCallback(error);
+			} else {
+				Logger.error(JSON.stringify(error));
+			}
+		};
+
+		this.loadImagesCollections(success, fail);
+	}
 
 	/**
 	 * Return a User instance as a JSON Object
@@ -159,11 +295,16 @@ class User extends ModelItf {
 		var data = super.toJSONObject();
 
 		var newData = {
+			"id" : this.hashid(),
 			"username": this.username(),
 			"email": this.email(),
 			"authkey": this.authKey(),
 			"isAdmin": this.isAdmin()
 		};
+
+		if(this._imagesCollections_loaded) {
+			newData["imagesCollections"] = (this.imagesCollections() !== null) ? this.serializeArray(this.imagesCollections()) : null;
+		}
 
 		return Helper.mergeObjects(data, newData);
 	}
@@ -174,7 +315,6 @@ class User extends ModelItf {
 	 * @method create
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
-
 	 */
 	create(successCallback : Function, failCallback : Function) {
 		var self = this;
@@ -182,6 +322,7 @@ class User extends ModelItf {
 		if(this.getId() == null) {
 
 			var newUserJSON = this.toJSONObject();
+			newUserJSON["hashid"] = this.hashid();
 			delete(newUserJSON["id"]);
 			delete(newUserJSON["createdAt"]);
 			delete(newUserJSON["updatedAt"]);
@@ -191,9 +332,11 @@ class User extends ModelItf {
 					var uObject = User.fromJSONObject(user.dataValues);
 					self._id = uObject.getId();
 
-					self.setSequelizeModel(user);
-					
-					successCallback(self);
+					self.setSequelizeModel(user, function() {
+						successCallback(self);
+					}, function(error) {
+						failCallback(error);
+					}, false);
 				})
 				.catch(function (error) {
 					failCallback(error);
@@ -211,7 +354,6 @@ class User extends ModelItf {
 	 * @param {number} id - The model instance's id.
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
-
 	 */
 	static read(id : number, successCallback : Function, failCallback : Function) {
 		// search for known ids
@@ -219,8 +361,11 @@ class User extends ModelItf {
 			.then(function(user) {
 				if(user != null) {
 					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user);
-					successCallback(uObject);
+					uObject.setSequelizeModel(user, function() {
+						successCallback(uObject);
+					}, function(error) {
+						failCallback(error);
+					}, false);
 				} else {
 					failCallback(new ModelException("User with given Id was not found."));
 				}
@@ -236,7 +381,6 @@ class User extends ModelItf {
 	 * @method update
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
-
 	 */
 	update(successCallback : Function, failCallback : Function) {
 		var self = this;
@@ -244,26 +388,19 @@ class User extends ModelItf {
 		if(this.getId() != null) {
 
 			var newUserJSON = self.toJSONObject();
+			newUserJSON["hashid"] = this.hashid();
 			delete(newUserJSON["id"]);
 			delete(newUserJSON["createdAt"]);
 			delete(newUserJSON["updatedAt"]);
 
 			self.getSequelizeModel().updateAttributes(newUserJSON)
-				.then(function () {
-
-					self.getSequelizeModel().save()
-						.then(function (sequelizeInstance) {
-							if(sequelizeInstance.getDataValue("updatedAt") == "now()") {
-								self.setUpdatedAt(moment().format());
-							} else {
-								self.setUpdatedAt(sequelizeInstance.getDataValue("updatedAt"));
-							}
-							successCallback(self);
-						})
-						.catch(function (error) {
-							failCallback(error);
-						});
-
+				.then(function (sequelizeInstance) {
+					if(sequelizeInstance.getDataValue("updatedAt") == "now()") {
+						self.setUpdatedAt(moment().format());
+					} else {
+						self.setUpdatedAt(sequelizeInstance.getDataValue("updatedAt"));
+					}
+					successCallback(self);
 				})
 				.catch(function (error) {
 					failCallback(error);
@@ -279,7 +416,6 @@ class User extends ModelItf {
 	 * @method delete
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
-
 	 */
 	delete(successCallback : Function, failCallback : Function) {
 		var self = this;
@@ -301,12 +437,96 @@ class User extends ModelItf {
 	}
 
 	/**
+	 * Add an ImagesCollection to User.
+	 *
+	 * @method addImagesCollection
+	 * @param {ImagesCollection} imagesCollection - ImagesCollection to add to user.
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	addImagesCollection(imagesCollection : ImagesCollection, successCallback : Function, failCallback : Function) {
+		var self = this;
+
+		if(this.getId() != null) {
+
+			if(imagesCollection.getId() != null) {
+				self.getSequelizeModel().addImagesCollection(imagesCollection.getSequelizeModel())
+					.then(function () {
+
+						if(self._imagesCollections == null) {
+							self._imagesCollections = new Array<ImagesCollection>();
+						}
+
+						self._imagesCollections.push(imagesCollection);
+						successCallback(self);
+					})
+					.catch(function (error) {
+						failCallback(error);
+					});
+			} else {
+				failCallback(new ModelException("You need to create the ImagesCollection before to add to User."));
+			}
+		} else {
+			failCallback(new ModelException("You need to create User before to add an ImagesCollection."));
+		}
+	}
+
+	/**
+	 * Remove an ImagesCollection from User.
+	 *
+	 * @method removeImagesCollection
+	 * @param {ImagesCollection} imagesCollection - ImagesCollection to add to user.
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	removeImagesCollection(imagesCollection : ImagesCollection, successCallback : Function, failCallback : Function) {
+		var self = this;
+
+		if(this.getId() != null) {
+
+			if(imagesCollection.getId() != null) {
+
+				if(self._imagesCollections == null) {
+					failCallback(new ModelException("ImagesCollection doesn't belong to this User."));
+				} else {
+					var imagesCollectionToDelete = null;
+
+					self._imagesCollections = self._imagesCollections.filter(function(obj) {
+						var comp = obj.getId() != imagesCollection.getId();
+						if(!comp) {
+							imagesCollectionToDelete = obj;
+						}
+
+						return comp;
+					});
+
+					if(imagesCollectionToDelete == null) {
+						failCallback(new ModelException("ImagesCollection doesn't belong to this User."));
+					} else {
+						self.getSequelizeModel().removeImagesCollection(imagesCollection.getSequelizeModel())
+							.then(function () {
+								successCallback(self);
+							})
+							.catch(function (error) {
+								self._imagesCollections.push(imagesCollectionToDelete);
+								failCallback(error);
+							});
+					}
+				}
+			} else {
+				failCallback(new ModelException("ImagesCollection doesn't exist. You can't remove an ImagesCollection that doesn't exist from a User."));
+			}
+		} else {
+			failCallback(new ModelException("User doesn't exist. User must to exist before to remove something from it."));
+		}
+	}
+
+	/**
 	 * Retrieve all models from database and create corresponding model instances.
 	 *
 	 * @method all
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
-
 	 */
 	static all(successCallback : Function, failCallback : Function) {
 		UserSchema.all()
@@ -315,11 +535,43 @@ class User extends ModelItf {
 
 				users.forEach(function(user : any) {
 					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user);
-					allUsers.push(uObject);
-				});
+					uObject.setSequelizeModel(user, function() {
+						allUsers.push(uObject);
+						if(allUsers.length == users.length) {
+							successCallback(allUsers);
+						}
+					}, function(error) {
+						failCallback(error);
+					}, false);
 
-				successCallback(allUsers);
+				});
+			})
+			.catch(function(e) {
+				failCallback(e);
+			});
+	}
+
+	/**
+	 * Find One User by hashid.
+	 *
+	 * @method findOneByHashid
+	 * @param {string} hashid - The User's hashid
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	static findOneByHashid(hashid : string, successCallback : Function, failCallback : Function) {
+		UserSchema.findOne({ where: {"hashid": hashid} })
+			.then(function(user) {
+				if(user != null) {
+					var uObject = User.fromJSONObject(user.dataValues);
+					uObject.setSequelizeModel(user, function() {
+						successCallback(uObject);
+					}, function(error) {
+						failCallback(error);
+					}, false);
+				} else {
+					failCallback(new ModelException("User with given Hashid was not found."));
+				}
 			})
 			.catch(function(e) {
 				failCallback(e);
@@ -340,8 +592,11 @@ class User extends ModelItf {
 
 				if(user != null) {
 					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user);
-					successCallback(uObject);
+					uObject.setSequelizeModel(user, function() {
+						successCallback(uObject);
+					}, function(error) {
+						failCallback(error);
+					}, false);
 				} else {
 					failCallback(new ModelException("User with given Username was not found."));
 				}
@@ -364,8 +619,11 @@ class User extends ModelItf {
 			.then(function(user) {
 				if(user != null) {
 					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user);
-					successCallback(uObject);
+					uObject.setSequelizeModel(user, function() {
+						successCallback(uObject);
+					}, function(error) {
+						failCallback(error);
+					}, false);
 				} else {
 					failCallback(new ModelException("User with given Email was not found."));
 				}
@@ -388,8 +646,11 @@ class User extends ModelItf {
 			.then(function(user) {
 				if(user != null) {
 					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user);
-					successCallback(uObject);
+					uObject.setSequelizeModel(user, function() {
+						successCallback(uObject);
+					}, function(error) {
+						failCallback(error);
+					}, false);
 				} else {
 					failCallback(new ModelException("User with given Authorization Key was not found."));
 				}
@@ -404,11 +665,11 @@ class User extends ModelItf {
 	 *
 	 * @method fromJSONObject
 	 * @static
-	 * @param {JSONObject} json - The JSON Object
+	 * @param {JSONObject} jsonObject - The JSON Object
 	 * @return {SDI} The model instance.
 	 */
 	static fromJSONObject(jsonObject : any) : User {
-		var user = new User(jsonObject.username, jsonObject.email, jsonObject.authkey, jsonObject.isAdmin, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
+		var user = new User(jsonObject.hashid, jsonObject.username, jsonObject.email, jsonObject.authkey, jsonObject.isAdmin, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
 
 		return user;
 	}

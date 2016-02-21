@@ -1,6 +1,6 @@
 module.exports = {
   up: function(migration, DataTypes) {
-    migration.createTable('Users', {
+    migration.createTable('Images', {
         id: {
           type: DataTypes.INTEGER,
           primaryKey: true,
@@ -11,24 +11,13 @@ module.exports = {
           unique: true,
           allowNull: false
         },
-        authkey: {
-          type: DataTypes.STRING(500),
-          unique: true,
-          allowNull: false
-        },
-        username: {
+        name: {
           type: DataTypes.STRING,
           allowNull: true
         },
-        email: {
+        description: {
           type: DataTypes.STRING,
-          unique: true,
-          allowNull: false
-        },
-        isAdmin: {
-          type: DataTypes.BOOLEAN,
-          defaultValue: false,
-          allowNull: false
+          allowNull: true
         },
         createdAt: {
           type: DataTypes.DATE,
@@ -39,12 +28,16 @@ module.exports = {
           type: DataTypes.DATE,
           defaultValue: DataTypes.fn('NOW'),
           allowNull: false
+        },
+        ImagesCollectionId : {
+          type: DataTypes.INTEGER,
+          allowNull: true
         }
       }
     );
   },
 
   down: function(migration, DataTypes) {
-    migration.dropTable('Users');
+    migration.dropTable('Images');
   }
 }

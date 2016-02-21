@@ -14,6 +14,8 @@ var basename  = path.basename(module.filename);
 var env       = process.env.NODE_ENV || 'development';
 var config    = require('../config/config.json')[env];
 
+var associations = require('../associations/dbAssociations.js');
+
 // Begin : Patch for Sequelize and their use of momentJS.
 Sequelize.DATE.prototype.$applyTimezone = function (date, options) {
   var momentDate = null;
@@ -49,7 +51,7 @@ if(process.env.DATABASE_URL) {
     logging: false
   });
 } else {
-  var options = {omitNull: true};
+  var options = {omitNull: true, logging: false};
   for (var attrname in config) {
     if(attrname != "database" && attrname != "username" && attrname != "password") {
       options[attrname] = config[attrname];
@@ -70,6 +72,28 @@ fs
     var model = sequelize['import'](path.join(__dirname, file));
     db[model.name] = model;
   });
+
+associations.hasMany.forEach(function(hMAss) {
+  var modelA = db[hMAss[0]];
+  var modelB = db[hMAss[1]];
+
+  if(typeof(hMAss[2]) != "undefined") {
+    modelA.hasMany(modelB, hMAss[2]);
+  } else {
+    modelA.hasMany(modelB);
+  }
+});
+
+associations.belongsTo.forEach(function(bTAss) {
+  var modelA = db[bTAss[0]];
+  var modelB = db[bTAss[1]];
+
+  if(typeof(bTAss[2]) != "undefined") {
+    modelA.belongsTo(modelB, bTAss[2]);
+  } else {
+    modelA.belongsTo(modelB);
+  }
+});
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;

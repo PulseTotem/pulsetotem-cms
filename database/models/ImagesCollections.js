@@ -1,7 +1,7 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('Users', {
+  return sequelize.define('ImagesCollections', {
     id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -13,24 +13,13 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       primaryKey: true
     },
-    authkey: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      primaryKey: true
-    },
-    username: {
+    name: {
       type: DataTypes.STRING,
       allowNull: true
     },
-    email: {
+    description: {
       type: DataTypes.STRING,
-      allowNull: false,
-      primaryKey: true
-    },
-    isAdmin: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false
+      allowNull: true
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -41,9 +30,13 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: 'now()'
+    },
+    UserId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     }
   }, {
-    tableName: 'Users',
+    tableName: 'ImagesCollections',
     freezeTableName: true
   });
 };

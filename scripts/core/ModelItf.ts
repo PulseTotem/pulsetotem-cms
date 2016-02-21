@@ -85,9 +85,19 @@ class ModelItf {
 	 * Set SequelizeModel of object.
 	 *
 	 * @method setSequelizeModel
+	 * @param {any} sequelizeModel - Instance of Sequelize Model
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 * @param {boolean} loadAssociations - Flag to load model associations or not. Default : true
 	 */
-	setSequelizeModel(sequelizeModel : any) {
+	setSequelizeModel(sequelizeModel : any, successCallback : Function, failCallback : Function, loadAssociations : boolean = true) {
 		this._sequelizeModel = sequelizeModel;
+
+		if(loadAssociations) {
+			this.loadAssociations(successCallback, failCallback);
+		} else {
+			successCallback();
+		}
 	}
 
 	/**
@@ -126,7 +136,6 @@ class ModelItf {
 	 * @method create
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
-
 	 */
 	create(successCallback : Function, failCallback : Function) {
 		Logger.error("ModelItf - create : Method need to be implemented.");
@@ -140,7 +149,6 @@ class ModelItf {
 	 * @param {number} id - The model instance's id.
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
-
 	 */
 	static read(id : number, successCallback : Function, failCallback : Function) {
 		Logger.error("ModelItf - read : Method need to be implemented.");
@@ -152,7 +160,6 @@ class ModelItf {
 	 * @method update
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
-
 	 */
 	update(successCallback : Function, failCallback : Function) {
 		Logger.error("ModelItf - update : Method need to be implemented.");
@@ -164,7 +171,6 @@ class ModelItf {
 	 * @method delete
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
-
 	 */
 	delete(successCallback : Function, failCallback : Function) {
 		Logger.error("ModelItf - delete : Method need to be implemented.");
@@ -183,6 +189,22 @@ class ModelItf {
 	}
 
 	/**
+	 * Serialize an array of ModelItf instances to a JSON Object.
+	 *
+	 * @method serializeArray
+	 * @param {Array<ModelItf>} models - an array of ModelItf instances
+	 */
+	serializeArray(models : Array<ModelItf>) {
+		var data = [];
+
+		models.forEach(function(model : ModelItf) {
+			data.push(model.toJSONObject());
+		});
+
+		return data;
+	}
+
+	/**
 	 * Return a ModelItf instance as a JSON Object
 	 *
 	 * @method toJSONObject
@@ -190,10 +212,21 @@ class ModelItf {
 	 */
 	toJSONObject() : Object {
 		var data = {
-			"id": this.getId(),
 			"createdAt" : this.createdAt(),
 			"updatedAt" : this.updatedAt()
 		};
 		return data;
+	}
+
+	/**
+	 * Load model associations.
+	 *
+	 * @method loadAssociations
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	loadAssociations(successCallback : Function, failCallback : Function) {
+		Logger.error("ModelItf - loadAssociations : Method is not implemented.");
+		failCallback(new Error("ModelItf - loadAssociations : Method is not implemented."));
 	}
 }
