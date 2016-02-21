@@ -32,9 +32,6 @@ module.exports = function (grunt) {
       distDatabase : {
         files: 	[{expand: true, cwd: 'database', src: ['**'], dest: 'dist/database/'}]
       },
-      distCMSConfigInfosFile: {
-        files: 	[{'dist/cms_config.json': 'scripts/core/cms_config.json'}]
-      },
 
       testDatabase : {
         files: 	[{expand: true, cwd: 'database', src: ['**'], dest: 'buildTests/database/'}]
@@ -196,7 +193,7 @@ module.exports = function (grunt) {
   grunt.registerTask('dist', function () {
     grunt.task.run(['clean:dist']);
 
-    grunt.task.run(['copy:distDatabase', 'copy:distCMSConfigInfosFile', 'typescript:dist']);
+    grunt.task.run(['copy:distDatabase', 'typescript:dist']);
   });
 
 /*  grunt.registerTask('test', function() {
