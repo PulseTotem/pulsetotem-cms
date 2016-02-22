@@ -76,6 +76,22 @@ class ImagesCollection extends ModelItf {
 	private _images_loaded : boolean;
 
 	/**
+	 * Cover property
+	 *
+	 * @property _cover
+	 * @type ImageObject
+	 */
+	private _cover : ImageObject;
+
+	/**
+	 * Lazy loading for User property
+	 *
+	 * @property _cover_loaded
+	 * @type boolean
+	 */
+	private _cover_loaded : boolean;
+
+	/**
 	 * Constructor.
 	 *
 	 * @constructor
@@ -95,6 +111,9 @@ class ImagesCollection extends ModelItf {
 
 		this._user = null;
 		this._user_loaded = false;
+
+		this._cover = null;
+		this._cover_loaded = false;
 
 		this._images = null;
 		this._images_loaded = false;
@@ -183,12 +202,57 @@ class ImagesCollection extends ModelItf {
 						var icObject = User.fromJSONObject(user.dataValues);
 						icObject.setSequelizeModel(user, function () {
 							self._user_loaded = true;
+							self._user = icObject;
 							successCallback();
 						}, function (error) {
 							failCallback(error);
 						}, false);
 					} else {
 						self._user_loaded = true;
+						successCallback();
+					}
+				})
+				.catch(function(error) {
+					failCallback(error);
+				});
+		} else {
+			successCallback();
+		}
+	}
+
+	/**
+	 * Return the ImagesCollection's cover.
+	 *
+	 * @method cover
+	 */
+	cover() {
+		return this._cover;
+	}
+
+	/**
+	 * Load the ImagesCollection's cover.
+	 *
+	 * @method loadCover
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	loadCover(successCallback : Function, failCallback : Function) {
+		if(! this._cover_loaded) {
+			var self = this;
+
+			this.getSequelizeModel().getImage()
+				.then(function(img) {
+					if(img != null) {
+						var iObject = ImageObject.fromJSONObject(img.dataValues);
+						iObject.setSequelizeModel(img, function () {
+							self._cover_loaded = true;
+							self._cover = iObject;
+							successCallback();
+						}, function (error) {
+							failCallback(error);
+						}, false);
+					} else {
+						self._cover_loaded = true;
 						successCallback();
 					}
 				})
@@ -268,7 +332,7 @@ class ImagesCollection extends ModelItf {
 		var self = this;
 
 		var success : Function = function(models) {
-			if(self._user_loaded && self._images_loaded) {
+			if(self._user_loaded && self._cover_loaded && self._images_loaded) {
 				if (successCallback != null) {
 					successCallback();
 				} // else //Nothing to do ?
@@ -284,6 +348,7 @@ class ImagesCollection extends ModelItf {
 		};
 
 		this.loadUser(success, fail);
+		this.loadCover(success, fail);
 		this.loadImages(success, fail);
 	}
 
@@ -306,6 +371,10 @@ class ImagesCollection extends ModelItf {
 		if(complete) {
 			if (this._user_loaded) {
 				newData["user"] = (this.user() !== null) ? this.user().toJSONObject() : null;
+			}
+
+			if (this._cover_loaded) {
+				newData["cover"] = (this.cover() !== null) ? this.cover().toJSONObject() : null;
 			}
 
 			if (this._images_loaded) {

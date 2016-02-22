@@ -164,6 +164,7 @@ class ImageObject extends ModelItf {
 						var icObject = ImagesCollection.fromJSONObject(imagesCollection.dataValues);
 						icObject.setSequelizeModel(imagesCollection, function () {
 							self._collection_loaded = true;
+							self._collection = icObject;
 							successCallback();
 						}, function (error) {
 							failCallback(error);

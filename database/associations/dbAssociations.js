@@ -6,4 +6,5 @@ exports.hasMany = [
 exports.belongsTo = [
   ["ImagesCollections", "Users"],
   ["Images", "ImagesCollections"],
+  ["ImagesCollections", "Images"]
 ];
