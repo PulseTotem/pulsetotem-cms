@@ -70,7 +70,7 @@ class ImagesRouter extends RouterItf {
 	 * @param {Express.Response} res - Response object.
 	 */
 	listAllImagesOfCollection(req : any, res : any) {
-		var images_JSON = req.imagesCollection.toJSON()["images"];
+		var images_JSON = req.imagesCollection.toJSONObject()["images"];
 
 		res.json(images_JSON);
 	}
@@ -96,7 +96,7 @@ class ImagesRouter extends RouterItf {
 			var newImage = new ImageObject(hashid, imageName, req.body.description);
 
 			var fail = function(error) {
-				res.status(500).send({ 'error': JSON.stringify(error) });
+				res.status(500).send({ 'error': error });
 			};
 
 			var success = function(image : ImageObject) {
@@ -173,7 +173,7 @@ class ImagesRouter extends RouterItf {
 			};
 
 			var fail = function(error) {
-				res.status(500).send({ 'error': JSON.stringify(error) });
+				res.status(500).send({ 'error': error });
 			};
 
 			req.image.update(success, fail);
@@ -204,7 +204,7 @@ class ImagesRouter extends RouterItf {
 
 				var fail = function(error) {
 					fs.rename(tmpImageFile, originImageFile , function(err) {
-						res.status(500).send({ 'error': JSON.stringify(error) });
+						res.status(500).send({ 'error': error });
 					});
 				};
 

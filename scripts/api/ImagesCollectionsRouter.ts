@@ -76,13 +76,13 @@ class ImagesCollectionsRouter extends RouterItf {
 	 */
 	listAllImagesCollectionsOfUser(req : any, res : any) {
 		var success = function() {
-			var imagesCollections_JSON = req.user.toJSON()["imagesCollections"];
+			var imagesCollections_JSON = req.user.toJSONObject()["imagesCollections"];
 
 			res.json(imagesCollections_JSON);
 		};
 
 		var fail = function(error) {
-			res.status(500).send({ 'error': JSON.stringify(error) });
+			res.status(500).send({ 'error': error });
 		};
 
 		req.user.loadImagesCollections(success, fail);
@@ -104,7 +104,7 @@ class ImagesCollectionsRouter extends RouterItf {
 			var newImagesCollection = new ImagesCollection(hashid, req.body.name, req.body.description);
 
 			var fail = function(error) {
-				res.status(500).send({ 'error': JSON.stringify(error) });
+				res.status(500).send({ 'error': error });
 			};
 
 			var success = function(imageCollection : ImagesCollection) {
@@ -185,7 +185,7 @@ class ImagesCollectionsRouter extends RouterItf {
 			};
 
 			var fail = function(error) {
-				res.status(500).send({ 'error': JSON.stringify(error) });
+				res.status(500).send({ 'error': error });
 			};
 
 			req.imagesCollection.update(success, fail);
@@ -216,7 +216,7 @@ class ImagesCollectionsRouter extends RouterItf {
 
 				var fail = function(error) {
 					fs.rename(tmpImagesCollectionFolder, originImagesCollectionFolder , function(err) {
-						res.status(500).send({ 'error': JSON.stringify(error) });
+						res.status(500).send({ 'error': error });
 					});
 				};
 
