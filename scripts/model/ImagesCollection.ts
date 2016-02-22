@@ -340,7 +340,7 @@ class ImagesCollection extends ModelItf {
 					self._id = uObject.getId();
 
 					self.setSequelizeModel(imagesCollection, function() {
-						successCallback(uObject);
+						successCallback(self);
 					}, function(error) {
 						failCallback(error);
 					});

@@ -460,7 +460,6 @@ class User extends ModelItf {
 			if(imagesCollection.getId() != null) {
 				self.getSequelizeModel().addImagesCollection(imagesCollection.getSequelizeModel())
 					.then(function () {
-
 						if(self._imagesCollections == null) {
 							self._imagesCollections = new Array<ImagesCollection>();
 						}

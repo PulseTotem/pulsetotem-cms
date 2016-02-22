@@ -261,7 +261,7 @@ class ImageObject extends ModelItf {
 					self._id = uObject.getId();
 
 					self.setSequelizeModel(image, function() {
-						successCallback(uObject);
+						successCallback(self);
 					}, function(error) {
 						failCallback(error);
 					});
