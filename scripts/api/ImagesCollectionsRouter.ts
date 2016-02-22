@@ -76,7 +76,7 @@ class ImagesCollectionsRouter extends RouterItf {
 	 */
 	listAllImagesCollectionsOfUser(req : any, res : any) {
 		var success = function() {
-			var imagesCollections_JSON = req.user.toJSONObject()["imagesCollections"];
+			var imagesCollections_JSON = req.user.toJSONObject(true)["imagesCollections"];
 
 			res.json(imagesCollections_JSON);
 		};

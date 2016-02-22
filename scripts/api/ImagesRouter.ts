@@ -70,7 +70,7 @@ class ImagesRouter extends RouterItf {
 	 * @param {Express.Response} res - Response object.
 	 */
 	listAllImagesOfCollection(req : any, res : any) {
-		var images_JSON = req.imagesCollection.toJSONObject()["images"];
+		var images_JSON = req.imagesCollection.toJSONObject(true)["images"];
 
 		res.json(images_JSON);
 	}

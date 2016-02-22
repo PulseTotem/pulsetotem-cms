@@ -216,9 +216,10 @@ class ImageObject extends ModelItf {
 	 * Return a ImageObject instance as a JSON Object
 	 *
 	 * @method toJSONObject
+	 * @param {boolean} complete - flag to obtain complete description of Model
 	 * @returns {Object} a JSON Object representing the instance
 	 */
-	toJSONObject() : Object {
+	toJSONObject(complete : boolean = false) : Object {
 		var data = super.toJSONObject();
 
 		var newData = {
@@ -226,7 +227,12 @@ class ImageObject extends ModelItf {
 			"name": this.name(),
 			"description": this.description()
 		};
-		newData["collection"] = (this.collection() !== null) ? this.collection().toJSONObject() : null;
+
+		if(complete) {
+			if(this._collection_loaded) {
+				newData["collection"] = (this.collection() !== null) ? this.collection().toJSONObject() : null;
+			}
+		}
 
 		return Helper.mergeObjects(data, newData);
 	}
@@ -243,7 +249,7 @@ class ImageObject extends ModelItf {
 
 		if(this.getId() == null) {
 
-			var newImageJSON = this.toJSONObject();
+			var newImageJSON = this.toJSONObject(true);
 			newImageJSON["hashid"] = this.hashid();
 			delete(newImageJSON["id"]);
 			delete(newImageJSON["createdAt"]);
@@ -309,7 +315,7 @@ class ImageObject extends ModelItf {
 
 		if(this.getId() != null) {
 
-			var newImageJSON = self.toJSONObject();
+			var newImageJSON = self.toJSONObject(true);
 			newImageJSON["hashid"] = this.hashid();
 			delete(newImageJSON["id"]);
 			delete(newImageJSON["createdAt"]);

@@ -291,9 +291,10 @@ class ImagesCollection extends ModelItf {
 	 * Return a ImagesCollection instance as a JSON Object
 	 *
 	 * @method toJSONObject
+	 * @param {boolean} complete - flag to obtain complete description of Model
 	 * @returns {Object} a JSON Object representing the instance
 	 */
-	toJSONObject() : Object {
+	toJSONObject(complete : boolean = false) : Object {
 		var data = super.toJSONObject();
 
 		var newData = {
@@ -302,12 +303,14 @@ class ImagesCollection extends ModelItf {
 			"description": this.description()
 		};
 
-		if(this._user_loaded) {
-			newData["user"] = (this.user() !== null) ? this.user().toJSONObject() : null;
-		}
+		if(complete) {
+			if (this._user_loaded) {
+				newData["user"] = (this.user() !== null) ? this.user().toJSONObject() : null;
+			}
 
-		if(this._images_loaded) {
-			newData["images"] = (this.images() !== null) ? this.serializeArray(this.images()) : null;
+			if (this._images_loaded) {
+				newData["images"] = (this.images() !== null) ? this.serializeArray(this.images()) : null;
+			}
 		}
 
 		return Helper.mergeObjects(data, newData);
@@ -325,7 +328,7 @@ class ImagesCollection extends ModelItf {
 
 		if(this.getId() == null) {
 
-			var newImagesCollectionJSON = this.toJSONObject();
+			var newImagesCollectionJSON = this.toJSONObject(true);
 			newImagesCollectionJSON["hashid"] = this.hashid();
 			delete(newImagesCollectionJSON["id"]);
 			delete(newImagesCollectionJSON["createdAt"]);
@@ -391,7 +394,7 @@ class ImagesCollection extends ModelItf {
 
 		if(this.getId() != null) {
 
-			var newImagesCollectionJSON = self.toJSONObject();
+			var newImagesCollectionJSON = self.toJSONObject(true);
 			newImagesCollectionJSON["hashid"] = this.hashid();
 			delete(newImagesCollectionJSON["id"]);
 			delete(newImagesCollectionJSON["createdAt"]);

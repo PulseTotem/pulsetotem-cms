@@ -121,11 +121,11 @@ class UsersRouter extends RouterItf {
 							if(err2) {
 								res.status(500).send({ 'error': JSON.stringify(err2) });
 							} else {
-								res.json(user.toJSONObject());
+								res.json(user.toJSONObject(true));
 							}
 						});
 					} else {
-						res.json(user.toJSONObject());
+						res.json(user.toJSONObject(true));
 					}
 				});
 			};
