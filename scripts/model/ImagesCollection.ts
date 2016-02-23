@@ -568,7 +568,16 @@ class ImagesCollection extends ModelItf {
 						}
 
 						self._images.push(image);
-						successCallback(self);
+						self._images_loaded = true;
+
+						if(self._cover == null) {
+							var successSetCover = function(img) {
+								successCallback(self);
+							};
+							self.setCover(image, successSetCover, failCallback);
+						} else {
+							successCallback(self);
+						}
 					})
 					.catch(function (error) {
 						failCallback(error);
@@ -628,6 +637,37 @@ class ImagesCollection extends ModelItf {
 			}
 		} else {
 			failCallback(new ModelException("ImagesCollection doesn't exist. ImageCollection must to exist before to remove something from it."));
+		}
+	}
+
+	/**
+	 * Set cover for ImagesCollection.
+	 *
+	 * @method setCover
+	 * @param {ImageObject} image - Image to set as cover for collection.
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	setCover(image : ImageObject, successCallback : Function, failCallback : Function) {
+		var self = this;
+
+		if(this.getId() != null) {
+
+			if(image.getId() != null) {
+				self.getSequelizeModel().setImage(image.getSequelizeModel())
+					.then(function () {
+						self._cover = image;
+						self._cover_loaded = true;
+						successCallback(self);
+					})
+					.catch(function (error) {
+						failCallback(error);
+					});
+			} else {
+				failCallback(new ModelException("You need to create the ImageObject before to set as cover for ImageCollection."));
+			}
+		} else {
+			failCallback(new ModelException("You need to create ImagesCollection before to set an ImageObject as cover."));
 		}
 	}
 

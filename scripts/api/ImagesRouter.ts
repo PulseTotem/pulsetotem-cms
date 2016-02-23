@@ -57,7 +57,7 @@ class ImagesRouter extends RouterItf {
 
 		// Define '/:image_id' route.
 		this.router.get('/:image_id', CMSAuth.can('manage user images'), function(req, res) { self.showImage(req, res); });
-		this.router.get('/:image_id/raw', CMSAuth.can('manage user images'), function(req, res) { self.rawImage(req, res); });
+		this.router.get('/:image_id/raw', function(req, res) { self.rawImage(req, res); });
 		this.router.put('/:image_id', CMSAuth.can('manage user images'), function(req, res) { self.updateImage(req, res); });
 		this.router.delete('/:image_id', CMSAuth.can('manage user images'), function(req, res) { self.deleteImage(req, res); });
 	}
@@ -83,42 +83,95 @@ class ImagesRouter extends RouterItf {
 	 * @param {Express.Response} res - Response object.
 	 */
 	newImage(req : any, res : any) {
-		if(typeof(req.body.name) == "undefined" || typeof(req.body.description) == "undefined" || typeof(req.files.file) == "undefined") {
+		if(typeof(req.files) == "undefined") {
 			res.status(500).send({ 'error': 'Missing some information to create new Image.' });
 		} else {
-			var hashid = uuid.v1();
 
-			var imageName = req.body.name;
-			if(imageName == "") {
-				imageName = hashid;
-			}
+			var addImageToCollection = function(imgId, imgName, imgDescription, imgFile, successCB, failCB) {
+				var newImage = new ImageObject(imgId, imgName, imgDescription);
 
-			var newImage = new ImageObject(hashid, imageName, req.body.description);
+				var successCreate = function(image:ImageObject) {
+					var successImagesCollectionLink = function () {
 
-			var fail = function(error) {
-				res.status(500).send({ 'error': error });
-			};
+						var originImageFile = CMSConfig.getUploadDir() + imgFile.name;
+						var destImageFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid() + "/" + imgId;
 
-			var success = function(image : ImageObject) {
+						fs.rename(originImageFile, destImageFile, function (err) {
+							if (err) {
+								failCB(new Error("Error during adding Image to ImagesCollection."));
+							} else {
+								successCB(image);
+							}
+						});
+					};
 
-				var successImagesCollectionLink = function() {
-
-					var originImageFile = CMSConfig.getUploadDir() + req.files.file.name;
-					var destImageFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid() + "/" + hashid;
-
-					fs.rename(originImageFile, destImageFile , function(err) {
-						if(err) {
-							res.status(500).send({ 'error': "Error during adding Image to ImagesCollection." });
-						} else {
-							res.json(image.toJSONObject());
-						}
-					});
+					req.imagesCollection.addImage(image, successImagesCollectionLink, failCB);
 				};
 
-				req.imagesCollection.addImage(image, successImagesCollectionLink, fail);
+				newImage.create(successCreate, failCB);
 			};
 
-			newImage.create(success, fail);
+			if(typeof(req.files.file) == "undefined") {
+
+				var filesKeys = Object.keys(req.files);
+
+				if(filesKeys.length > 0) {
+					var imagesDesc = [];
+					var nbFails = 0;
+
+					filesKeys.forEach(function(filesKey : any) {
+						var file : any = req.files[filesKey];
+
+						var fail = function (error) {
+							nbFails = nbFails + 1;
+							imagesDesc.push({
+								"file" : file.originalname,
+								"error" : error
+							});
+
+							if(imagesDesc.length == filesKeys.length) {
+								if(nbFails == filesKeys.length) {
+									res.status(500).json(imagesDesc);
+								} else {
+									res.json(imagesDesc);
+								}
+							}
+						};
+
+						var success = function(image:ImageObject) {
+							imagesDesc.push(image.toJSONObject());
+
+							if(imagesDesc.length == filesKeys.length) {
+								res.json(imagesDesc);
+							}
+						};
+
+						var hashid = uuid.v1();
+
+						addImageToCollection(hashid, file.originalname, "", file, success, fail);
+					});
+				} else {
+					res.status(500).send({ 'error': 'Missing some information to create new Image.' });
+				}
+			} else {
+				var hashid = uuid.v1();
+
+				var imageName = req.body.name || "";
+				if (imageName == "") {
+					imageName = req.files.file.originalname;
+				}
+				var imageDescription = req.body.description || "";
+
+				var fail = function (error) {
+					res.status(500).send({'error': error});
+				};
+
+				var success = function(image:ImageObject) {
+					res.json(image.toJSONObject());
+				};
+
+				addImageToCollection(hashid, imageName, imageDescription, req.files.file, success, fail);
+			}
 		}
 	}
 
@@ -141,11 +194,20 @@ class ImagesRouter extends RouterItf {
 	 * @param {Express.Response} res - Response object.
 	 */
 	rawImage(req : any, res : any) {
-		var imagePath = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.image.collection().hashid() + "/" + req.image.hashid();
 
-		var img = fs.readFileSync(imagePath);
-		res.set('Content-Type', 'image/jpeg');
-		res.status(200).end(img, 'binary');
+		var fail = function(error) {
+			res.status(500).send({ 'error': error });
+		};
+
+		var success = function() {
+			var imagePath = CMSConfig.getUploadDir() + "users/" + req.image.collection().user().hashid() + "/images/" + req.image.collection().hashid() + "/" + req.image.hashid();
+
+			var img = fs.readFileSync(imagePath);
+			res.set('Content-Type', 'image/jpeg');
+			res.status(200).end(img, 'binary');
+		};
+
+		req.image.collection().loadUser(success, fail);
 	}
 
 	/**
