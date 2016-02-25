@@ -99,8 +99,8 @@ class Server {
 	 */
 	private _buildServer(uploadDir : string) {
 		this.app = express();
-		this.app.use(bodyParser.json()); // for parsing application/json
-		this.app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+		this.app.use(bodyParser.json({limit: '50mb'})); // for parsing application/json
+		this.app.use(bodyParser.urlencoded({ limit: '50mb', extended: true })); // for parsing application/x-www-form-urlencoded
 		this.app.use(multer({ dest: uploadDir })); // for parsing multipart/form-data
 
 		this.app.use(function(req, res, next) {
