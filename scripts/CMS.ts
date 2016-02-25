@@ -8,6 +8,7 @@
 
 /// <reference path="./api/UsersRouter.ts" />
 /// <reference path="./api/ImagesRouter.ts" />
+/// <reference path="./api/AdminRouter.ts" />
 
 
 
@@ -156,6 +157,7 @@ class CMS extends Server {
 	buildAPI() {
 		this.app.use(CMSConfig.getBaseUrl() + "users", (new UsersRouter()).getRouter());
 		this.app.use(CMSConfig.getBaseUrl() + "images", (new ImagesRouter()).getRouter());
+		this.app.use(CMSConfig.getBaseUrl() + "admin", (new AdminRouter()).getRouter());
 	}
 }
 

@@ -42,21 +42,44 @@ class ImagesCollectionsRouter extends RouterItf {
 
 		// Manage params
 		this.router.param("imagescollection_id", function (req, res, next, id) {
-			var success = function(imagesCollection) {
-				req.imagesCollection = imagesCollection;
-				next();
-			};
-
 			var fail = function(error) {
 				next(error);
+			};
+
+			var success = function(imagesCollection) {
+				req.imagesCollection = imagesCollection;
+
+				if(typeof(req.user) == "undefined") {
+
+					var successLoadUser = function() {
+						req.user = req.imagesCollection.user();
+						next();
+					};
+
+					req.imagesCollection.user().loadAssociations(successLoadUser, fail);
+				} else {
+					next();
+				}
 			};
 
 			ImagesCollection.findOneByHashid(id, success, fail);
 		});
 
 		// Define '/' route.
-		this.router.get('/', CMSAuth.can('manage user information'), function(req, res) { self.listAllImagesCollectionsOfUser(req, res); });
-		this.router.post('/', CMSAuth.can('manage user information'), function(req, res) { self.newImagesCollection(req, res); });
+		this.router.get('/', CMSAuth.can('manage user information'), function(req, res) {
+			if(typeof(req.user) != "undefined") {
+				self.listAllImagesCollectionsOfUser(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
+		this.router.post('/', CMSAuth.can('manage user information'), function(req, res) {
+			if(typeof(req.user) != "undefined") {
+				self.newImagesCollection(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
 
 		// Define '/:imagescollection_id' route.
 		this.router.get('/:imagescollection_id', CMSAuth.can('manage user images collections'), function(req, res) { self.showImagesCollection(req, res); });
