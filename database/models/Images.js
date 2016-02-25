@@ -34,6 +34,14 @@ module.exports = function(sequelize, DataTypes) {
     ImagesCollectionId: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    mimetype: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    extension: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     tableName: 'Images',

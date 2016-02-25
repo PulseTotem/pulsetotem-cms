@@ -44,6 +44,22 @@ class ImageObject extends ModelItf {
 	private _hashid : string;
 
 	/**
+	 * Mimetype property.
+	 *
+	 * @property _mimetype
+	 * @type string
+	 */
+	private _mimetype : string;
+
+	/**
+	 * Extension property.
+	 *
+	 * @property _extension
+	 * @type string
+	 */
+	private _extension : string;
+
+	/**
 	 * ImagesCollection property
 	 *
 	 * @property _collection
@@ -66,16 +82,20 @@ class ImageObject extends ModelItf {
 	 * @param {string} hashid - The ImageObject's hashid.
 	 * @param {string} name - The ImageObject's name.
 	 * @param {string} description - The ImageObject's description.
+	 * @param {string} mimetype - The ImageObject's mimetype.
+	 * @param {string} extension - The ImageObject's extension.
 	 * @param {number} id - The ImageObject's id.
 	 * @param {string} createdAt - The ImageObject's createdAt.
 	 * @param {string} updatedAt - The ImageObject's updatedAt.
 	 */
-	constructor(hashid : string = "", name : string = "", description : string = "", id : number = null, createdAt : string = null, updatedAt : string = null) {
+	constructor(hashid : string = "", name : string = "", description : string = "", mimetype : string = "", extension : string = "", id : number = null, createdAt : string = null, updatedAt : string = null) {
 		super(id, createdAt, updatedAt);
 
 		this.setHashid(hashid);
 		this.setName(name);
 		this.setDescription(description);
+		this.setMimetype(mimetype);
+		this.setExtension(extension);
 
 		this._collection = null;
 		this._collection_loaded = false;
@@ -136,6 +156,44 @@ class ImageObject extends ModelItf {
 	 */
 	description() {
 		return this._description;
+	}
+
+	/**
+	 * Set the ImageObject's mimetype.
+	 *
+	 * @method setMimetype
+	 * @param {string} mimetype - New mimetype
+	 */
+	setMimetype(mimetype : string) {
+		this._mimetype = mimetype;
+	}
+
+	/**
+	 * Return the ImageObject's mimetype.
+	 *
+	 * @method mimetype
+	 */
+	mimetype() {
+		return this._mimetype;
+	}
+
+	/**
+	 * Set the ImageObject's extension.
+	 *
+	 * @method setExtension
+	 * @param {string} extension - New extension
+	 */
+	setExtension(extension : string) {
+		this._extension = extension;
+	}
+
+	/**
+	 * Return the ImageObject's extension.
+	 *
+	 * @method extension
+	 */
+	extension() {
+		return this._extension;
 	}
 
 	/**
@@ -226,7 +284,9 @@ class ImageObject extends ModelItf {
 		var newData = {
 			"id" : this.hashid(),
 			"name": this.name(),
-			"description": this.description()
+			"description": this.description(),
+			"mimetype" : this.mimetype(),
+			"extension" : this.extension()
 		};
 
 		if(complete) {
@@ -434,7 +494,7 @@ class ImageObject extends ModelItf {
 	 * @return {SDI} The model instance.
 	 */
 	static fromJSONObject(jsonObject : any) : ImageObject {
-		var image = new ImageObject(jsonObject.hashid, jsonObject.name, jsonObject.description, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
+		var image = new ImageObject(jsonObject.hashid, jsonObject.name, jsonObject.description, jsonObject.mimetype, jsonObject.extension, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
 
 		return image;
 	}

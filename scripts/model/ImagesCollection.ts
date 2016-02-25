@@ -497,16 +497,45 @@ class ImagesCollection extends ModelItf {
 		var self = this;
 
 		if(this.getId() != null) {
-			self.getSequelizeModel().destroy()
-				.then(function () {
-					var destroyId = self.getId();
-					self._id = null;
 
-					successCallback({"id" : destroyId});
-				})
-				.catch(function (error) {
-					failCallback(error);
-				});
+			var deleteCollection = function() {
+				self.getSequelizeModel().destroy()
+					.then(function () {
+						var destroyId = self.getId();
+						self._id = null;
+
+						successCallback({"id" : destroyId});
+					})
+					.catch(function (error) {
+						failCallback(error);
+					});
+			};
+
+			var deleteImages = function() {
+
+				if(self.images().length > 0) {
+					var nbDelete = 0;
+
+					var successDelete = function () {
+						nbDelete = nbDelete + 1;
+						if (nbDelete == self.images().length) {
+							deleteCollection();
+						}
+					};
+
+					self.images().forEach(function (image:ImageObject) {
+						image.delete(successDelete, failCallback);
+					});
+				} else {
+					deleteCollection();
+				}
+			};
+
+			if(! self._images_loaded) {
+				self.loadImages(deleteImages, failCallback);
+			} else {
+				deleteImages();
+			}
 		} else {
 			failCallback(new ModelException("You need to create ImagesCollection before to delete it..."));
 		}
@@ -624,7 +653,21 @@ class ImagesCollection extends ModelItf {
 					} else {
 						self.getSequelizeModel().removeImage(image.getSequelizeModel())
 							.then(function () {
-								successCallback(self);
+								if(self._cover.getId() == image.getId()) {
+									if(self.images().length > 0) {
+										var successSetCover = function(img) {
+											successCallback(self);
+										};
+										self.setCover(self.images()[0], successSetCover, failCallback);
+									} else {
+										var successUnsetCover = function(img) {
+											successCallback(self);
+										};
+										self.unsetCover(successUnsetCover, failCallback);
+									}
+								} else {
+									successCallback(self);
+								}
 							})
 							.catch(function (error) {
 								self._images.push(imageToDelete);
@@ -668,6 +711,31 @@ class ImagesCollection extends ModelItf {
 			}
 		} else {
 			failCallback(new ModelException("You need to create ImagesCollection before to set an ImageObject as cover."));
+		}
+	}
+
+	/**
+	 * Unset cover for ImagesCollection.
+	 *
+	 * @method unsetCover
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	unsetCover(successCallback : Function, failCallback : Function) {
+		var self = this;
+
+		if(this.getId() != null) {
+			self.getSequelizeModel().setImage(null)
+				.then(function () {
+					self._cover = null;
+					self._cover_loaded = true;
+					successCallback(self);
+				})
+				.catch(function (error) {
+					failCallback(error);
+				});
+		} else {
+			failCallback(new ModelException("You need to create ImagesCollection before to unset an ImageObject as cover."));
 		}
 	}
 

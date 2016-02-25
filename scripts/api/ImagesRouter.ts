@@ -11,6 +11,7 @@
 declare var require : any;
 
 var fs : any = require("fs");
+var lwip : any = require('lwip');
 
 var uuid : any = require('node-uuid');
 
@@ -88,13 +89,17 @@ class ImagesRouter extends RouterItf {
 		} else {
 
 			var addImageToCollection = function(imgId, imgName, imgDescription, imgFile, successCB, failCB) {
-				var newImage = new ImageObject(imgId, imgName, imgDescription);
+				var newImage = new ImageObject(imgId, imgName, imgDescription, imgFile.mimetype, imgFile.extension);
 
 				var successCreate = function(image:ImageObject) {
 					var successImagesCollectionLink = function () {
 
 						var originImageFile = CMSConfig.getUploadDir() + imgFile.name;
-						var destImageFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid() + "/" + imgId;
+						var extension = '';
+						if(imgFile.extension != '') {
+							extension = '.' + imgFile.extension;
+						}
+						var destImageFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid() + "/" + imgId + extension;
 
 						fs.rename(originImageFile, destImageFile, function (err) {
 							if (err) {
@@ -200,11 +205,52 @@ class ImagesRouter extends RouterItf {
 		};
 
 		var success = function() {
-			var imagePath = CMSConfig.getUploadDir() + "users/" + req.image.collection().user().hashid() + "/images/" + req.image.collection().hashid() + "/" + req.image.hashid();
+			var extension = '';
+			if(req.image.extension() != null && req.image.extension() != '') {
+				extension = '.' + req.image.extension();
+			}
+			var imagePath = CMSConfig.getUploadDir() + "users/" + req.image.collection().user().hashid() + "/images/" + req.image.collection().hashid() + "/" + req.image.hashid() + extension;
 
-			var img = fs.readFileSync(imagePath);
-			res.set('Content-Type', 'image/jpeg');
-			res.status(200).end(img, 'binary');
+			if(extension != '') {
+
+				lwip.open(imagePath, function (err, img) {
+					if (err) {
+						fail("Fail during reading file");
+						return;
+					}
+
+					var bufferType = 'jpg';
+					if (req.image.mimetype() != null && req.image.mimetype() != "") {
+						res.set('Content-Type', req.image.mimetype());
+						switch (req.image.mimetype()) {
+							case 'image/gif' :
+								bufferType = 'gif';
+								break;
+							case 'image/png' :
+								bufferType = 'png';
+								break;
+						}
+					} else {
+						res.set('Content-Type', 'image/jpeg');
+					}
+
+					img.toBuffer(bufferType, function (err, imgBuffer) {
+						if (err) {
+							fail("Fail during rendering file");
+							return;
+						}
+						res.status(200).end(imgBuffer);
+					});
+				});
+			} else {
+				var img = fs.readFileSync(imagePath);
+				if (req.image.mimetype() != null && req.image.mimetype() != "") {
+					res.set('Content-Type', req.image.mimetype());
+				} else {
+					res.set('Content-Type', 'image/jpeg');
+				}
+				res.status(200).end(img, 'binary');
+			}
 		};
 
 		req.image.collection().loadUser(success, fail);
@@ -251,27 +297,40 @@ class ImagesRouter extends RouterItf {
 	 */
 	deleteImage(req : any, res : any) {
 
-		var originImageFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.image.collection().hashid() + "/" + req.image.hashid();
-		var tmpImageFile = CMSConfig.getUploadDir() + "deletetmp/users_" + req.user.hashid() + "_images_" + req.image.collection().hashid() + "_" + req.image.hashid();
+		var fail = function(error) {
+			res.status(500).send({ 'error': error });
+		};
 
-		fs.rename(originImageFile, tmpImageFile, function(err) {
-			if(err) {
-				res.status(500).send({ 'error': "Error during deleting Image." });
-			} else {
-				var success = function(deleteImageId) {
-					fs.unlink(tmpImageFile, function(err2) {
-						res.json(deleteImageId);
-					});
-				};
-
-				var fail = function(error) {
-					fs.rename(tmpImageFile, originImageFile , function(err) {
-						res.status(500).send({ 'error': error });
-					});
-				};
-
-				req.image.delete(success, fail);
+		var successRemoveImage = function() {
+			var extension = '';
+			if(req.image.extension() != null && req.image.extension() != '') {
+				extension = '.' + req.image.extension();
 			}
-		});
+
+			var originImageFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.image.collection().hashid() + "/" + req.image.hashid() + extension;
+			var tmpImageFile = CMSConfig.getUploadDir() + "deletetmp/users_" + req.user.hashid() + "_images_" + req.image.collection().hashid() + "_" + req.image.hashid() + extension;
+
+			fs.rename(originImageFile, tmpImageFile, function(err) {
+				if(err) {
+					res.status(500).send({ 'error': "Error during deleting Image." });
+				} else {
+					var success = function(deleteImageId) {
+						fs.unlink(tmpImageFile, function(err2) {
+							res.json(deleteImageId);
+						});
+					};
+
+					var fail = function(error) {
+						fs.rename(tmpImageFile, originImageFile , function(err) {
+							res.status(500).send({ 'error': error });
+						});
+					};
+
+					req.image.delete(success, fail);
+				}
+			});
+		};
+
+		req.imagesCollection.removeImage(req.image, successRemoveImage, fail);
 	}
 }
