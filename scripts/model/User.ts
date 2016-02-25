@@ -289,21 +289,29 @@ class User extends ModelItf {
 	 * Return a User instance as a JSON Object
 	 *
 	 * @method toJSONObject
-	 * @returns {Object} a JSON Object representing the instance
+	 * @param {boolean} complete - flag to obtain complete description of Model
+	 * @returns {JSONObject} a JSON Object representing the instance
 	 */
-	toJSONObject() : Object {
+	toJSONObject(complete : boolean = false) : any {
 		var data = super.toJSONObject();
 
 		var newData = {
 			"id" : this.hashid(),
 			"username": this.username(),
 			"email": this.email(),
-			"authkey": this.authKey(),
 			"isAdmin": this.isAdmin()
 		};
 
-		if(this._imagesCollections_loaded) {
-			newData["imagesCollections"] = (this.imagesCollections() !== null) ? this.serializeArray(this.imagesCollections()) : null;
+		if(complete) {
+			var completeData = {
+				"authkey": this.authKey()
+			};
+
+			newData = Helper.mergeObjects(newData, completeData);
+
+			if (this._imagesCollections_loaded) {
+				newData["imagesCollections"] = (this.imagesCollections() !== null) ? this.serializeArray(this.imagesCollections()) : null;
+			}
 		}
 
 		return Helper.mergeObjects(data, newData);
@@ -321,7 +329,7 @@ class User extends ModelItf {
 
 		if(this.getId() == null) {
 
-			var newUserJSON = this.toJSONObject();
+			var newUserJSON = this.toJSONObject(true);
 			newUserJSON["hashid"] = this.hashid();
 			delete(newUserJSON["id"]);
 			delete(newUserJSON["createdAt"]);
@@ -387,7 +395,7 @@ class User extends ModelItf {
 
 		if(this.getId() != null) {
 
-			var newUserJSON = self.toJSONObject();
+			var newUserJSON = self.toJSONObject(true);
 			newUserJSON["hashid"] = this.hashid();
 			delete(newUserJSON["id"]);
 			delete(newUserJSON["createdAt"]);
@@ -452,7 +460,6 @@ class User extends ModelItf {
 			if(imagesCollection.getId() != null) {
 				self.getSequelizeModel().addImagesCollection(imagesCollection.getSequelizeModel())
 					.then(function () {
-
 						if(self._imagesCollections == null) {
 							self._imagesCollections = new Array<ImagesCollection>();
 						}

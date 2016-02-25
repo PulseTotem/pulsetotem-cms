@@ -87,7 +87,7 @@ class UsersRouter extends RouterItf {
 		};
 
 		var fail = function(error) {
-			res.status(500).send({ 'error': JSON.stringify(error) });
+			res.status(500).send({ 'error': error });
 		};
 
 		User.all(success, fail);
@@ -121,17 +121,17 @@ class UsersRouter extends RouterItf {
 							if(err2) {
 								res.status(500).send({ 'error': JSON.stringify(err2) });
 							} else {
-								res.json(user.toJSONObject());
+								res.json(user.toJSONObject(true));
 							}
 						});
 					} else {
-						res.json(user.toJSONObject());
+						res.json(user.toJSONObject(true));
 					}
 				});
 			};
 
 			var fail = function(error) {
-				res.status(500).send({ 'error': JSON.stringify(error) });
+				res.status(500).send({ 'error': error });
 			};
 
 			newUser.create(success, fail);
@@ -174,7 +174,7 @@ class UsersRouter extends RouterItf {
 			};
 
 			var fail = function(error) {
-				res.status(500).send({ 'error': JSON.stringify(error) });
+				res.status(500).send({ 'error': error });
 			};
 
 			req.user.update(success, fail);
@@ -203,7 +203,7 @@ class UsersRouter extends RouterItf {
 			};
 
 			var fail = function(error) {
-				res.status(500).send({ 'error': JSON.stringify(error) });
+				res.status(500).send({ 'error': error });
 			};
 
 			req.user.update(success, fail);
@@ -234,7 +234,7 @@ class UsersRouter extends RouterItf {
 
 				var fail = function(error) {
 					fs.rename(tmpUserFolder, originUserFolder , function(err) {
-						res.status(500).send({ 'error': JSON.stringify(error) });
+						res.status(500).send({ 'error': error });
 					});
 				};
 

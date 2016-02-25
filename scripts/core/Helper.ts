@@ -17,7 +17,7 @@ class Helper {
 	 * @param obj2
 	 * @returns obj3 a new object based on obj1 and obj2
 	 */
-	static mergeObjects(obj1 : any, obj2 : any){
+	static mergeObjects(obj1 : any, obj2 : any) : any {
 		var obj3 = {};
 		for (var attrname in obj1) { obj3[attrname] = obj1[attrname]; }
 		for (var attrname in obj2) { obj3[attrname] = obj2[attrname]; }

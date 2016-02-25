@@ -75,14 +75,33 @@ class ImagesCollectionsRouter extends RouterItf {
 	 * @param {Express.Response} res - Response object.
 	 */
 	listAllImagesCollectionsOfUser(req : any, res : any) {
-		var success = function() {
-			var imagesCollections_JSON = req.user.toJSON()["imagesCollections"];
-
-			res.json(imagesCollections_JSON);
+		var fail = function(error) {
+			res.status(500).send({ 'error': error });
 		};
 
-		var fail = function(error) {
-			res.status(500).send({ 'error': JSON.stringify(error) });
+		var success = function() {
+
+			var imagesCollections_JSON = [];
+
+			if(req.user.imagesCollections().length > 0) {
+				req.user.imagesCollections().forEach(function (imgCollection:ImagesCollection) {
+
+					var successLoadCover = function() {
+						imagesCollections_JSON.push(imgCollection.toJSONObject(true));
+
+						if(imagesCollections_JSON.length == req.user.imagesCollections().length) {
+							res.json(imagesCollections_JSON);
+						}
+					};
+
+					imgCollection.loadCover(successLoadCover, fail);
+				});
+			} else {
+				imagesCollections_JSON = req.user.toJSONObject(true)["imagesCollections"];
+
+				res.json(imagesCollections_JSON);
+			}
+
 		};
 
 		req.user.loadImagesCollections(success, fail);
@@ -104,7 +123,7 @@ class ImagesCollectionsRouter extends RouterItf {
 			var newImagesCollection = new ImagesCollection(hashid, req.body.name, req.body.description);
 
 			var fail = function(error) {
-				res.status(500).send({ 'error': JSON.stringify(error) });
+				res.status(500).send({ 'error': error });
 			};
 
 			var success = function(imageCollection : ImagesCollection) {
@@ -185,7 +204,7 @@ class ImagesCollectionsRouter extends RouterItf {
 			};
 
 			var fail = function(error) {
-				res.status(500).send({ 'error': JSON.stringify(error) });
+				res.status(500).send({ 'error': error });
 			};
 
 			req.imagesCollection.update(success, fail);
@@ -216,7 +235,7 @@ class ImagesCollectionsRouter extends RouterItf {
 
 				var fail = function(error) {
 					fs.rename(tmpImagesCollectionFolder, originImagesCollectionFolder , function(err) {
-						res.status(500).send({ 'error': JSON.stringify(error) });
+						res.status(500).send({ 'error': error });
 					});
 				};
 

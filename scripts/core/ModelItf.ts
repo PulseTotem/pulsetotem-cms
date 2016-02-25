@@ -208,9 +208,10 @@ class ModelItf {
 	 * Return a ModelItf instance as a JSON Object
 	 *
 	 * @method toJSONObject
-	 * @returns {Object} a JSON Object representing the instance
+	 * @param {boolean} complete - flag to obtain complete description of Model
+	 * @returns {JSONObject} a JSON Object representing the instance
 	 */
-	toJSONObject() : Object {
+	toJSONObject(complete : boolean = false) : any {
 		var data = {
 			"createdAt" : this.createdAt(),
 			"updatedAt" : this.updatedAt()

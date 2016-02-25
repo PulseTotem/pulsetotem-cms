@@ -76,6 +76,22 @@ class ImagesCollection extends ModelItf {
 	private _images_loaded : boolean;
 
 	/**
+	 * Cover property
+	 *
+	 * @property _cover
+	 * @type ImageObject
+	 */
+	private _cover : ImageObject;
+
+	/**
+	 * Lazy loading for User property
+	 *
+	 * @property _cover_loaded
+	 * @type boolean
+	 */
+	private _cover_loaded : boolean;
+
+	/**
 	 * Constructor.
 	 *
 	 * @constructor
@@ -95,6 +111,9 @@ class ImagesCollection extends ModelItf {
 
 		this._user = null;
 		this._user_loaded = false;
+
+		this._cover = null;
+		this._cover_loaded = false;
 
 		this._images = null;
 		this._images_loaded = false;
@@ -183,12 +202,57 @@ class ImagesCollection extends ModelItf {
 						var icObject = User.fromJSONObject(user.dataValues);
 						icObject.setSequelizeModel(user, function () {
 							self._user_loaded = true;
+							self._user = icObject;
 							successCallback();
 						}, function (error) {
 							failCallback(error);
 						}, false);
 					} else {
 						self._user_loaded = true;
+						successCallback();
+					}
+				})
+				.catch(function(error) {
+					failCallback(error);
+				});
+		} else {
+			successCallback();
+		}
+	}
+
+	/**
+	 * Return the ImagesCollection's cover.
+	 *
+	 * @method cover
+	 */
+	cover() {
+		return this._cover;
+	}
+
+	/**
+	 * Load the ImagesCollection's cover.
+	 *
+	 * @method loadCover
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	loadCover(successCallback : Function, failCallback : Function) {
+		if(! this._cover_loaded) {
+			var self = this;
+
+			this.getSequelizeModel().getImage()
+				.then(function(img) {
+					if(img != null) {
+						var iObject = ImageObject.fromJSONObject(img.dataValues);
+						iObject.setSequelizeModel(img, function () {
+							self._cover_loaded = true;
+							self._cover = iObject;
+							successCallback();
+						}, function (error) {
+							failCallback(error);
+						}, false);
+					} else {
+						self._cover_loaded = true;
 						successCallback();
 					}
 				})
@@ -268,7 +332,7 @@ class ImagesCollection extends ModelItf {
 		var self = this;
 
 		var success : Function = function(models) {
-			if(self._user_loaded && self._images_loaded) {
+			if(self._user_loaded && self._cover_loaded && self._images_loaded) {
 				if (successCallback != null) {
 					successCallback();
 				} // else //Nothing to do ?
@@ -284,6 +348,7 @@ class ImagesCollection extends ModelItf {
 		};
 
 		this.loadUser(success, fail);
+		this.loadCover(success, fail);
 		this.loadImages(success, fail);
 	}
 
@@ -291,9 +356,10 @@ class ImagesCollection extends ModelItf {
 	 * Return a ImagesCollection instance as a JSON Object
 	 *
 	 * @method toJSONObject
-	 * @returns {Object} a JSON Object representing the instance
+	 * @param {boolean} complete - flag to obtain complete description of Model
+	 * @returns {JSONObject} a JSON Object representing the instance
 	 */
-	toJSONObject() : Object {
+	toJSONObject(complete : boolean = false) : any {
 		var data = super.toJSONObject();
 
 		var newData = {
@@ -302,12 +368,18 @@ class ImagesCollection extends ModelItf {
 			"description": this.description()
 		};
 
-		if(this._user_loaded) {
-			newData["user"] = (this.user() !== null) ? this.user().toJSONObject() : null;
-		}
+		if(complete) {
+			if (this._user_loaded) {
+				newData["user"] = (this.user() !== null) ? this.user().toJSONObject() : null;
+			}
 
-		if(this._images_loaded) {
-			newData["images"] = (this.images() !== null) ? this.serializeArray(this.images()) : null;
+			if (this._cover_loaded) {
+				newData["cover"] = (this.cover() !== null) ? this.cover().toJSONObject() : null;
+			}
+
+			if (this._images_loaded) {
+				newData["images"] = (this.images() !== null) ? this.serializeArray(this.images()) : null;
+			}
 		}
 
 		return Helper.mergeObjects(data, newData);
@@ -325,7 +397,7 @@ class ImagesCollection extends ModelItf {
 
 		if(this.getId() == null) {
 
-			var newImagesCollectionJSON = this.toJSONObject();
+			var newImagesCollectionJSON = this.toJSONObject(true);
 			newImagesCollectionJSON["hashid"] = this.hashid();
 			delete(newImagesCollectionJSON["id"]);
 			delete(newImagesCollectionJSON["createdAt"]);
@@ -337,7 +409,7 @@ class ImagesCollection extends ModelItf {
 					self._id = uObject.getId();
 
 					self.setSequelizeModel(imagesCollection, function() {
-						successCallback(uObject);
+						successCallback(self);
 					}, function(error) {
 						failCallback(error);
 					});
@@ -391,7 +463,7 @@ class ImagesCollection extends ModelItf {
 
 		if(this.getId() != null) {
 
-			var newImagesCollectionJSON = self.toJSONObject();
+			var newImagesCollectionJSON = self.toJSONObject(true);
 			newImagesCollectionJSON["hashid"] = this.hashid();
 			delete(newImagesCollectionJSON["id"]);
 			delete(newImagesCollectionJSON["createdAt"]);
@@ -425,16 +497,45 @@ class ImagesCollection extends ModelItf {
 		var self = this;
 
 		if(this.getId() != null) {
-			self.getSequelizeModel().destroy()
-				.then(function () {
-					var destroyId = self.getId();
-					self._id = null;
 
-					successCallback({"id" : destroyId});
-				})
-				.catch(function (error) {
-					failCallback(error);
-				});
+			var deleteCollection = function() {
+				self.getSequelizeModel().destroy()
+					.then(function () {
+						var destroyId = self.getId();
+						self._id = null;
+
+						successCallback({"id" : destroyId});
+					})
+					.catch(function (error) {
+						failCallback(error);
+					});
+			};
+
+			var deleteImages = function() {
+
+				if(self.images().length > 0) {
+					var nbDelete = 0;
+
+					var successDelete = function () {
+						nbDelete = nbDelete + 1;
+						if (nbDelete == self.images().length) {
+							deleteCollection();
+						}
+					};
+
+					self.images().forEach(function (image:ImageObject) {
+						image.delete(successDelete, failCallback);
+					});
+				} else {
+					deleteCollection();
+				}
+			};
+
+			if(! self._images_loaded) {
+				self.loadImages(deleteImages, failCallback);
+			} else {
+				deleteImages();
+			}
 		} else {
 			failCallback(new ModelException("You need to create ImagesCollection before to delete it..."));
 		}
@@ -496,7 +597,16 @@ class ImagesCollection extends ModelItf {
 						}
 
 						self._images.push(image);
-						successCallback(self);
+						self._images_loaded = true;
+
+						if(self._cover == null) {
+							var successSetCover = function(img) {
+								successCallback(self);
+							};
+							self.setCover(image, successSetCover, failCallback);
+						} else {
+							successCallback(self);
+						}
 					})
 					.catch(function (error) {
 						failCallback(error);
@@ -543,7 +653,21 @@ class ImagesCollection extends ModelItf {
 					} else {
 						self.getSequelizeModel().removeImage(image.getSequelizeModel())
 							.then(function () {
-								successCallback(self);
+								if(self._cover.getId() == image.getId()) {
+									if(self.images().length > 0) {
+										var successSetCover = function(img) {
+											successCallback(self);
+										};
+										self.setCover(self.images()[0], successSetCover, failCallback);
+									} else {
+										var successUnsetCover = function(img) {
+											successCallback(self);
+										};
+										self.unsetCover(successUnsetCover, failCallback);
+									}
+								} else {
+									successCallback(self);
+								}
 							})
 							.catch(function (error) {
 								self._images.push(imageToDelete);
@@ -556,6 +680,62 @@ class ImagesCollection extends ModelItf {
 			}
 		} else {
 			failCallback(new ModelException("ImagesCollection doesn't exist. ImageCollection must to exist before to remove something from it."));
+		}
+	}
+
+	/**
+	 * Set cover for ImagesCollection.
+	 *
+	 * @method setCover
+	 * @param {ImageObject} image - Image to set as cover for collection.
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	setCover(image : ImageObject, successCallback : Function, failCallback : Function) {
+		var self = this;
+
+		if(this.getId() != null) {
+
+			if(image.getId() != null) {
+				self.getSequelizeModel().setImage(image.getSequelizeModel())
+					.then(function () {
+						self._cover = image;
+						self._cover_loaded = true;
+						successCallback(self);
+					})
+					.catch(function (error) {
+						failCallback(error);
+					});
+			} else {
+				failCallback(new ModelException("You need to create the ImageObject before to set as cover for ImageCollection."));
+			}
+		} else {
+			failCallback(new ModelException("You need to create ImagesCollection before to set an ImageObject as cover."));
+		}
+	}
+
+	/**
+	 * Unset cover for ImagesCollection.
+	 *
+	 * @method unsetCover
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	unsetCover(successCallback : Function, failCallback : Function) {
+		var self = this;
+
+		if(this.getId() != null) {
+			self.getSequelizeModel().setImage(null)
+				.then(function () {
+					self._cover = null;
+					self._cover_loaded = true;
+					successCallback(self);
+				})
+				.catch(function (error) {
+					failCallback(error);
+				});
+		} else {
+			failCallback(new ModelException("You need to create ImagesCollection before to unset an ImageObject as cover."));
 		}
 	}
 
