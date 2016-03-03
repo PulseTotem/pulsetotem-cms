@@ -82,13 +82,23 @@ class ImagesRouter extends RouterItf {
 	 * @param data The base64 image
 	 * @returns {string} a mimetype
      */
-	guessImageMime(data){
+	private guessImageMimeFromB64(data){
 		if(data.charAt(0)=='/'){
 			return "image/jpeg";
 		}else if(data.charAt(0)=='R'){
 			return "image/gif";
 		}else if(data.charAt(0)=='i'){
 			return "image/png";
+		}
+	}
+
+	private guessImageExtensionFromMimeType(mime : string) {
+		if (mime == "image/jpeg") {
+			return "jpg";
+		} else if (mime == "image/gif") {
+			return "gif";
+		} else if (mime == "image/png") {
+			return "png";
 		}
 	}
 
@@ -103,9 +113,9 @@ class ImagesRouter extends RouterItf {
 	 * @param {Express.Response} res - Response object.
 	 */
 	newImage(req : any, res : any) {
-		if(typeof(req.files) == "undefined") {
+		if(typeof(req.files) == "undefined" && typeof(req.fileb64) == "undefined") {
 			res.status(500).send({ 'error': 'Missing some information to create new Image.' });
-		} else {
+		} else if (typeof(req.files) != "undefined") {
 
 			var addImageToCollection = function(imgId, imgName, imgDescription, imgFile, successCB, failCB) {
 				var newImage = new ImageObject(imgId, imgName, imgDescription, imgFile.mimetype, imgFile.extension);
@@ -196,6 +206,50 @@ class ImagesRouter extends RouterItf {
 
 				addImageToCollection(hashid, imageName, imageDescription, req.files.file, success, fail);
 			}
+		} else if (typeof(req.fileb64 != "undefined")) {
+			var hashid = uuid.v1();
+			var imageName = req.fileb64.name;
+			var file = req.fileb64.file;
+			var description = req.fileb64.description;
+			var type = this.guessImageMimeFromB64(file);
+			var extension = this.guessImageExtensionFromMimeType(type);
+
+			var newImage = new ImageObject(hashid, imageName, description, type, extension);
+
+			var success = function(image:ImageObject) {
+				res.json(image.toJSONObject());
+			};
+
+			var fail = function (error) {
+				res.status(500).send({'error': error});
+			};
+
+			var successCreation = function (image : ImageObject) {
+				var successImagesCollectionLink = function () {
+					var fileExtension = '.' + extension;
+					var destImageFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid() + "/" + hashid + fileExtension;
+					var base64DrawContent = file.replace(/^data:image\/(jpeg|png|gif);base64,/, "");
+					var drawContentImg = new Buffer(base64DrawContent, 'base64');
+
+					lwip.open(drawContentImg, extension, function (drawContentErr, lwipImage) {
+						if (drawContentErr) {
+							fail("Fail opening original file : " + JSON.stringify(drawContentErr));
+						} else {
+							lwipImage.writeFile(destImageFile, extension, function (errWriteFile) {
+								if (errWriteFile) {
+									fail("Fail writing file : "+JSON.stringify(errWriteFile));
+								} else {
+									success(image);
+								}
+							});
+						}
+					});
+				};
+
+				req.imagesCollection.addImage(image, successImagesCollectionLink, fail);
+			};
+
+			newImage.create(successCreation, fail);
 		}
 	}
 
