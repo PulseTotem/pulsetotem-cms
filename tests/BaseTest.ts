@@ -9,6 +9,7 @@ declare var require : any;
 declare var describe : any;
 declare var beforeEach : any;
 declare var it : any;
+declare var after : any;
 
 var assert : any = require("assert");
 var sinon : any = require("sinon");
@@ -21,3 +22,16 @@ var db : any = require('../database/models/index.js');
 
 Logger.setLevel(LoggerLevel.Debug);
 
+var destroyDatas = function (model: string) {
+
+    db[model].truncate({'cascade':true})
+        .then(
+            function() {
+                Logger.info("Empty test table "+model);
+            }
+        )
+        .catch(
+            function (err) {
+                Logger.error("Error while emptying table "+model+" : "+JSON.stringify(err));
+        });
+};

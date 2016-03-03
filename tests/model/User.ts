@@ -3,11 +3,15 @@
  */
 
 /// <reference path="../BaseTest.ts" />
-
 /// <reference path="../../scripts/model/User.ts" />
 /// <reference path="../../scripts/exceptions/ModelException.ts" />
 
 describe('User', function() {
+	after(function() {
+		destroyDatas('Users');
+	});
+
+
 	describe('#constructor(hashid, username, email, authkey , isAdmin)', function() {
 		it('should store the given hashid', function() {
 			var hashid = uuid.v1();
@@ -100,7 +104,7 @@ describe('User', function() {
 			var success = function() {
 
 				assert.notEqual(user.getId(), null, "User Id is null.");
-				assert(spyCreate.calledOnce, "Sequelize create method is not called or more than once.");
+				assert(spyCreate.calledOnce, "Sequelize create method is not called or more than once:"+spyCreate.callCount);
 				assert(spyCreate.calledWith(userJSON), "Sequelize create method is not called with right params.");
 
 				done();
@@ -134,7 +138,7 @@ describe('User', function() {
 
 				var successRead = function(readObject) {
 					assert.equal(readObject.getId(), user.getId(), "Read Object is not the right one.");
-					assert(spyFindById.calledOnce, "Sequelize read method is not called or more than once.");
+					assert(spyFindById.calledOnce, "Sequelize read method is not called or more than once: "+spyFindById.callCount);
 					assert(spyFindById.calledWith(user.getId()), "Sequelize read method is not called with right params.");
 
 					done();

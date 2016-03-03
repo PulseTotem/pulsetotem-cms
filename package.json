@@ -15,22 +15,26 @@
     "node-rest-client": "<=1.0.0",
     "mkdirp": "<=0.5.1",
     "rmdir": "<=1.1.0",
-    "lwip": "=0.0.7"
+    "lwip": "=0.0.8"
   },
   "devDependencies": {
     "grunt": "<=0.4.5",
-    "grunt-contrib-copy": "<=0.8.0",
     "grunt-contrib-clean": "<=0.6.0",
-    "grunt-exec": "<=0.4.6",
-    "sequelize-cli": "<=2.3.0",
-    "sequelize-auto": "<=0.2.7",
-    "nock": "<=0.48.0",
-    "sinon": "<=1.10.3",
-    "mocha": "<=1.21.4",
-    "grunt-mocha-test": "<=0.12.0",
+    "grunt-contrib-copy": "<=0.8.0",
+    "grunt-contrib-watch": "<=0.6.1",
     "grunt-contrib-yuidoc": "<=0.5.2",
-    "grunt-typescript": "<=0.3.0",
+    "grunt-env": "<=0.4.4",
+    "grunt-exec": "<=0.4.6",
     "grunt-express-server": "<=0.4.17",
-    "grunt-contrib-watch": "<=0.6.1"
+    "grunt-mocha-test": "<=0.12.7",
+    "grunt-typescript": "<=0.3.0",
+    "mocha": "<=2.2.5",
+    "nock": "<=0.48.0",
+    "sequelize-auto": "<=0.2.7",
+    "sequelize-cli": "<=2.3.0",
+    "sinon": "<=1.10.3",
+    "mocha-jenkins-reporter": "0.1.9",
+    "istanbul": "0.3.17",
+    "grunt-mocha-istanbul": "2.4.0"
   }
 }
