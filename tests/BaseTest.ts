@@ -27,7 +27,7 @@ var destroyDatas = function (model: string) {
     db[model].truncate({'cascade':true})
         .then(
             function() {
-                Logger.error("Empty test table "+model);
+                Logger.info("Empty test table "+model);
             }
         )
         .catch(

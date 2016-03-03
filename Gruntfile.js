@@ -13,6 +13,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-yuidoc');
   grunt.loadNpmTasks('grunt-exec');
   grunt.loadNpmTasks('grunt-env');
+  grunt.loadNpmTasks('grunt-mocha-istanbul');
 
   // tasks
   grunt.initConfig({
@@ -93,6 +94,13 @@ module.exports = function (grunt) {
           module: 'commonjs',
           basePath: 'tests'
         }
+      },
+      jenkins: {
+        src: [
+            'scripts/**/*.ts',
+            'tests/**/*.ts'
+        ],
+        dest: 'buildTests/test.js'
       }
     },
 
@@ -164,7 +172,31 @@ module.exports = function (grunt) {
           captureFile: 'buildTests/result.txt'
         },
         src: ['buildTests/**/*.js']
+      },
+      jenkins: {
+        options: {
+          reporter: 'mocha-jenkins-reporter',
+          quiet: false,
+          reporterOptions: {
+            "junit_report_name": "Tests",
+            "junit_report_path": "buildTests/report.xml",
+            "junit_report_stack": 1
+          }
+        },
+        src: ['buildTests/**/*.js']
       }
+    },
+
+    mocha_istanbul: {
+      coverage: {
+        src: 'buildTests/', // a folder works nicely
+        options: {
+          mask: '*.js',
+          root: 'buildTests/',
+          reportFormats: ['cobertura', 'html'],
+          coverageFolder: 'buildTests/coverage'
+        }
+      },
     },
 // ---------------------------------------------
 
@@ -298,4 +330,5 @@ module.exports = function (grunt) {
   });
 
   grunt.registerTask('doc', ['clean:doc', 'yuidoc']);
+  grunt.registerTask('jenkins', ['env:test','clean:test', 'copy:testDatabase', 'copy:testCMSConfigInfosFile','exec:doMigrationTests','typescript:jenkins','mochaTest:jenkins','mocha_istanbul:coverage']);
 }
