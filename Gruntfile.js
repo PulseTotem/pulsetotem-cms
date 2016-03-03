@@ -12,12 +12,21 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-contrib-yuidoc');
   grunt.loadNpmTasks('grunt-exec');
+  grunt.loadNpmTasks('grunt-env');
 
   // tasks
   grunt.initConfig({
 
     config : grunt.file.readJSON('database/config/config.json'),
-    
+    env : {
+      dev: {
+        NODE_ENV: 'development'
+      },
+      test: {
+        NODE_ENV: 'test'
+      }
+    },
+
 // ---------------------------------------------
 //                          build and dist tasks
 // ---------------------------------------------
@@ -225,7 +234,7 @@ module.exports = function (grunt) {
   });
 
   grunt.registerTask('test', function(name) {
-    grunt.task.run(['clean:test', 'copy:testDatabase', 'copy:testConfigDatabaseFile', 'copy:testCMSConfigInfosFile']);
+    grunt.task.run(['env:test','clean:test', 'copy:testDatabase', 'copy:testConfigDatabaseFile', 'copy:testCMSConfigInfosFile']);
     grunt.task.run(['exec:doMigrationTests']);
 
     if(arguments.length == 0) {
