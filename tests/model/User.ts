@@ -3,11 +3,15 @@
  */
 
 /// <reference path="../BaseTest.ts" />
-
 /// <reference path="../../scripts/model/User.ts" />
 /// <reference path="../../scripts/exceptions/ModelException.ts" />
 
 describe('User', function() {
+	after(function() {
+		destroyDatas('Users');
+	});
+
+
 	describe('#constructor(hashid, username, email, authkey , isAdmin)', function() {
 		it('should store the given hashid', function() {
 			var hashid = uuid.v1();

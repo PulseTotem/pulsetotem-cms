@@ -45,9 +45,6 @@ module.exports = function (grunt) {
       testDatabase : {
         files: 	[{expand: true, cwd: 'database', src: ['**'], dest: 'buildTests/database/'}]
       },
-      testConfigDatabaseFile : {
-        files: 	[{'buildTests/database/config/config.json': 'database/config/configTests.json'}]
-      },
       testCMSConfigInfosFile: {
         files: 	[{'buildTests/cms_config.json': 'scripts/core/cms_config_tests.json'}]
       },
@@ -234,7 +231,7 @@ module.exports = function (grunt) {
   });
 
   grunt.registerTask('test', function(name) {
-    grunt.task.run(['env:test','clean:test', 'copy:testDatabase', 'copy:testConfigDatabaseFile', 'copy:testCMSConfigInfosFile']);
+    grunt.task.run(['env:test','clean:test', 'copy:testDatabase', 'copy:testCMSConfigInfosFile']);
     grunt.task.run(['exec:doMigrationTests']);
 
     if(arguments.length == 0) {
