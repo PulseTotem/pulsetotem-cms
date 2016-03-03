@@ -77,10 +77,29 @@ class ImagesRouter extends RouterItf {
 	}
 
 	/**
+	 * Return the mimetype from a base64 image
+	 *
+	 * @param data The base64 image
+	 * @returns {string} a mimetype
+     */
+	guessImageMime(data){
+		if(data.charAt(0)=='/'){
+			return "image/jpeg";
+		}else if(data.charAt(0)=='R'){
+			return "image/gif";
+		}else if(data.charAt(0)=='i'){
+			return "image/png";
+		}
+	}
+
+	/**
 	 * Add a new Image to Collection.
 	 *
 	 * @method newImage
-	 * @param {Express.Request} req - Request object.
+	 * @param {Express.Request} req - Request object. The request object should contain either a files attribute
+	 * from a file upload or a fileb64 representing an image file in base64.
+	 * The structure if it is a fileb64 is the following: {'name': filename, 'file': base64file, 'description': description}
+	 *
 	 * @param {Express.Response} res - Response object.
 	 */
 	newImage(req : any, res : any) {
