@@ -97,7 +97,6 @@ module.exports = function (grunt) {
       },
       jenkins: {
         src: [
-            'scripts/**/*.ts',
             'tests/**/*.ts'
         ],
         dest: 'buildTests/test.js'
