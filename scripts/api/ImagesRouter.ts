@@ -9,7 +9,7 @@
 /// <reference path="../model/ImageObject.ts" />
 
 declare var require : any;
-
+declare var Buffer : any;
 var fs : any = require("fs");
 var lwip : any = require('lwip');
 
