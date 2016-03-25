@@ -38,7 +38,9 @@ class AdminRouter extends RouterItf {
 	buildRouter() {
 		var self = this;
 
+		this.router.use(CMSAuth.can('perform admin action'));
+
 		// Define '/images_collections' route.
-		this.router.use('/images_collections', CMSAuth.can('perform admin action'), (new ImagesCollectionsRouter()).getRouter());
+		this.router.use('/images_collections', (new ImagesCollectionsRouter()).getRouter());
 	}
 }

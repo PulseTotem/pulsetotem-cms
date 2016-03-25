@@ -77,32 +77,6 @@ class ImagesRouter extends RouterItf {
 	}
 
 	/**
-	 * Return the mimetype from a base64 image
-	 *
-	 * @param data The base64 image
-	 * @returns {string} a mimetype
-     */
-	private guessImageMimeFromB64(data){
-		if(data.charAt(0)=='/'){
-			return "image/jpeg";
-		}else if(data.charAt(0)=='R'){
-			return "image/gif";
-		}else if(data.charAt(0)=='i'){
-			return "image/png";
-		}
-	}
-
-	private guessImageExtensionFromMimeType(mime : string) {
-		if (mime == "image/jpeg") {
-			return "jpg";
-		} else if (mime == "image/gif") {
-			return "gif";
-		} else if (mime == "image/png") {
-			return "png";
-		}
-	}
-
-	/**
 	 * Add a new Image to Collection.
 	 *
 	 * @method newImage
@@ -211,8 +185,8 @@ class ImagesRouter extends RouterItf {
 			var imageName = req.fileb64.name;
 			var file = req.fileb64.file;
 			var description = req.fileb64.description;
-			var type = this.guessImageMimeFromB64(file);
-			var extension = this.guessImageExtensionFromMimeType(type);
+			var type = Helper.guessImageMimeFromB64(file);
+			var extension = Helper.guessImageExtensionFromMimeType(type);
 
 			var newImage = new ImageObject(hashid, imageName, description, type, extension);
 
@@ -285,7 +259,7 @@ class ImagesRouter extends RouterItf {
 
 			var imageBasePath = CMSConfig.getUploadDir() + "users/" + req.image.collection().user().hashid() + "/images/" + req.image.collection().hashid() + "/" + req.image.hashid();
 
-			var renderImg = function(img) {
+			var renderImg = function(img, isLwipImg) {
 				var bufferType = 'jpg';
 				if (req.image.mimetype() != null && req.image.mimetype() != "") {
 					res.set('Content-Type', req.image.mimetype());
@@ -301,114 +275,121 @@ class ImagesRouter extends RouterItf {
 					res.set('Content-Type', 'image/jpeg');
 				}
 
-				img.toBuffer(bufferType, function (err, imgBuffer) {
-					if (err) {
-						fail("Fail during rendering file");
-						return;
-					}
-					res.status(200).end(imgBuffer);
-				});
+				if(isLwipImg) {
+					img.toBuffer(bufferType, function (err, imgBuffer) {
+						if (err) {
+							fail("Fail during rendering file");
+							return;
+						}
+						res.status(200).end(imgBuffer);
+					});
+				} else {
+					res.status(200).end(img, 'binary');
+				}
 			};
 
 			if(extension != '') {
 				var imagePath;
 
-				if(typeof(req.query.size) != "undefined") {
-					switch(req.query.size) {
-						case 'original' :
-							imagePath = imageBasePath + extension;
-							break;
-						case 'large' :
-							imagePath = imageBasePath + '_large' + extension;
-							break;
-						case 'medium' :
-							imagePath = imageBasePath + '_medium' + extension;
-							break;
-						case 'small' :
-							imagePath = imageBasePath + '_small' + extension;
-							break;
-						case 'thumb' :
-							imagePath = imageBasePath + '_thumb' + extension;
-							break;
-						case 'square' :
-							imagePath = imageBasePath + '_square' + extension;
-							break;
-						default:
-							imagePath = imageBasePath + extension;
-					}
-				} else {
+				if ( 	(req.image.mimetype() != null && req.image.mimetype() != "" && req.image.mimetype() == 'image/gif') ||
+					(extension == ".gif")		) { //Manage gif alone due to an issue with lwip gif rendering (issue : https://github.com/EyalAr/lwip/issues/153)
 					imagePath = imageBasePath + extension;
-				}
+					var img = fs.readFileSync(imagePath);
+					renderImg(img, false);
+				} else {
 
-				lwip.open(imagePath, function (err, img) {
-					if (err) {
-						if(imagePath == imageBasePath + extension) {
-							fail("Fail during reading file");
-							return;
-						} else {
-							lwip.open(imageBasePath + extension, function (errOriginal, imgOriginal) {
-								if (errOriginal) {
-									fail("Fail during reading file");
-									return;
-								}
-								var originalWidth = imgOriginal.width();
-								var originalHeight = imgOriginal.height();
-
-								var newWidth = 0;
-								var newHeight = -1;
-
-								switch(req.query.size) {
-									case 'large' :
-										newWidth = 1024;
-										break;
-									case 'medium' :
-										newWidth = 640;
-										break;
-									case 'small' :
-										newWidth = 320;
-										break;
-									case 'thumb' :
-										newWidth = 100;
-										break;
-									case 'square' :
-										newWidth = 75;
-										newHeight = 75;
-										break;
-								}
-
-								if(newHeight == -1) {
-									var ratio = originalWidth / newWidth;
-									newHeight = originalHeight / ratio;
-								}
-
-								imgOriginal.resize(newWidth, newHeight, function(errResize, imgResized) {
-									if(errResize) {
-										fail("Fail during resizing file");
-										return;
-									}
-
-									imgResized.writeFile(imagePath, function(errWrite) {
-										if(errWrite) {
-											fail("Fail during writing file");
-											return;
-										}
-										renderImg(imgResized);
-									});
-								});
-							});
+					if (typeof(req.query.size) != "undefined") {
+						switch (req.query.size) {
+							case 'original' :
+								imagePath = imageBasePath + extension;
+								break;
+							case 'large' :
+								imagePath = imageBasePath + '_large' + extension;
+								break;
+							case 'medium' :
+								imagePath = imageBasePath + '_medium' + extension;
+								break;
+							case 'small' :
+								imagePath = imageBasePath + '_small' + extension;
+								break;
+							case 'thumb' :
+								imagePath = imageBasePath + '_thumb' + extension;
+								break;
+							case 'square' :
+								imagePath = imageBasePath + '_square' + extension;
+								break;
+							default:
+								imagePath = imageBasePath + extension;
 						}
 					} else {
-						renderImg(img);
+						imagePath = imageBasePath + extension;
 					}
-				});
+
+					lwip.open(imagePath, function (err, img) {
+						if (err) {
+							if (imagePath == imageBasePath + extension) {
+								fail("Fail during reading file");
+								return;
+							} else {
+								lwip.open(imageBasePath + extension, function (errOriginal, imgOriginal) {
+									if (errOriginal) {
+										fail("Fail during reading file");
+										return;
+									}
+									var originalWidth = imgOriginal.width();
+									var originalHeight = imgOriginal.height();
+
+									var newWidth = 0;
+									var newHeight = -1;
+
+									switch (req.query.size) {
+										case 'large' :
+											newWidth = 1024;
+											break;
+										case 'medium' :
+											newWidth = 640;
+											break;
+										case 'small' :
+											newWidth = 320;
+											break;
+										case 'thumb' :
+											newWidth = 100;
+											break;
+										case 'square' :
+											newWidth = 75;
+											newHeight = 75;
+											break;
+									}
+
+									if (newHeight == -1) {
+										var ratio = originalWidth / newWidth;
+										newHeight = originalHeight / ratio;
+									}
+
+									imgOriginal.resize(newWidth, newHeight, function (errResize, imgResized) {
+										if (errResize) {
+											fail("Fail during resizing file");
+											return;
+										}
+
+										imgResized.writeFile(imagePath, function (errWrite) {
+											if (errWrite) {
+												fail("Fail during writing file");
+												return;
+											}
+											renderImg(imgResized, true);
+										});
+									});
+								});
+							}
+						} else {
+							renderImg(img, true);
+						}
+					});
+				}
 			} else {
 				var img = fs.readFileSync(imageBasePath);
-				if (req.image.mimetype() != null && req.image.mimetype() != "") {
-					res.set('Content-Type', req.image.mimetype());
-				} else {
-					res.set('Content-Type', 'image/jpeg');
-				}
-				res.status(200).end(img, 'binary');
+				renderImg(img, false);
 			}
 		};
 
