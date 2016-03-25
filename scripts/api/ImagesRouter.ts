@@ -77,22 +77,6 @@ class ImagesRouter extends RouterItf {
 	}
 
 	/**
-	 * Return the mimetype from a base64 image
-	 *
-	 * @param data The base64 image
-	 * @returns {string} a mimetype
-     */
-	guessImageMime(data){
-		if(data.charAt(0)=='/'){
-			return "image/jpeg";
-		}else if(data.charAt(0)=='R'){
-			return "image/gif";
-		}else if(data.charAt(0)=='i'){
-			return "image/png";
-		}
-	}
-
-	/**
 	 * Add a new Image to Collection.
 	 *
 	 * @method newImage

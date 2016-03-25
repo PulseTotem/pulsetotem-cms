@@ -76,51 +76,55 @@ class AuthManager {
 		var self = this;
 
 		return function(req, res, next) { // Return a middleware function
+			if(req.method != 'OPTIONS') {
+				if (typeof(self.actions[action]) != "undefined") { // check for existing action
+					var rolesForAction = self.actions[action];
 
-			if(typeof(self.actions[action]) != "undefined") { // check for existing action
-				var rolesForAction = self.actions[action];
+					if (rolesForAction.length > 0) { // check for roles associated to action
 
-				if(rolesForAction.length > 0) { // check for roles associated to action
+						var errorsList = new Array();
 
-					var errorsList = new Array();
+						var checkRole = function (roleIndex) {
+							// Loop through all checkFunction.
+							// Continue while checkFunction returns an error. Stop when a checkFunction is OK.
 
-					var checkRole = function(roleIndex) {
-						// Loop through all checkFunction.
-						// Continue while checkFunction returns an error. Stop when a checkFunction is OK.
+							if (roleIndex < rolesForAction.length) {
 
-						if(roleIndex < rolesForAction.length) {
+								var role = rolesForAction[roleIndex];
 
-							var role = rolesForAction[roleIndex];
+								if (typeof(self.roles[role]) != "undefined") {
+									var checkFunction = self.roles[role];
 
-							if (typeof(self.roles[role]) != "undefined") {
-								var checkFunction = self.roles[role];
+									checkFunction(req, res, function (error) {
+										if (typeof(error) == "undefined" || error == null) { // All is ok.
+											next();
+										} else { // An error occured.
+											errorsList.push(error.message);
 
-								checkFunction(req, res, function (error) {
-									if (typeof(error) == "undefined" || error == null) { // All is ok.
-										next();
-									} else { // An error occured.
-										errorsList.push(error.message);
+											checkRole(++roleIndex);
+										}
+									});
 
-										checkRole(++roleIndex);
-									}
-								});
+								} else {
+									next(new Error("Authorization for this action '" + action + "' can't be checked."));
+								}
 
 							} else {
-								next(new Error("Authorization for this action '" + action + "' can't be checked."));
+								next(new Error("You haven't authorization to perform this action '" + action + "'. Errors list is : " + JSON.stringify(errorsList)));
 							}
+						};
 
-						} else {
-							next(new Error("You haven't authorization to perform this action '" + action + "'. Errors list is : " + JSON.stringify(errorsList)));
-						}
-					};
+						checkRole(0);
 
-					checkRole(0);
-
+					} else {
+						next(new Error("Authorization for this action '" + action + "' can't be checked."));
+					}
 				} else {
 					next(new Error("Authorization for this action '" + action + "' can't be checked."));
 				}
 			} else {
-				next(new Error("Authorization for this action '" + action + "' can't be checked."));
+				//No check during 'OPTIONS' request.
+				next();
 			}
 		};
 	}

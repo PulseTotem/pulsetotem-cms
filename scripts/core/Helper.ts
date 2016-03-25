@@ -23,4 +23,20 @@ class Helper {
 		for (var attrname in obj2) { obj3[attrname] = obj2[attrname]; }
 		return obj3;
 	}
+
+	/**
+	 * Return the mimetype from a base64 image
+	 *
+	 * @param data The base64 image
+	 * @returns {string} a mimetype
+	 */
+	static guessImageMime(data){
+		if(data.charAt(0)=='/'){
+			return "image/jpeg";
+		}else if(data.charAt(0)=='R'){
+			return "image/gif";
+		}else if(data.charAt(0)=='i'){
+			return "image/png";
+		}
+	}
 }
