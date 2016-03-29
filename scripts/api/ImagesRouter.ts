@@ -88,6 +88,7 @@ class ImagesRouter extends RouterItf {
 	 */
 	newImage(req : any, res : any) {
 		if(typeof(req.files) == "undefined" && typeof(req.body.file) == "undefined") {
+			Logger.error("Try to upload an image without any datas");
 			res.status(500).send({ 'error': 'Missing some information to create new Image.' });
 		} else if (typeof(req.files) != "undefined") {
 
@@ -180,7 +181,7 @@ class ImagesRouter extends RouterItf {
 
 				addImageToCollection(hashid, imageName, imageDescription, req.files.file, success, fail);
 			}
-		} else if (typeof(req.body.file != "undefined")) {
+		} else if (typeof(req.body.file) != "undefined") {
 			var hashid = uuid.v1();
 			var imageName = req.body.name;
 			var file = req.body.file;
