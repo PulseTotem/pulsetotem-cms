@@ -87,7 +87,7 @@ class ImagesRouter extends RouterItf {
 	 * @param {Express.Response} res - Response object.
 	 */
 	newImage(req : any, res : any) {
-		if(typeof(req.files) == "undefined" && typeof(req.fileb64) == "undefined") {
+		if(typeof(req.files) == "undefined" && typeof(req.body.file) == "undefined") {
 			res.status(500).send({ 'error': 'Missing some information to create new Image.' });
 		} else if (typeof(req.files) != "undefined") {
 
@@ -180,11 +180,11 @@ class ImagesRouter extends RouterItf {
 
 				addImageToCollection(hashid, imageName, imageDescription, req.files.file, success, fail);
 			}
-		} else if (typeof(req.fileb64 != "undefined")) {
+		} else if (typeof(req.body.file != "undefined")) {
 			var hashid = uuid.v1();
-			var imageName = req.fileb64.name;
-			var file = req.fileb64.file;
-			var description = req.fileb64.description;
+			var imageName = req.body.name;
+			var file = req.body.file;
+			var description = req.body.description;
 			var extension = Helper.guessImageExtensionFromB64(file);
 
 			if (extension == null) {
