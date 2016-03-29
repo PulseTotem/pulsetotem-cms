@@ -185,8 +185,12 @@ class ImagesRouter extends RouterItf {
 			var imageName = req.fileb64.name;
 			var file = req.fileb64.file;
 			var description = req.fileb64.description;
-			var type = Helper.guessImageMimeFromB64(file);
-			var extension = Helper.guessImageExtensionFromMimeType(type);
+			var extension = Helper.guessImageExtensionFromB64(file);
+
+			if (extension == null) {
+				res.status(500).send({ 'error': 'Unable to detect image extension from b64 datas.' });
+			}
+			var type = Helper.guessMimetypeFromExtension(extension);
 
 			var newImage = new ImageObject(hashid, imageName, description, type, extension);
 

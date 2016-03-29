@@ -25,34 +25,33 @@ class Helper {
 	}
 
 	/**
-	 * Return the mimetype from a base64 image
-	 *
-	 * @param data The base64 image
-	 * @returns {string} a mimetype
-	 */
-	static guessImageMimeFromB64(data){
-		if(data.charAt(0)=='/'){
-			return "image/jpeg";
-		}else if(data.charAt(0)=='R'){
-			return "image/gif";
-		}else if(data.charAt(0)=='i'){
-			return "image/png";
+	 * Detect file extension from base64 image data.
+	 * @param data
+	 * @returns {any}
+     */
+	public static guessImageExtensionFromB64(data) {
+		var decoded = btoa(data);
+		var lowerCase = decoded.toLowerCase();
+		if (lowerCase.indexOf("png") !== -1) {
+			return "png"
+		} else if (lowerCase.indexOf("jpg") !== -1 || lowerCase.indexOf("jpeg") !== -1) {
+			return "jpg";
+		} else if (lowerCase.indexOf("gif") !== -1) {
+			return "gif";
+		} else {
+			return null;
 		}
 	}
 
-	/**
-	 * Return an image extension given the mimetype
-	 *
-	 * @param mime Mimetype of an image
-	 * @returns {string} Extension the image file should have
-     */
-	static guessImageExtensionFromMimeType(mime : string) {
-		if (mime == "image/jpeg") {
-			return "jpg";
-		} else if (mime == "image/gif") {
-			return "gif";
-		} else if (mime == "image/png") {
-			return "png";
+	public static guessMimetypeFromExtension(extension : string) {
+		if (extension == "png") {
+			return "image/png";
+		} else if (extension == "jpg") {
+			return "image/jpeg";
+		} else if (extension == "gif") {
+			return "image/gif";
+		} else {
+			return null;
 		}
 	}
 }
