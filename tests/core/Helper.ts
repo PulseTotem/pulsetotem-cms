@@ -90,4 +90,43 @@ describe('Helper', function() {
 		});
 
 	});
+
+	describe('#isEmpty(obj)', function () {
+		it('should return true if obj is {}', function () {
+			assert.ok(Helper.isEmpty({}));
+		});
+
+		it('should return true if obj is ""', function () {
+			assert.ok(Helper.isEmpty(""));
+		});
+
+		it('should return true if obj is null', function () {
+			assert.ok(Helper.isEmpty(null));
+		});
+
+		it('should return true if obj is undefined', function () {
+			var a : any;
+			assert.ok(Helper.isEmpty(a));
+		});
+
+		it('should return true if obj is []', function () {
+			assert.ok(Helper.isEmpty([]));
+		});
+
+		it('should return false if obj is 2', function () {
+			assert.ok(!Helper.isEmpty(2));
+		});
+
+		it('should return false if obj is {"b":"c"}', function () {
+			assert.ok(!Helper.isEmpty({'b':'c'}));
+		});
+
+		it('should return false if obj is ["a"]', function () {
+			assert.ok(!Helper.isEmpty(["a"]));
+		});
+
+		it('should return false if obj is "a"', function () {
+			assert.ok(!Helper.isEmpty("a"));
+		});
+	});
 });

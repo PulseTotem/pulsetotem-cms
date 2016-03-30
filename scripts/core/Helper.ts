@@ -59,7 +59,11 @@ class Helper {
 	 * @returns {boolean}
      */
 	public static isEmpty(obj : any) {
-		if (typeof(obj) === "undefined") {
+		if (obj == null || obj == "undefined" || obj === "" || typeof(obj) === "undefined") {
+			return true;
+		}
+
+		if (obj instanceof Array && obj.length == 0) {
 			return true;
 		}
 		return Object.keys(obj).length === 0 && JSON.stringify(obj) === JSON.stringify({});
