@@ -69,8 +69,10 @@ class Helper {
 		try {
 			return Object.keys(obj).length === 0 && JSON.stringify(obj) === JSON.stringify({});
 		} catch (e) {
+			Logger.error("Catch error");
 			Logger.error(e);
-			Logger.error(obj);
+			Logger.error(typeof(obj));
+			Logger.error(obj.length);
 			return true;
 		}
 	}
