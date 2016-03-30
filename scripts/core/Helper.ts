@@ -66,6 +66,12 @@ class Helper {
 		if (obj instanceof Array && obj.length == 0) {
 			return true;
 		}
-		return Object.keys(obj).length === 0 && JSON.stringify(obj) === JSON.stringify({});
+		try {
+			return Object.keys(obj).length === 0 && JSON.stringify(obj) === JSON.stringify({});
+		} catch (e) {
+			Logger.error(e);
+			Logger.error(obj);
+			return true;
+		}
 	}
 }
