@@ -52,4 +52,13 @@ class Helper {
 			return null;
 		}
 	}
+
+	/**
+	 * Test if obj is an empty object or not. See: http://stackoverflow.com/questions/679915/how-do-i-test-for-an-empty-javascript-object
+	 * @param obj
+	 * @returns {boolean}
+     */
+	public static isEmpty(obj : any) {
+		return Object.keys(obj).length === 0 && JSON.stringify(obj) === JSON.stringify({});
+	}
 }

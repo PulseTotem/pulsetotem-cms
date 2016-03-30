@@ -87,10 +87,10 @@ class ImagesRouter extends RouterItf {
 	 * @param {Express.Response} res - Response object.
 	 */
 	newImage(req : any, res : any) {
-		if(typeof(req.files) == "undefined" && typeof(req.body.file) == "undefined") {
+		if(Helper.isEmpty(req.files) && Helper.isEmpty(req.body.file)) {
 			Logger.error("Try to upload an image without any datas");
 			res.status(500).send({ 'error': 'Missing some information to create new Image.' });
-		} else if (typeof(req.files) != "undefined") {
+		} else if (!Helper.isEmpty(req.files)) {
 			var addImageToCollection = function(imgId, imgName, imgDescription, imgFile, successCB, failCB) {
 				var newImage = new ImageObject(imgId, imgName, imgDescription, imgFile.mimetype, imgFile.extension);
 
@@ -159,9 +159,7 @@ class ImagesRouter extends RouterItf {
 						addImageToCollection(hashid, file.originalname, "", file, success, fail);
 					});
 				} else {
-					Logger.debug("Obtained request :");
-					Logger.debug(req);
-					res.status(500).send({ 'error': 'Missing some information to create new Image.' });
+					res.status(500).send({ 'error': 'Files is defined but missed information to create image.' });
 				}
 			} else {
 				var hashid = uuid.v1();
@@ -182,7 +180,7 @@ class ImagesRouter extends RouterItf {
 
 				addImageToCollection(hashid, imageName, imageDescription, req.files.file, success, fail);
 			}
-		} else if (typeof(req.body.file) != "undefined") {
+		} else if (!Helper.isEmpty(req.body.file)) {
 			var hashid = uuid.v1();
 			var imageName = req.body.name;
 			var file = req.body.file;
