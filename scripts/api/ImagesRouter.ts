@@ -91,6 +91,10 @@ class ImagesRouter extends RouterItf {
 			Logger.error("Try to upload an image without any datas");
 			res.status(500).send({ 'error': 'Missing some information to create new Image.' });
 		} else if (!Helper.isEmpty(req.files)) {
+
+			Logger.debug("Upload image using files property");
+			Logger.debug(req.files);
+
 			var addImageToCollection = function(imgId, imgName, imgDescription, imgFile, successCB, failCB) {
 				var newImage = new ImageObject(imgId, imgName, imgDescription, imgFile.mimetype, imgFile.extension);
 
@@ -181,6 +185,8 @@ class ImagesRouter extends RouterItf {
 				addImageToCollection(hashid, imageName, imageDescription, req.files.file, success, fail);
 			}
 		} else if (!Helper.isEmpty(req.body.file)) {
+
+			Logger.debug("Upload image using body.file property");
 			var hashid = uuid.v1();
 			var imageName = req.body.name;
 			var file = req.body.file;

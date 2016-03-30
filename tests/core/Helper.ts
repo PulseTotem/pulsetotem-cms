@@ -6,6 +6,9 @@
 
 /// <reference path="../../scripts/core/Helper.ts" />
 
+declare var Buffer;
+var fs = require('fs');
+
 describe('Helper', function() {
 	describe('#mergeObjects(obj1, obj2)', function() {
 		it('merge two objects properly', function() {
