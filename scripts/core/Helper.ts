@@ -37,7 +37,15 @@ class Helper {
 		} else if (data.indexOf("image/gif") !== -1) {
 			return "gif";
 		} else {
-			return null;
+			if(data.charAt(0)=='/'){
+				return "jpg";
+			}else if(data.charAt(0)=='R'){
+				return "gif";
+			}else if(data.charAt(0)=='i'){
+				return "png";
+			} else {
+				return null;
+			}
 		}
 	}
 

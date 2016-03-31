@@ -193,47 +193,49 @@ class ImagesRouter extends RouterItf {
 			var description = req.body.description;
 			var extension = Helper.guessImageExtensionFromB64(file);
 
-			if (extension == null) {
-				res.status(500).send({ 'error': 'Unable to detect image extension from b64 datas.' });
-			}
-			var type = Helper.guessMimetypeFromExtension(extension);
-
-			var newImage = new ImageObject(hashid, imageName, description, type, extension);
-
-			var success = function(image:ImageObject) {
-				res.json(image.toJSONObject());
-			};
-
 			var fail = function (error) {
+				Logger.error(error);
 				res.status(500).send({'error': error});
 			};
 
-			var successCreation = function (image : ImageObject) {
-				var successImagesCollectionLink = function () {
-					var fileExtension = '.' + extension;
-					var destImageFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid() + "/" + hashid + fileExtension;
-					var base64DrawContent = file.replace(/^data:image\/(jpeg|png|gif);base64,/, "");
-					var drawContentImg = new Buffer(base64DrawContent, 'base64');
+			if (extension == null) {
+				fail('Unable to detect image extension from b64 datas.');
+			} else {
+				var type = Helper.guessMimetypeFromExtension(extension);
 
-					lwip.open(drawContentImg, extension, function (drawContentErr, lwipImage) {
-						if (drawContentErr) {
-							fail("Fail opening original file : " + JSON.stringify(drawContentErr));
-						} else {
-							lwipImage.writeFile(destImageFile, extension, function (errWriteFile) {
-								if (errWriteFile) {
-									fail("Fail writing file : "+JSON.stringify(errWriteFile));
-								} else {
-									success(image);
-								}
-							});
-						}
-					});
+				var newImage = new ImageObject(hashid, imageName, description, type, extension);
+
+				var success = function(image:ImageObject) {
+					res.json(image.toJSONObject());
 				};
 
-				req.imagesCollection.addImage(image, successImagesCollectionLink, fail);
-			};
+				var successCreation = function (image : ImageObject) {
+					var successImagesCollectionLink = function () {
+						var fileExtension = '.' + extension;
+						var destImageFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid() + "/" + hashid + fileExtension;
+						var base64DrawContent = file.replace(/^data:image\/(jpeg|png|gif);base64,/, "");
+						var drawContentImg = new Buffer(base64DrawContent, 'base64');
 
-			newImage.create(successCreation, fail);
+						lwip.open(drawContentImg, extension, function (drawContentErr, lwipImage) {
+							if (drawContentErr) {
+								fail("Fail opening original file : " + JSON.stringify(drawContentErr));
+							} else {
+								lwipImage.writeFile(destImageFile, extension, function (errWriteFile) {
+									if (errWriteFile) {
+										fail("Fail writing file : "+JSON.stringify(errWriteFile));
+									} else {
+										success(image);
+									}
+								});
+							}
+						});
+					};
+
+					req.imagesCollection.addImage(image, successImagesCollectionLink, fail);
+				};
+
+				newImage.create(successCreation, fail);
+			}
 		}
 	}
 
