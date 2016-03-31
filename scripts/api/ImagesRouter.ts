@@ -93,7 +93,6 @@ class ImagesRouter extends RouterItf {
 		} else if (!Helper.isEmpty(req.files)) {
 
 			Logger.debug("Upload image using files property");
-			Logger.debug(req.files);
 
 			var addImageToCollection = function(imgId, imgName, imgDescription, imgFile, successCB, failCB) {
 				var newImage = new ImageObject(imgId, imgName, imgDescription, imgFile.mimetype, imgFile.extension);
