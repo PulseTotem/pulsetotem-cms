@@ -171,6 +171,8 @@ class Server {
 			if (res.headersSent) {
 				return next(err);
 			}
+			Logger.debug("Server - Error : ");
+			Logger.debug(err);
 			res.status(500).send({ 'error': err.message });
 		});
 
