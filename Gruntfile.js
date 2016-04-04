@@ -317,10 +317,26 @@ module.exports = function (grunt) {
           grunt.task.run(['copy:migrationFile']);
           break;
         case 'do' :
-          grunt.task.run(['exec:doMigration', 'clean:models', 'exec:generateModels']);
+          var generateModels = "false";
+          if(typeof(arg2) != "undefined" && arg2 != null) {
+            generateModels = arg2;
+          }
+          if(generateModels == "true") {
+            grunt.task.run(['exec:doMigration', 'clean:models', 'exec:generateModels']);
+          } else {
+            grunt.task.run(['exec:doMigration']);
+          }
           break;
         case 'undo' :
-          grunt.task.run(['exec:undoMigration', 'clean:models', 'exec:generateModels']);
+          var generateModels = "false";
+          if(typeof(arg2) != "undefined" && arg2 != null) {
+            generateModels = arg2;
+          }
+          if(generateModels == "true") {
+            grunt.task.run(['exec:undoMigration', 'clean:models', 'exec:generateModels']);
+          } else {
+            grunt.task.run(['exec:undoMigration']);
+          }
           break;
         default :
           grunt.log.writeln('Action "' + arg + '" doesn\'t exist.');
