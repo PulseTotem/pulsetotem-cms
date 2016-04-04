@@ -36,14 +36,6 @@ class ImageObject extends ModelItf {
 	private _description : string;
 
 	/**
-	 * Hashid property.
-	 *
-	 * @property _hashid
-	 * @type string
-	 */
-	private _hashid : string;
-
-	/**
 	 * Mimetype property.
 	 *
 	 * @property _mimetype
@@ -99,25 +91,6 @@ class ImageObject extends ModelItf {
 
 		this._collection = null;
 		this._collection_loaded = false;
-	}
-
-	/**
-	 * Set the ImageObject's hashid.
-	 *
-	 * @method setHashid
-	 * @param {string} hashid - New hashid
-	 */
-	setHashid(hashid : string) {
-		this._hashid = hashid;
-	}
-
-	/**
-	 * Return the ImageObject's hashid.
-	 *
-	 * @method hashid
-	 */
-	hashid() {
-		return this._hashid;
 	}
 
 	/**

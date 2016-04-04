@@ -36,14 +36,6 @@ class News extends ModelItf {
 	private _content : string;
 
 	/**
-	 * Hashid property.
-	 *
-	 * @property _hashid
-	 * @type string
-	 */
-	private _hashid : string;
-
-	/**
 	 * Begin property.
 	 *
 	 * @property _begin
@@ -99,25 +91,6 @@ class News extends ModelItf {
 
 		this._collection = null;
 		this._collection_loaded = false;
-	}
-
-	/**
-	 * Set the News's hashid.
-	 *
-	 * @method setHashid
-	 * @param {string} hashid - New hashid
-	 */
-	setHashid(hashid : string) {
-		this._hashid = hashid;
-	}
-
-	/**
-	 * Return the News's hashid.
-	 *
-	 * @method hashid
-	 */
-	hashid() {
-		return this._hashid;
 	}
 
 	/**

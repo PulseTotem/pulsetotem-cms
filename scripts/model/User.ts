@@ -53,14 +53,6 @@ class User extends ModelItf {
 	private _isAdmin : boolean;
 
 	/**
-	 * Hashid property.
-	 *
-	 * @property _hashid
-	 * @type string
-	 */
-	private _hashid : string;
-
-	/**
 	 * ImagesCollections property.
 	 *
 	 * @property _imagesCollections
@@ -99,28 +91,8 @@ class User extends ModelItf {
 		this.setAuthKey(authkey);
 		this.setIsAdmin(isAdmin);
 
-
 		this._imagesCollections = null;
 		this._imagesCollections_loaded = false;
-	}
-
-	/**
-	 * Set the User's hashid.
-	 *
-	 * @method setHashid
-	 * @param {string} hashid - New hashid
-	 */
-	setHashid(hashid : string) {
-		this._hashid = hashid;
-	}
-
-	/**
-	 * Return the User's hashid.
-	 *
-	 * @method hashid
-	 */
-	hashid() {
-		return this._hashid;
 	}
 
 	/**

@@ -36,14 +36,6 @@ class ImagesCollection extends ModelItf {
 	private _description : string;
 
 	/**
-	 * Hashid property.
-	 *
-	 * @property _hashid
-	 * @type string
-	 */
-	private _hashid : string;
-
-	/**
 	 * User property
 	 *
 	 * @property _user
@@ -117,25 +109,6 @@ class ImagesCollection extends ModelItf {
 
 		this._images = null;
 		this._images_loaded = false;
-	}
-
-	/**
-	 * Set the ImagesCollection's hashid.
-	 *
-	 * @method setHashid
-	 * @param {string} hashid - New hashid
-	 */
-	setHashid(hashid : string) {
-		this._hashid = hashid;
-	}
-
-	/**
-	 * Return the ImagesCollection's hashid.
-	 *
-	 * @method hashid
-	 */
-	hashid() {
-		return this._hashid;
 	}
 
 	/**
