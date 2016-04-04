@@ -15,7 +15,7 @@
     "node-rest-client": "<=1.0.0",
     "mkdirp": "<=0.5.1",
     "rmdir": "<=1.1.0",
-    "lwip": "=0.0.8"
+    "lwip": "<=0.0.8"
   },
   "devDependencies": {
     "grunt": "<=0.4.5",
