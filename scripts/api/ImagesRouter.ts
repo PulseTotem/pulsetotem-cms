@@ -9,7 +9,7 @@
 /// <reference path="../model/ImageObject.ts" />
 
 declare var require : any;
-
+declare var Buffer : any;
 var fs : any = require("fs");
 var lwip : any = require('lwip');
 
@@ -87,9 +87,12 @@ class ImagesRouter extends RouterItf {
 	 * @param {Express.Response} res - Response object.
 	 */
 	newImage(req : any, res : any) {
-		if(typeof(req.files) == "undefined") {
+		if(Helper.isEmpty(req.files) && Helper.isEmpty(req.body.file)) {
+			Logger.error("Try to upload an image without any datas");
 			res.status(500).send({ 'error': 'Missing some information to create new Image.' });
-		} else {
+		} else if (!Helper.isEmpty(req.files)) {
+
+			Logger.debug("Upload image using files property");
 
 			var addImageToCollection = function(imgId, imgName, imgDescription, imgFile, successCB, failCB) {
 				var newImage = new ImageObject(imgId, imgName, imgDescription, imgFile.mimetype, imgFile.extension);
@@ -159,7 +162,7 @@ class ImagesRouter extends RouterItf {
 						addImageToCollection(hashid, file.originalname, "", file, success, fail);
 					});
 				} else {
-					res.status(500).send({ 'error': 'Missing some information to create new Image.' });
+					res.status(500).send({ 'error': 'Files is defined but missed information to create image.' });
 				}
 			} else {
 				var hashid = uuid.v1();
@@ -179,6 +182,58 @@ class ImagesRouter extends RouterItf {
 				};
 
 				addImageToCollection(hashid, imageName, imageDescription, req.files.file, success, fail);
+			}
+		} else if (!Helper.isEmpty(req.body.file)) {
+
+			Logger.debug("Upload image using body.file property");
+			var hashid = uuid.v1();
+			var imageName = req.body.name;
+			var file = req.body.file;
+			var description = req.body.description;
+			var extension = Helper.guessImageExtensionFromB64(file);
+
+			var fail = function (error) {
+				Logger.error(error);
+				res.status(500).send({'error': error});
+			};
+
+			if (extension == null) {
+				fail('Unable to detect image extension from b64 datas.');
+			} else {
+				var type = Helper.guessMimetypeFromExtension(extension);
+
+				var newImage = new ImageObject(hashid, imageName, description, type, extension);
+
+				var success = function(image:ImageObject) {
+					res.json(image.toJSONObject());
+				};
+
+				var successCreation = function (image : ImageObject) {
+					var successImagesCollectionLink = function () {
+						var fileExtension = '.' + extension;
+						var destImageFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid() + "/" + hashid + fileExtension;
+						var base64DrawContent = file.replace(/^data:image\/(jpeg|png|gif);base64,/, "");
+						var drawContentImg = new Buffer(base64DrawContent, 'base64');
+
+						lwip.open(drawContentImg, extension, function (drawContentErr, lwipImage) {
+							if (drawContentErr) {
+								fail("Fail opening original file : " + JSON.stringify(drawContentErr));
+							} else {
+								lwipImage.writeFile(destImageFile, extension, function (errWriteFile) {
+									if (errWriteFile) {
+										fail("Fail writing file : "+JSON.stringify(errWriteFile));
+									} else {
+										success(image);
+									}
+								});
+							}
+						});
+					};
+
+					req.imagesCollection.addImage(image, successImagesCollectionLink, fail);
+				};
+
+				newImage.create(successCreation, fail);
 			}
 		}
 	}
