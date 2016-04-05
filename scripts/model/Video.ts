@@ -441,6 +441,62 @@ class Video extends ModelItf {
 	}
 
 	/**
+	 * Set thumbnail for Video.
+	 *
+	 * @method setThumbnail
+	 * @param {ImageObject} image - Image to set as thumbnail for video.
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	setThumbnail(image : ImageObject, successCallback : Function, failCallback : Function) {
+		var self = this;
+
+		if(this.getId() != null) {
+
+			if(image.getId() != null) {
+				self.getSequelizeModel().setImage(image.getSequelizeModel())
+					.then(function () {
+						self._thumbnail = image;
+						self._thumbnail_loaded = true;
+						successCallback(self);
+					})
+					.catch(function (error) {
+						failCallback(error);
+					});
+			} else {
+				failCallback(new ModelException("You need to create the Image before to set as thumbnail for Video."));
+			}
+		} else {
+			failCallback(new ModelException("You need to create Video before to set an Image as thumbnail."));
+		}
+	}
+
+	/**
+	 * Unset thumbnail for Video.
+	 *
+	 * @method unsetThumbnail
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	unsetThumbnail(successCallback : Function, failCallback : Function) {
+		var self = this;
+
+		if(this.getId() != null) {
+			self.getSequelizeModel().setImage(null)
+				.then(function () {
+					self._thumbnail = null;
+					self._thumbnail_loaded = true;
+					successCallback(self);
+				})
+				.catch(function (error) {
+					failCallback(error);
+				});
+		} else {
+			failCallback(new ModelException("You need to create Video before to unset an Image as thumbnail."));
+		}
+	}
+
+	/**
 	 * Find One Video by hashid.
 	 *
 	 * @method findOneByHashid
