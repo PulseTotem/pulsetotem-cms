@@ -19,6 +19,14 @@ module.exports = {
           type: DataTypes.STRING,
           allowNull: true
         },
+        mimetype: {
+          type: DataTypes.STRING,
+          allowNull: true
+        },
+        extension: {
+          type: DataTypes.STRING,
+          allowNull: true
+        },
         createdAt: {
           type: DataTypes.DATE,
           defaultValue: DataTypes.fn('NOW'),
