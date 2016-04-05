@@ -75,6 +75,10 @@ class Helper {
 			return true;
 		}
 
+		if (typeof(obj) == "number") {
+			return false;
+		}
+
 		if (typeof(obj) == "string" && obj.length > 0) {
 			return false;
 		}
