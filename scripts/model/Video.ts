@@ -37,6 +37,22 @@ class Video extends ModelItf {
 	private _description : string;
 
 	/**
+	 * Mimetype property.
+	 *
+	 * @property _mimetype
+	 * @type string
+	 */
+	private _mimetype : string;
+
+	/**
+	 * Extension property.
+	 *
+	 * @property _extension
+	 * @type string
+	 */
+	private _extension : string;
+
+	/**
 	 * VideosCollection property
 	 *
 	 * @property _collection
@@ -75,16 +91,20 @@ class Video extends ModelItf {
 	 * @param {string} hashid - The Video's hashid.
 	 * @param {string} name - The Video's name.
 	 * @param {string} description - The Video's description.
+	 * @param {string} mimetype - The ImageObject's mimetype.
+	 * @param {string} extension - The ImageObject's extension.
 	 * @param {number} id - The Video's id.
 	 * @param {string} createdAt - The Video's createdAt.
 	 * @param {string} updatedAt - The Video's updatedAt.
 	 */
-	constructor(hashid : string = "", name : string = "", description : string = "", id : number = null, createdAt : string = null, updatedAt : string = null) {
+	constructor(hashid : string = "", name : string = "", description : string = "", mimetype : string = "", extension : string = "", id : number = null, createdAt : string = null, updatedAt : string = null) {
 		super(id, createdAt, updatedAt);
 
 		this.setHashid(hashid);
 		this.setName(name);
 		this.setDescription(description);
+		this.setMimetype(mimetype);
+		this.setExtension(extension);
 
 		this._collection = null;
 		this._collection_loaded = false;
@@ -129,6 +149,44 @@ class Video extends ModelItf {
 	 */
 	description() {
 		return this._description;
+	}
+
+	/**
+	 * Set the Video's mimetype.
+	 *
+	 * @method setMimetype
+	 * @param {string} mimetype - New mimetype
+	 */
+	setMimetype(mimetype : string) {
+		this._mimetype = mimetype;
+	}
+
+	/**
+	 * Return the Video's mimetype.
+	 *
+	 * @method mimetype
+	 */
+	mimetype() {
+		return this._mimetype;
+	}
+
+	/**
+	 * Set the Video's extension.
+	 *
+	 * @method setExtension
+	 * @param {string} extension - New extension
+	 */
+	setExtension(extension : string) {
+		this._extension = extension;
+	}
+
+	/**
+	 * Return the Video's extension.
+	 *
+	 * @method extension
+	 */
+	extension() {
+		return this._extension;
 	}
 
 	/**
@@ -264,7 +322,9 @@ class Video extends ModelItf {
 		var newData = {
 			"id" : this.hashid(),
 			"name": this.name(),
-			"description": this.description()
+			"description": this.description(),
+			"mimetype" : this.mimetype(),
+			"extension" : this.extension()
 		};
 
 		if(complete) {
@@ -532,7 +592,7 @@ class Video extends ModelItf {
 	 * @return {SDI} The model instance.
 	 */
 	static fromJSONObject(jsonObject : any) : Video {
-		var video = new Video(jsonObject.hashid, jsonObject.name, jsonObject.description, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
+		var video = new Video(jsonObject.hashid, jsonObject.name, jsonObject.description, jsonObject.mimetype, jsonObject.extension, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
 
 		return video;
 	}
