@@ -8,6 +8,7 @@
 /// <reference path="../exceptions/ModelException.ts" />
 
 /// <reference path="./ImagesCollection.ts" />
+/// <reference path="./NewsCollection.ts" />
 
 
 var UserSchema : any = db["Users"];
