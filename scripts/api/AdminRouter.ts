@@ -6,6 +6,7 @@
 /// <reference path="../auth/CMSAuth.ts" />
 
 /// <reference path="./ImagesCollectionsRouter.ts" />
+/// <reference path="./NewsCollectionsRouter.ts" />
 
 declare var require : any;
 
@@ -42,5 +43,8 @@ class AdminRouter extends RouterItf {
 
 		// Define '/images_collections' route.
 		this.router.use('/images_collections', (new ImagesCollectionsRouter()).getRouter());
+
+		// Define '/news_collections' route.
+		this.router.use('/news_collections', (new NewsCollectionsRouter()).getRouter());
 	}
 }

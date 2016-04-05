@@ -218,7 +218,7 @@ class ImagesCollectionsRouter extends RouterItf {
 				req.imagesCollection.setName(req.body.name);
 			}
 
-			if(typeof(req.body.description) != "undefined" && req.body.description != "") {
+			if(typeof(req.body.description) != "undefined") {
 				req.imagesCollection.setDescription(req.body.description);
 			}
 

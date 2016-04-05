@@ -45,6 +45,14 @@ class ModelItf {
 	_updatedAt : string;
 
 	/**
+	 * Hashid property.
+	 *
+	 * @property _hashid
+	 * @type string
+	 */
+	_hashid : string;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param {number} id - The model ID.
@@ -59,6 +67,7 @@ class ModelItf {
 		this._id = id;
 		this._createdAt = createdAt;
 		this._updatedAt = updatedAt;
+		this._hashid = "";
 	}
 
 	/**
@@ -128,6 +137,25 @@ class ModelItf {
 	 */
 	setUpdatedAt(updatedAt : string) {
 		this._updatedAt = updatedAt;
+	}
+
+	/**
+	 * Set the User's hashid.
+	 *
+	 * @method setHashid
+	 * @param {string} hashid - New hashid
+	 */
+	setHashid(hashid : string) {
+		this._hashid = hashid;
+	}
+
+	/**
+	 * Return the User's hashid.
+	 *
+	 * @method hashid
+	 */
+	hashid() {
+		return this._hashid;
 	}
 
 	/**

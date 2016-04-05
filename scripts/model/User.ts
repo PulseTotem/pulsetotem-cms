@@ -53,14 +53,6 @@ class User extends ModelItf {
 	private _isAdmin : boolean;
 
 	/**
-	 * Hashid property.
-	 *
-	 * @property _hashid
-	 * @type string
-	 */
-	private _hashid : string;
-
-	/**
 	 * ImagesCollections property.
 	 *
 	 * @property _imagesCollections
@@ -75,6 +67,22 @@ class User extends ModelItf {
 	 * @type boolean
 	 */
 	private _imagesCollections_loaded : boolean;
+
+	/**
+	 * NewsCollections property.
+	 *
+	 * @property _newsCollections
+	 * @type Array<NewsCollection>
+	 */
+	private _newsCollections : Array<NewsCollection>;
+
+	/**
+	 * Lazy loading for _newsCollections property.
+	 *
+	 * @property _newsCollections_loaded
+	 * @type boolean
+	 */
+	private _newsCollections_loaded : boolean;
 
 
 	/**
@@ -99,28 +107,11 @@ class User extends ModelItf {
 		this.setAuthKey(authkey);
 		this.setIsAdmin(isAdmin);
 
-
 		this._imagesCollections = null;
 		this._imagesCollections_loaded = false;
-	}
 
-	/**
-	 * Set the User's hashid.
-	 *
-	 * @method setHashid
-	 * @param {string} hashid - New hashid
-	 */
-	setHashid(hashid : string) {
-		this._hashid = hashid;
-	}
-
-	/**
-	 * Return the User's hashid.
-	 *
-	 * @method hashid
-	 */
-	hashid() {
-		return this._hashid;
+		this._newsCollections = null;
+		this._newsCollections_loaded = false;
 	}
 
 	/**
@@ -254,6 +245,61 @@ class User extends ModelItf {
 		}
 	}
 
+	/**
+	 * Return the User's NewsCollections.
+	 *
+	 * @method newsCollections
+	 */
+	newsCollections() {
+		return this._newsCollections;
+	}
+
+	/**
+	 * Load the User's NewsCollections.
+	 *
+	 * @method loadNewsCollections
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	loadNewsCollections(successCallback : Function, failCallback : Function) {
+		if(! this._newsCollections_loaded) {
+			var self = this;
+
+			this.getSequelizeModel().getNewsCollections()
+				.then(function(newsCollections) {
+
+					var allNewsCollections : Array<NewsCollection> = new Array<NewsCollection>();
+
+					if(newsCollections.length > 0) {
+
+						newsCollections.forEach(function(newsCollection : any) {
+							var ncObject = NewsCollection.fromJSONObject(newsCollection.dataValues);
+							ncObject.setSequelizeModel(newsCollection, function () {
+								allNewsCollections.push(ncObject);
+								if (allNewsCollections.length == newsCollections.length) {
+									self._newsCollections_loaded = true;
+									self._newsCollections = allNewsCollections;
+									successCallback();
+								}
+							}, function (error) {
+								failCallback(error);
+							}, false);
+						});
+
+					} else {
+						self._newsCollections_loaded = true;
+						self._newsCollections = allNewsCollections;
+						successCallback();
+					}
+				})
+				.catch(function(error) {
+					failCallback(error);
+				});
+		} else {
+			successCallback();
+		}
+	}
+
 	//////////////////// Methods managing model. ///////////////////////////
 
 	/**
@@ -267,7 +313,7 @@ class User extends ModelItf {
 		var self = this;
 
 		var success : Function = function(models) {
-			if(self._imagesCollections_loaded) {
+			if(self._imagesCollections_loaded && self._newsCollections_loaded) {
 				if (successCallback != null) {
 					successCallback();
 				} // else //Nothing to do ?
@@ -283,6 +329,7 @@ class User extends ModelItf {
 		};
 
 		this.loadImagesCollections(success, fail);
+		this.loadNewsCollections(success, fail);
 	}
 
 	/**
@@ -311,6 +358,10 @@ class User extends ModelItf {
 
 			if (this._imagesCollections_loaded) {
 				newData["imagesCollections"] = (this.imagesCollections() !== null) ? this.serializeArray(this.imagesCollections()) : null;
+			}
+
+			if (this._newsCollections_loaded) {
+				newData["newsCollections"] = (this.newsCollections() !== null) ? this.serializeArray(this.newsCollections()) : null;
 			}
 		}
 
@@ -522,6 +573,90 @@ class User extends ModelItf {
 				}
 			} else {
 				failCallback(new ModelException("ImagesCollection doesn't exist. You can't remove an ImagesCollection that doesn't exist from a User."));
+			}
+		} else {
+			failCallback(new ModelException("User doesn't exist. User must to exist before to remove something from it."));
+		}
+	}
+
+	/**
+	 * Add an NewsCollection to User.
+	 *
+	 * @method addNewsCollection
+	 * @param {NewsCollection} newsCollection - NewsCollection to add to user.
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	addNewsCollection(newsCollection : NewsCollection, successCallback : Function, failCallback : Function) {
+		var self = this;
+
+		if(this.getId() != null) {
+
+			if(newsCollection.getId() != null) {
+				self.getSequelizeModel().addNewsCollection(newsCollection.getSequelizeModel())
+					.then(function () {
+						if(self._newsCollections == null) {
+							self._newsCollections = new Array<NewsCollection>();
+						}
+
+						self._newsCollections.push(newsCollection);
+						successCallback(self);
+					})
+					.catch(function (error) {
+						failCallback(error);
+					});
+			} else {
+				failCallback(new ModelException("You need to create the NewsCollection before to add to User."));
+			}
+		} else {
+			failCallback(new ModelException("You need to create User before to add an NewsCollection."));
+		}
+	}
+
+	/**
+	 * Remove an NewsCollection from User.
+	 *
+	 * @method removeNewsCollection
+	 * @param {NewsCollection} newsCollection - NewsCollection to add to user.
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	removeNewsCollection(newsCollection : NewsCollection, successCallback : Function, failCallback : Function) {
+		var self = this;
+
+		if(this.getId() != null) {
+
+			if(newsCollection.getId() != null) {
+
+				if(self._newsCollections == null) {
+					failCallback(new ModelException("NewsCollection doesn't belong to this User."));
+				} else {
+					var newsCollectionToDelete = null;
+
+					self._newsCollections = self._newsCollections.filter(function(obj) {
+						var comp = obj.getId() != newsCollection.getId();
+						if(!comp) {
+							newsCollectionToDelete = obj;
+						}
+
+						return comp;
+					});
+
+					if(newsCollectionToDelete == null) {
+						failCallback(new ModelException("NewsCollection doesn't belong to this User."));
+					} else {
+						self.getSequelizeModel().removeNewsCollection(newsCollection.getSequelizeModel())
+							.then(function () {
+								successCallback(self);
+							})
+							.catch(function (error) {
+								self._newsCollections.push(newsCollectionToDelete);
+								failCallback(error);
+							});
+					}
+				}
+			} else {
+				failCallback(new ModelException("NewsCollection doesn't exist. You can't remove an NewsCollection that doesn't exist from a User."));
 			}
 		} else {
 			failCallback(new ModelException("User doesn't exist. User must to exist before to remove something from it."));

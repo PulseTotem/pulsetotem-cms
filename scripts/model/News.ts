@@ -7,60 +7,60 @@
 /// <reference path="../core/Helper.ts" />
 /// <reference path="../exceptions/ModelException.ts" />
 
-/// <reference path="./ImagesCollection.ts" />
+/// <reference path="./NewsCollection.ts" />
 
-var ImageSchema : any = db["Images"];
+var NewsSchema : any = db["News"];
 
 /**
- * Model : ImageObject
+ * Model : News
  *
- * @class ImageObject
+ * @class News
  * @extends ModelItf
  */
-class ImageObject extends ModelItf {
+class News extends ModelItf {
 
 	/**
-	 * Name property.
+	 * Title property.
 	 *
-	 * @property _name
+	 * @property _title
 	 * @type string
 	 */
-	private _name : string;
+	private _title : string;
 
 	/**
-	 * Description property.
+	 * Content property.
 	 *
-	 * @property _description
+	 * @property _content
 	 * @type string
 	 */
-	private _description : string;
+	private _content : string;
 
 	/**
-	 * Mimetype property.
+	 * Begin property.
 	 *
-	 * @property _mimetype
+	 * @property _begin
 	 * @type string
 	 */
-	private _mimetype : string;
+	private _begin : string;
 
 	/**
-	 * Extension property.
+	 * End property.
 	 *
-	 * @property _extension
+	 * @property _end
 	 * @type string
 	 */
-	private _extension : string;
+	private _end : string;
 
 	/**
-	 * ImagesCollection property
+	 * NewsCollection property
 	 *
 	 * @property _collection
-	 * @type ImagesCollection
+	 * @type NewsCollection
 	 */
-	private _collection : ImagesCollection;
+	private _collection : NewsCollection;
 
 	/**
-	 * Lazy loading for ImagesCollection property
+	 * Lazy loading for NewsCollection property
 	 *
 	 * @property _collection_loaded
 	 * @type boolean
@@ -71,106 +71,106 @@ class ImageObject extends ModelItf {
 	 * Constructor.
 	 *
 	 * @constructor
-	 * @param {string} hashid - The ImageObject's hashid.
-	 * @param {string} name - The ImageObject's name.
-	 * @param {string} description - The ImageObject's description.
-	 * @param {string} mimetype - The ImageObject's mimetype.
-	 * @param {string} extension - The ImageObject's extension.
-	 * @param {number} id - The ImageObject's id.
-	 * @param {string} createdAt - The ImageObject's createdAt.
-	 * @param {string} updatedAt - The ImageObject's updatedAt.
+	 * @param {string} hashid - The News's hashid.
+	 * @param {string} title - The News's title.
+	 * @param {string} content - The News's content.
+	 * @param {string} begin - The News's begin.
+	 * @param {string} end - The News's end.
+	 * @param {number} id - The News's id.
+	 * @param {string} createdAt - The News's createdAt.
+	 * @param {string} updatedAt - The News's updatedAt.
 	 */
-	constructor(hashid : string = "", name : string = "", description : string = "", mimetype : string = "", extension : string = "", id : number = null, createdAt : string = null, updatedAt : string = null) {
+	constructor(hashid : string = "", title : string = "", content : string = "", begin : string = "", end : string = "", id : number = null, createdAt : string = null, updatedAt : string = null) {
 		super(id, createdAt, updatedAt);
 
 		this.setHashid(hashid);
-		this.setName(name);
-		this.setDescription(description);
-		this.setMimetype(mimetype);
-		this.setExtension(extension);
+		this.setTitle(title);
+		this.setContent(content);
+		this.setBegin(begin);
+		this.setEnd(end);
 
 		this._collection = null;
 		this._collection_loaded = false;
 	}
 
 	/**
-	 * Set the ImageObject's name.
+	 * Set the News's title.
 	 *
-	 * @method setName
-	 * @param {string} name - New name
+	 * @method setTitle
+	 * @param {string} title - New title
 	 */
-	setName(name : string) {
-		this._name = name;
+	setTitle(title : string) {
+		this._title = title;
 	}
 
 	/**
-	 * Return the ImageObject's name.
+	 * Return the News's title.
 	 *
-	 * @method name
+	 * @method title
 	 */
-	name() {
-		return this._name;
+	title() {
+		return this._title;
 	}
 
 	/**
-	 * Set the ImageObject's description.
+	 * Set the News's content.
 	 *
-	 * @method setDescription
-	 * @param {string} description - New description
+	 * @method setContent
+	 * @param {string} content - New content
 	 */
-	setDescription(description : string) {
-		this._description = description;
+	setContent(content : string) {
+		this._content = content;
 	}
 
 	/**
-	 * Return the ImageObject's description.
+	 * Return the News's content.
 	 *
-	 * @method description
+	 * @method content
 	 */
-	description() {
-		return this._description;
+	content() {
+		return this._content;
 	}
 
 	/**
-	 * Set the ImageObject's mimetype.
+	 * Set the News's begin.
 	 *
-	 * @method setMimetype
-	 * @param {string} mimetype - New mimetype
+	 * @method setBegin
+	 * @param {string} begin - New begin
 	 */
-	setMimetype(mimetype : string) {
-		this._mimetype = mimetype;
+	setBegin(begin : string) {
+		this._begin = begin;
 	}
 
 	/**
-	 * Return the ImageObject's mimetype.
+	 * Return the News's begin.
 	 *
-	 * @method mimetype
+	 * @method begin
 	 */
-	mimetype() {
-		return this._mimetype;
+	begin() {
+		return this._begin;
 	}
 
 	/**
-	 * Set the ImageObject's extension.
+	 * Set the News's end.
 	 *
-	 * @method setExtension
-	 * @param {string} extension - New extension
+	 * @method setEnd
+	 * @param {string} end - New end
 	 */
-	setExtension(extension : string) {
-		this._extension = extension;
+	setEnd(end : string) {
+		this._end = end;
 	}
 
 	/**
-	 * Return the ImageObject's extension.
+	 * Return the News's end.
 	 *
-	 * @method extension
+	 * @method end
 	 */
-	extension() {
-		return this._extension;
+	end() {
+		return this._end;
 	}
 
 	/**
-	 * Return the ImageObject's ImagesCollection.
+	 * Return the News's NewsCollection.
 	 *
 	 * @method collection
 	 */
@@ -179,7 +179,7 @@ class ImageObject extends ModelItf {
 	}
 
 	/**
-	 * Load the ImageObject's ImagesCollection.
+	 * Load the News's NewsCollection.
 	 *
 	 * @method loadCollection
 	 * @param {Function} successCallback - The callback function when success.
@@ -189,13 +189,13 @@ class ImageObject extends ModelItf {
 		if(! this._collection_loaded) {
 			var self = this;
 
-			this.getSequelizeModel().getImagesCollection()
-				.then(function(imagesCollection) {
-					if(imagesCollection != null) {
-						var icObject = ImagesCollection.fromJSONObject(imagesCollection.dataValues);
-						icObject.setSequelizeModel(imagesCollection, function () {
+			this.getSequelizeModel().getNewsCollection()
+				.then(function(newsCollection) {
+					if(newsCollection != null) {
+						var ncObject = NewsCollection.fromJSONObject(newsCollection.dataValues);
+						ncObject.setSequelizeModel(newsCollection, function () {
 							self._collection_loaded = true;
-							self._collection = icObject;
+							self._collection = ncObject;
 							successCallback();
 						}, function (error) {
 							failCallback(error);
@@ -245,7 +245,7 @@ class ImageObject extends ModelItf {
 	}
 
 	/**
-	 * Return a ImageObject instance as a JSON Object
+	 * Return a News instance as a JSON Object
 	 *
 	 * @method toJSONObject
 	 * @param {boolean} complete - flag to obtain complete description of Model
@@ -256,10 +256,10 @@ class ImageObject extends ModelItf {
 
 		var newData = {
 			"id" : this.hashid(),
-			"name": this.name(),
-			"description": this.description(),
-			"mimetype" : this.mimetype(),
-			"extension" : this.extension()
+			"title": this.title(),
+			"content": this.content(),
+			"begin" : this.begin(),
+			"end" : this.end()
 		};
 
 		if(complete) {
@@ -283,18 +283,18 @@ class ImageObject extends ModelItf {
 
 		if(this.getId() == null) {
 
-			var newImageJSON = this.toJSONObject(true);
-			newImageJSON["hashid"] = this.hashid();
-			delete(newImageJSON["id"]);
-			delete(newImageJSON["createdAt"]);
-			delete(newImageJSON["updatedAt"]);
+			var newNewsJSON = this.toJSONObject(true);
+			newNewsJSON["hashid"] = this.hashid();
+			delete(newNewsJSON["id"]);
+			delete(newNewsJSON["createdAt"]);
+			delete(newNewsJSON["updatedAt"]);
 
-			ImageSchema.create(newImageJSON)
-				.then(function (image) {
-					var uObject = ImageObject.fromJSONObject(image.dataValues);
-					self._id = uObject.getId();
+			NewsSchema.create(newNewsJSON)
+				.then(function (news) {
+					var nObject = News.fromJSONObject(news.dataValues);
+					self._id = nObject.getId();
 
-					self.setSequelizeModel(image, function() {
+					self.setSequelizeModel(news, function() {
 						successCallback(self);
 					}, function(error) {
 						failCallback(error);
@@ -304,7 +304,7 @@ class ImageObject extends ModelItf {
 					failCallback(error);
 				});
 		} else {
-			failCallback(new ModelException("ImageObject already exists."));
+			failCallback(new ModelException("News already exists."));
 		}
 	}
 
@@ -319,17 +319,17 @@ class ImageObject extends ModelItf {
 	 */
 	static read(id : number, successCallback : Function, failCallback : Function) {
 		// search for known ids
-		ImageSchema.findById(id)
-			.then(function(image) {
-				if(image != null) {
-					var uObject = ImageObject.fromJSONObject(image.dataValues);
-					uObject.setSequelizeModel(image, function() {
-						successCallback(uObject);
+		NewsSchema.findById(id)
+			.then(function(news) {
+				if(news != null) {
+					var nObject = News.fromJSONObject(news.dataValues);
+					nObject.setSequelizeModel(news, function() {
+						successCallback(nObject);
 					}, function(error) {
 						failCallback(error);
 					});
 				} else {
-					failCallback(new ModelException("ImageObject with given Id was not found."));
+					failCallback(new ModelException("News with given Id was not found."));
 				}
 			})
 			.catch(function(error) {
@@ -349,13 +349,13 @@ class ImageObject extends ModelItf {
 
 		if(this.getId() != null) {
 
-			var newImageJSON = self.toJSONObject(true);
-			newImageJSON["hashid"] = this.hashid();
-			delete(newImageJSON["id"]);
-			delete(newImageJSON["createdAt"]);
-			delete(newImageJSON["updatedAt"]);
+			var newNewsJSON = self.toJSONObject(true);
+			newNewsJSON["hashid"] = this.hashid();
+			delete(newNewsJSON["id"]);
+			delete(newNewsJSON["createdAt"]);
+			delete(newNewsJSON["updatedAt"]);
 
-			self.getSequelizeModel().updateAttributes(newImageJSON)
+			self.getSequelizeModel().updateAttributes(newNewsJSON)
 				.then(function(sequelizeInstance) {
 					if(sequelizeInstance.getDataValue("updatedAt") == "now()") {
 						self.setUpdatedAt(moment().format());
@@ -368,7 +368,7 @@ class ImageObject extends ModelItf {
 					failCallback(error);
 				});
 		} else {
-			failCallback(new ModelException("You need to create ImageObject before to update it."));
+			failCallback(new ModelException("You need to create News before to update it."));
 		}
 	}
 
@@ -394,7 +394,7 @@ class ImageObject extends ModelItf {
 					failCallback(error);
 				});
 		} else {
-			failCallback(new ModelException("You need to create ImageObject before to delete it..."));
+			failCallback(new ModelException("You need to create News before to delete it..."));
 		}
 	}
 
@@ -406,24 +406,24 @@ class ImageObject extends ModelItf {
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
 	static all(successCallback : Function, failCallback : Function) {
-		ImageSchema.all()
-			.then(function(images) {
-				var allImages : Array<ImageObject> = new Array<ImageObject>();
+		NewsSchema.all()
+			.then(function(newsList) {
+				var allNews : Array<News> = new Array<News>();
 
-				if(images.length > 0) {
-					images.forEach(function (image:any) {
-						var uObject = ImageObject.fromJSONObject(image.dataValues);
-						uObject.setSequelizeModel(image, function () {
-							allImages.push(uObject);
-							if (allImages.length == images.length) {
-								successCallback(allImages);
+				if(newsList.length > 0) {
+					newsList.forEach(function (news:any) {
+						var nObject = News.fromJSONObject(news.dataValues);
+						nObject.setSequelizeModel(news, function () {
+							allNews.push(nObject);
+							if (allNews.length == newsList.length) {
+								successCallback(allNews);
 							}
 						}, function (error) {
 							failCallback(error);
 						});
 					});
 				} else {
-					successCallback(allImages);
+					successCallback(allNews);
 				}
 			})
 			.catch(function(e) {
@@ -432,25 +432,25 @@ class ImageObject extends ModelItf {
 	}
 
 	/**
-	 * Find One ImageObject by hashid.
+	 * Find One News by hashid.
 	 *
 	 * @method findOneByHashid
-	 * @param {string} hashid - The ImageObject's hashid
+	 * @param {string} hashid - The News's hashid
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
 	static findOneByHashid(hashid : string, successCallback : Function, failCallback : Function) {
-		ImageSchema.findOne({ where: {"hashid": hashid} })
-			.then(function(image) {
-				if(image != null) {
-					var uObject = ImageObject.fromJSONObject(image.dataValues);
-					uObject.setSequelizeModel(image, function() {
-						successCallback(uObject);
+		NewsSchema.findOne({ where: {"hashid": hashid} })
+			.then(function(news) {
+				if(news != null) {
+					var nObject = News.fromJSONObject(news.dataValues);
+					nObject.setSequelizeModel(news, function() {
+						successCallback(nObject);
 					}, function(error) {
 						failCallback(error);
 					});
 				} else {
-					failCallback(new ModelException("ImageObject with given Hashid was not found."));
+					failCallback(new ModelException("News with given Hashid was not found."));
 				}
 			})
 			.catch(function(e) {
@@ -459,16 +459,16 @@ class ImageObject extends ModelItf {
 	}
 
 	/**
-	 * Return a ImageObject instance from a JSON Object.
+	 * Return a News instance from a JSON Object.
 	 *
 	 * @method fromJSONObject
 	 * @static
 	 * @param {JSONObject} jsonObject - The JSON Object
 	 * @return {SDI} The model instance.
 	 */
-	static fromJSONObject(jsonObject : any) : ImageObject {
-		var image = new ImageObject(jsonObject.hashid, jsonObject.name, jsonObject.description, jsonObject.mimetype, jsonObject.extension, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
+	static fromJSONObject(jsonObject : any) : News {
+		var news = new News(jsonObject.hashid, jsonObject.title, jsonObject.content, jsonObject.begin, jsonObject.end, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
 
-		return image;
+		return news;
 	}
 }
