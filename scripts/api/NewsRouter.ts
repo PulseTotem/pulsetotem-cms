@@ -54,7 +54,7 @@ class NewsRouter extends RouterItf {
 		this.router.post('/', CMSAuth.can('manage user news collections'), function(req, res) { self.newNews(req, res); });
 
 		// Define '/:news_id' route.
-		this.router.get('/:news_id', CMSAuth.can('manage user news'), function(req, res) { self.showNews(req, res); });
+		this.router.get('/:news_id', function(req, res) { self.showNews(req, res); });
 		this.router.put('/:news_id', CMSAuth.can('manage user news'), function(req, res) { self.updateNews(req, res); });
 		this.router.delete('/:news_id', CMSAuth.can('manage user news'), function(req, res) { self.deleteNews(req, res); });
 	}

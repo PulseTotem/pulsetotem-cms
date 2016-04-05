@@ -138,6 +138,60 @@ class CMSAuth extends AuthManager {
 				}
 			});
 		});
+
+		this.addRole("NewsCollection.Owner", function(req, res, done) {
+			self.can("manage user information")(req, res, function(error) {
+				if (typeof(error) == "undefined" || error == null) { // All is ok.
+					if(!req.newsCollection) {
+						done(new Error('NewsCollection was not found.'));
+					} else {
+						if(req.user.getId() == req.newsCollection.user().getId()) {
+							done();
+						} else {
+							done(new Error('Unauthorized.'));
+						}
+					}
+				} else { // An error occured.
+					done(error);
+				}
+			});
+		});
+
+		this.addRole("News.Owner", function(req, res, done) {
+			self.can("manage user information")(req, res, function(error) {
+				if (typeof(error) == "undefined" || error == null) { // All is ok.
+					if(!req.news) {
+						done(new Error('News was not found.'));
+					} else {
+
+						var successLoadUser = function() {
+							if(req.user.getId() == req.news.collection().user().getId()) {
+
+								if(!req.newsCollection) {
+									done();
+								} else {
+									if(req.newsCollection.getId() == req.news.collection().getId()) {
+										done();
+									} else {
+										done(new Error('News doesn\'t belong to this NewsCollection.'));
+									}
+								}
+							} else {
+								done(new Error('Unauthorized.'));
+							}
+						};
+
+						var fail = function() {
+							done(new Error('Unauthorized.'));
+						};
+
+						req.news.collection().loadUser(successLoadUser, fail);
+					}
+				} else { // An error occured.
+					done(error);
+				}
+			});
+		});
 	}
 
 	/**
@@ -152,5 +206,8 @@ class CMSAuth extends AuthManager {
 		this.addAction("manage user information", ["Admin", "Profil.Owner"]);
 		this.addAction("manage user images collections", ["Admin", "ImagesCollection.Owner"]);
 		this.addAction("manage user images", ["Admin", "Image.Owner"]);
+		this.addAction("manage user news collections", ["Admin", "NewsCollection.Owner"]);
+		this.addAction("manage user news", ["Admin", "News.Owner"]);
+
 	}
 }
