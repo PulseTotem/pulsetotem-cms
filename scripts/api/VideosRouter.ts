@@ -11,7 +11,6 @@
 declare var require : any;
 declare var Buffer : any;
 var fs : any = require("fs");
-var lwip : any = require('lwip');
 
 var uuid : any = require('node-uuid');
 
@@ -210,24 +209,45 @@ class VideosRouter extends RouterItf {
 
 			var videoBasePath = CMSConfig.getUploadDir() + "users/" + req.video.collection().user().hashid() + "/videos/" + req.video.collection().hashid() + "/" + req.video.hashid();
 
-			var renderVideo = function(vid) {
+			var renderVideo = function(vidPath) {
+				var contentType = 'video/mp4';
 				if (req.video.mimetype() != null && req.video.mimetype() != "") {
-					res.set('Content-Type', req.video.mimetype());
-				} else {
-					res.set('Content-Type', 'video/mp4');
+					contentType = req.video.mimetype();
 				}
 
-				//TODO : res.status(200).end(img, 'binary');
+				var range = req.headers.range;
+				var positions = range.replace(/bytes=/, "").split("-");
+				var start = parseInt(positions[0], 10);
+
+				fs.stat(vidPath, function(err, stats) {
+					var total = stats.size;
+					var end = positions[1] ? parseInt(positions[1], 10) : total - 1;
+					var chunksize = (end - start) + 1;
+
+					res.writeHead(206, {
+						"Content-Range": "bytes " + start + "-" + end + "/" + total,
+						"Accept-Ranges": "bytes",
+						"Content-Length": chunksize,
+						"Content-Type": contentType
+					});
+
+					var stream = fs.createReadStream(vidPath, {start: start, end: end})
+						.on("open", function () {
+							stream.pipe(res);
+						}).on("error", function (err) {
+							res.end(err);
+						});
+				});
 			};
 
 			if(extension != '') {
 				var videoPath = videoBasePath + extension;
 
-				var vid = fs.readFileSync(videoPath);
-				renderVideo(vid);
+				//var vid = fs.readFileSync(videoPath);
+				renderVideo(videoPath);
 			} else {
-				var vid = fs.readFileSync(videoBasePath);
-				renderVideo(vid);
+				//var vid = fs.readFileSync(videoBasePath);
+				renderVideo(videoBasePath);
 			}
 		};
 
