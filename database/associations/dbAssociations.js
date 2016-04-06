@@ -2,7 +2,9 @@ exports.hasMany = [
   ["Users", "ImagesCollections"],
   ["ImagesCollections", "Images"],
   ["Users", "NewsCollections"],
-  ["NewsCollections", "News"]
+  ["NewsCollections", "News"],
+  ["Users", "VideosCollections"],
+  ["VideosCollections", "Videos"]
 ];
 
 exports.belongsTo = [
@@ -11,5 +13,9 @@ exports.belongsTo = [
   ["ImagesCollections", "Images"],
   ["NewsCollections", "Users"],
   ["News", "NewsCollections"],
-  ["News", "Images"]
+  ["News", "Images"],
+  ["VideosCollections", "Users"],
+  ["Videos", "VideosCollections"],
+  ["VideosCollections", "Videos"],
+  ["Videos", "Images"]
 ];

@@ -192,6 +192,60 @@ class CMSAuth extends AuthManager {
 				}
 			});
 		});
+
+		this.addRole("VideosCollection.Owner", function(req, res, done) {
+			self.can("manage user information")(req, res, function(error) {
+				if (typeof(error) == "undefined" || error == null) { // All is ok.
+					if(!req.videosCollection) {
+						done(new Error('VideosCollection was not found.'));
+					} else {
+						if(req.user.getId() == req.videosCollection.user().getId()) {
+							done();
+						} else {
+							done(new Error('Unauthorized.'));
+						}
+					}
+				} else { // An error occured.
+					done(error);
+				}
+			});
+		});
+
+		this.addRole("Video.Owner", function(req, res, done) {
+			self.can("manage user information")(req, res, function(error) {
+				if (typeof(error) == "undefined" || error == null) { // All is ok.
+					if(!req.video) {
+						done(new Error('Video was not found.'));
+					} else {
+
+						var successLoadUser = function() {
+							if(req.user.getId() == req.video.collection().user().getId()) {
+
+								if(!req.videosCollection) {
+									done();
+								} else {
+									if(req.videosCollection.getId() == req.video.collection().getId()) {
+										done();
+									} else {
+										done(new Error('Video doesn\'t belong to this VideosCollection.'));
+									}
+								}
+							} else {
+								done(new Error('Unauthorized.'));
+							}
+						};
+
+						var fail = function() {
+							done(new Error('Unauthorized.'));
+						};
+
+						req.video.collection().loadUser(successLoadUser, fail);
+					}
+				} else { // An error occured.
+					done(error);
+				}
+			});
+		});
 	}
 
 	/**
@@ -208,6 +262,7 @@ class CMSAuth extends AuthManager {
 		this.addAction("manage user images", ["Admin", "Image.Owner"]);
 		this.addAction("manage user news collections", ["Admin", "NewsCollection.Owner"]);
 		this.addAction("manage user news", ["Admin", "News.Owner"]);
-
+		this.addAction("manage user videos collections", ["Admin", "VideosCollection.Owner"]);
+		this.addAction("manage user videos", ["Admin", "Videos.Owner"]);
 	}
 }
