@@ -7,6 +7,7 @@
 
 /// <reference path="./ImagesCollectionsRouter.ts" />
 /// <reference path="./NewsCollectionsRouter.ts" />
+/// <reference path="./VideosCollectionsRouter.ts" />
 
 declare var require : any;
 
@@ -46,5 +47,8 @@ class AdminRouter extends RouterItf {
 
 		// Define '/news_collections' route.
 		this.router.use('/news_collections', (new NewsCollectionsRouter()).getRouter());
+
+		// Define '/videos_collections' route.
+		this.router.use('/videos_collections', (new VideosCollectionsRouter()).getRouter());
 	}
 }

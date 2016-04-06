@@ -8,6 +8,7 @@
 /// <reference path="../model/User.ts" />
 
 /// <reference path="./ImagesCollectionsRouter.ts" />
+/// <reference path="./VideosCollectionsRouter.ts" />
 /// <reference path="./NewsCollectionsRouter.ts" />
 
 declare var require : any;
@@ -70,6 +71,9 @@ class UsersRouter extends RouterItf {
 
 		// Define '/:user_id/news_collections' route.
 		this.router.use('/:user_id/news_collections', (new NewsCollectionsRouter()).getRouter());
+
+		// Define '/:user_id/videos_collections' route.
+		this.router.use('/:user_id/videos_collections', (new VideosCollectionsRouter()).getRouter());
 	}
 
 	/**
