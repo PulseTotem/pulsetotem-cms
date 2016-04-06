@@ -166,6 +166,10 @@ class Server {
 	run() {
 		var self = this;
 
+		this.app.use(function(req, res) {
+			res.status(404).send({ 'error': 'Cannot get '+req.url });
+		});
+
 		//Define errorHandler function.
 		this.app.use(function(err, req, res, next) {
 			if (res.headersSent) {
