@@ -216,7 +216,7 @@ class VideosRouter extends RouterItf {
 				}
 
 				var range = req.headers.range;
-				var positions = range.replace(/bytes=/, "").split("-");
+				var positions = range ? range.replace(/bytes=/, "").split("-") : ["0"];
 				var start = parseInt(positions[0], 10);
 
 				fs.stat(vidPath, function(err, stats) {
