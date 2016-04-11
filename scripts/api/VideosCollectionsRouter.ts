@@ -120,11 +120,17 @@ class VideosCollectionsRouter extends RouterItf {
 				req.user.videosCollections().forEach(function (vidCollection:VideosCollection) {
 
 					var successLoadCover = function() {
-						videosCollections_JSON.push(vidCollection.toJSONObject(true));
+						var successLoadThumbnail = function() {
+							var vidCollectionJSON = vidCollection.toJSONObject(true);
+							vidCollectionJSON["cover"] = vidCollection.cover().toJSONObject(true);
+							videosCollections_JSON.push(vidCollectionJSON);
 
-						if(videosCollections_JSON.length == req.user.videosCollections().length) {
-							res.json(videosCollections_JSON);
-						}
+							if(videosCollections_JSON.length == req.user.videosCollections().length) {
+								res.json(videosCollections_JSON);
+							}
+						};
+
+						vidCollection.cover().loadThumbnail(successLoadThumbnail, fail);
 					};
 
 					vidCollection.loadCover(successLoadCover, fail);

@@ -2,6 +2,8 @@
  * @author Christian Brel <christian@pulsetotem.fr, ch.brel@gmail.com>
  */
 
+var child_process : any = require('child_process');
+
 /**
  * Helper class.
  *
@@ -91,5 +93,35 @@ class Helper {
 			Logger.error(obj.length);
 			return true;
 		}
+	}
+
+	/**
+	 * Perform a snapshot in a video.
+	 * 'ffmpeg' lib needs to be installed on server.
+	 *
+	 * @method makeSnapshot
+	 * @static
+	 * @param {string} path - Path to video file
+	 * @param {string} destPath - Path of snapshot image file
+	 * @param {string} time - Time where perform snapshot
+	 * @param {string} width - Snapshot's width
+	 * @param {string} height - Snapshot's height
+	 * @param {Function} callback - A callback function
+	 */
+	static makeSnapshot(path : string, destPath : string, time : string, width : string, height : string, callback : Function = null) {
+		if (time == null) {
+			time = '00:00:01';
+		}
+		if (width == null) {
+			width = '200';
+		}
+		if (height == null) {
+			height = '125';
+		}
+		child_process.exec('ffmpeg -ss ' + time + ' -i ' + path + ' -y -s ' + width + '*' + height + ' -vframes 1 -f image2 ' + destPath, function(error, stdout, stderr) {
+			if (callback != null) {
+				callback(error);
+			}
+		});
 	}
 }

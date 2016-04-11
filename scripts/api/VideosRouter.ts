@@ -16,7 +16,6 @@
 declare var require : any;
 declare var Buffer : any;
 var fs : any = require("fs");
-var thumbler : any = require('video-thumb');
 
 var uuid : any = require('node-uuid');
 
@@ -76,9 +75,27 @@ class VideosRouter extends RouterItf {
 	 * @param {Express.Response} res - Response object.
 	 */
 	listAllVideosOfCollection(req : any, res : any) {
-		var videos_JSON = req.videosCollection.toJSONObject(true)["videos"];
+		var videos_JSON = [];
 
-		res.json(videos_JSON);
+		if(req.videosCollection.videos().length > 0) {
+			var fail = function(error) {
+				res.status(500).send({ 'error': error });
+			};
+
+			req.videosCollection.videos().forEach(function (video : Video) {
+				var successLoadThumbnail = function() {
+					videos_JSON.push(video.toJSONObject(true));
+
+					if(videos_JSON.length == req.videosCollection.videos().length) {
+						res.json(videos_JSON);
+					}
+				};
+
+				video.loadThumbnail(successLoadThumbnail, fail);
+			});
+		} else {
+			res.json(videos_JSON);
+		}
 	}
 
 	/**
@@ -110,24 +127,28 @@ class VideosRouter extends RouterItf {
 							} else {
 								var destThumbnailFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.videosThumbnailsCollection.hashid() + "/" + vidId + '.png';
 
-								thumbler.extract(destVideoFile, destThumbnailFile, '00:00:05', '200x125', function(){
-									//TODO: Check this method
-									var newThumbnailImage = new ImageObject(vidId, vidName + " Thumbnail", "", Helper.guessMimetypeFromExtension("png"), "png");
+								Helper.makeSnapshot(destVideoFile, destThumbnailFile, '00:00:05', '200', '125', function(error){
+									if(error != null) {
+										Logger.debug(error);
+										failCB(error);
+									} else {
+										var newThumbnailImage = new ImageObject(vidId, vidName + " Thumbnail", "", Helper.guessMimetypeFromExtension("png"), "png");
 
-									var successCreateThumbnail = function(thumbnailImg : ImageObject) {
-										var successThumbnailsCollectionLink = function() {
+										var successCreateThumbnail = function (thumbnailImg:ImageObject) {
+											var successThumbnailsCollectionLink = function () {
 
-											var successThumbnailVideoLink = function() {
-												successCB(video);
+												var successThumbnailVideoLink = function () {
+													successCB(video);
+												};
+
+												video.setThumbnail(thumbnailImg, successThumbnailVideoLink, failCB)
 											};
 
-											video.setThumbnail(thumbnailImg, successThumbnailVideoLink, failCB)
+											req.videosThumbnailsCollection.addImage(thumbnailImg, successThumbnailsCollectionLink, failCB);
 										};
 
-										req.videosThumbnailsCollection.addImage(thumbnailImg, successThumbnailsCollectionLink, failCB);
-									};
-
-									newThumbnailImage.create(successCreateThumbnail, failCB);
+										newThumbnailImage.create(successCreateThumbnail, failCB);
+									}
 								});
 							}
 						});
