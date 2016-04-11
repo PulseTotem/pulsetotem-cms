@@ -445,11 +445,17 @@ class ImagesRouter extends RouterItf {
 	 * @method deleteImage
 	 * @param {Express.Request} req - Request object.
 	 * @param {Express.Response} res - Response object.
+	 * @param {Function} successCallback - If setted, this function should be called instead sending res
+	 * @param {Function} failCallback - If setted, this function should be called instead sending res
 	 */
-	deleteImage(req : any, res : any) {
+	deleteImage(req : any, res : any, successCallback : Function = null, failCallback : Function = null) {
 
-		var fail = function(error) {
-			res.status(500).send({ 'error': error });
+		var failCB = function(errString) {
+			if(failCallback != null) {
+				failCallback(errString);
+			} else {
+				res.status(500).send({ 'error': errString });
+			}
 		};
 
 		var successRemoveImage = function() {
@@ -463,17 +469,21 @@ class ImagesRouter extends RouterItf {
 
 			fs.rename(originImageFile, tmpImageFile, function(err) {
 				if(err) {
-					res.status(500).send({ 'error': "Error during deleting Image." });
+					failCB("Error during deleting Image.");
 				} else {
 					var success = function(deleteImageId) {
 						fs.unlink(tmpImageFile, function(err2) {
-							res.json(deleteImageId);
+							if(successCallback != null) {
+								successCallback(deleteImageId);
+							} else {
+								res.json(deleteImageId);
+							}
 						});
 					};
 
 					var fail = function(error) {
 						fs.rename(tmpImageFile, originImageFile , function(err) {
-							res.status(500).send({ 'error': error });
+							failCB(error);
 						});
 					};
 
@@ -482,6 +492,6 @@ class ImagesRouter extends RouterItf {
 			});
 		};
 
-		req.imagesCollection.removeImage(req.image, successRemoveImage, fail);
+		req.imagesCollection.removeImage(req.image, successRemoveImage, failCB);
 	}
 }

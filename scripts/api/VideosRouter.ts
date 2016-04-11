@@ -6,11 +6,17 @@
 /// <reference path="../core/CMSConfig.ts" />
 /// <reference path="../auth/CMSAuth.ts" />
 
+/// <reference path="../core/Helper.ts" />
+
 /// <reference path="../model/Video.ts" />
+/// <reference path="../model/ImageObject.ts" />
+
+/// <reference path="./ImagesRouter.ts" />
 
 declare var require : any;
 declare var Buffer : any;
 var fs : any = require("fs");
+var thumbler : any = require('video-thumb');
 
 var uuid : any = require('node-uuid');
 
@@ -89,7 +95,7 @@ class VideosRouter extends RouterItf {
 			var addVideoToCollection = function(vidId, vidName, vidDescription, vidFile, successCB, failCB) {
 				var newVideo = new Video(vidId, vidName, vidDescription, vidFile.mimetype, vidFile.extension);
 
-				var successCreate = function(video:Video) {
+				var successCreate = function(video : Video) {
 					var successVideosCollectionLink = function () {
 						var originVideoFile = CMSConfig.getUploadDir() + vidFile.name;
 						var extension = '';
@@ -102,7 +108,27 @@ class VideosRouter extends RouterItf {
 							if (err) {
 								failCB(new Error("Error during adding Video to VideosCollection."));
 							} else {
-								successCB(video);
+								var destThumbnailFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.videosThumbnailsCollection.hashid() + "/" + vidId + '.png';
+
+								thumbler.extract(destVideoFile, destThumbnailFile, '00:00:05', '200x125', function(){
+									//TODO: Check this method
+									var newThumbnailImage = new ImageObject(vidId, vidName + " Thumbnail", "", Helper.guessMimetypeFromExtension("png"), "png");
+
+									var successCreateThumbnail = function(thumbnailImg : ImageObject) {
+										var successThumbnailsCollectionLink = function() {
+
+											var successThumbnailVideoLink = function() {
+												successCB(video);
+											};
+
+											video.setThumbnail(thumbnailImg, successThumbnailVideoLink, failCB)
+										};
+
+										req.videosThumbnailsCollection.addImage(thumbnailImg, successThumbnailsCollectionLink, failCB);
+									};
+
+									newThumbnailImage.create(successCreateThumbnail, failCB);
+								});
 							}
 						});
 					};
@@ -268,6 +294,7 @@ class VideosRouter extends RouterItf {
 
 			if(typeof(req.body.name) != "undefined" && req.body.name != "") {
 				req.video.setName(req.body.name);
+				req.video.thumbnail().setName(req.body.name + " Thumbnail")
 			}
 
 			if(typeof(req.body.description) != "undefined" && req.body.description != "") {
@@ -275,7 +302,13 @@ class VideosRouter extends RouterItf {
 			}
 
 			var success = function(video) {
-				res.json(video.toJSONObject());
+
+				var successThumbnailUpdated = function() {
+					//Success even if thumbnail update failed.
+					res.json(video.toJSONObject());
+				};
+
+				req.video.thumbnail().update(successThumbnailUpdated, successThumbnailUpdated);
 			};
 
 			var fail = function(error) {
@@ -295,7 +328,7 @@ class VideosRouter extends RouterItf {
 	 */
 	deleteVideo(req : any, res : any) {
 
-		var fail = function(error) {
+		var failCB = function(error) {
 			res.status(500).send({ 'error': error });
 		};
 
@@ -310,17 +343,22 @@ class VideosRouter extends RouterItf {
 
 			fs.rename(originVideoFile, tmpVideoFile, function(err) {
 				if(err) {
-					res.status(500).send({ 'error': "Error during deleting Video." });
+					failCB("Error during deleting Video.");
 				} else {
 					var success = function(deleteVideoId) {
 						fs.unlink(tmpVideoFile, function(err2) {
-							res.json(deleteVideoId);
+							var imgRouter : ImagesRouter = new ImagesRouter();
+							req.imagesCollection = req.videosThumbnailsCollection;
+							req.image = req.video.thumbnail();
+							imgRouter.deleteImage(req, res, function() {
+								res.json(deleteVideoId);
+							}, failCB);
 						});
 					};
 
 					var fail = function(error) {
 						fs.rename(tmpVideoFile, originVideoFile , function(err) {
-							res.status(500).send({ 'error': error });
+							failCB(error);
 						});
 					};
 
@@ -329,6 +367,6 @@ class VideosRouter extends RouterItf {
 			});
 		};
 
-		req.videosCollection.removeVideo(req.video, successRemoveVideo, fail);
+		req.videosCollection.removeVideo(req.video, successRemoveVideo, failCB);
 	}
 }

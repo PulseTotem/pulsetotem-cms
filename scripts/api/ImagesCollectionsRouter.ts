@@ -141,54 +141,77 @@ class ImagesCollectionsRouter extends RouterItf {
 		if(typeof(req.body.name) == "undefined" || req.body.name == "" || typeof(req.body.description) == "undefined") {
 			res.status(500).send({ 'error': 'Missing some information to create new Images Collection.' });
 		} else {
-			var hashid = uuid.v1();
-
-			var newImagesCollection = new ImagesCollection(hashid, req.body.name, req.body.description);
-
 			var fail = function(error) {
 				res.status(500).send({ 'error': error });
 			};
 
 			var success = function(imageCollection : ImagesCollection) {
+				res.json(imageCollection.toJSONObject());
+			};
 
-				var successUserLink = function() {
+			var hashid = uuid.v1();
+			ImagesCollectionsRouter.newImagesCollectionObject(req, hashid, req.body.name, req.body.description, success, fail);
+		}
+	}
 
-					var createImagesCollectionFolder = function() {
-						fs.stat(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + hashid + "/", function (err, stats) {
-							if (err || !stats.isDirectory()) {
-								mkdirp(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + hashid + "/", function (err2) {
-									if (err2) {
-										res.status(500).send({'error': JSON.stringify(err2)});
-									} else {
-										res.json(imageCollection.toJSONObject());
-									}
-								});
-							} else {
-								res.json(imageCollection.toJSONObject());
-							}
-						});
-					};
+	/**
+	 * Create new Images Collection and add it to User.
+	 *
+	 * @method newImagesCollectionObject
+	 * @static
+	 * @param {Express.Request} req - Request object.
+	 * @param {string} hashid - ImagesCollection's hashid.
+	 * @param {string} name - ImagesCollection's name.
+	 * @param {string} description - ImagesCollection's description.
+	 * @param {Function} successCallback - Success callback function.
+	 * @param {Function} failCallback - Fail callback function.
+	 */
+	static newImagesCollectionObject(req : any, hashid : string, name : string, description : string, successCallback : Function, failCallback : Function ) {
+		var newImagesCollection = new ImagesCollection(hashid, name, description);
 
-					fs.stat(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/", function (errImagesFolder, stats) {
-						if (errImagesFolder || !stats.isDirectory()) {
-							mkdirp(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/", function (errImagesFolderCreation) {
-								if (errImagesFolderCreation) {
-									res.status(500).send({'error': JSON.stringify(errImagesFolderCreation)});
+		var fail = function(error) {
+			failCallback(error);
+		};
+
+		var success = function(imageCollection : ImagesCollection) {
+
+			var successUserLink = function() {
+
+				var createImagesCollectionFolder = function() {
+					fs.stat(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + hashid + "/", function (err, stats) {
+						if (err || !stats.isDirectory()) {
+							mkdirp(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + hashid + "/", function (err2) {
+								if (err2) {
+									fail(err2);
 								} else {
-									createImagesCollectionFolder();
+									successCallback(imageCollection);
 								}
 							});
 						} else {
-							createImagesCollectionFolder();
+							successCallback(imageCollection);
 						}
 					});
 				};
 
-				req.user.addImagesCollection(imageCollection, successUserLink, fail);
+				fs.stat(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/", function (errImagesFolder, stats) {
+					if (errImagesFolder || !stats.isDirectory()) {
+						mkdirp(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/", function (errImagesFolderCreation) {
+							if (errImagesFolderCreation) {
+								fail(errImagesFolderCreation);
+							} else {
+								createImagesCollectionFolder();
+							}
+						});
+					} else {
+						createImagesCollectionFolder();
+					}
+				});
 			};
 
-			newImagesCollection.create(success, fail);
-		}
+			req.user.addImagesCollection(imageCollection, successUserLink, fail);
+		};
+
+		newImagesCollection.create(success, fail);
 	}
 
 	/**
@@ -240,25 +263,39 @@ class ImagesCollectionsRouter extends RouterItf {
 	 * @method deleteImagesCollection
 	 * @param {Express.Request} req - Request object.
 	 * @param {Express.Response} res - Response object.
+	 * @param {Function} successCallback - If setted, this function should be called instead sending res
+	 * @param {Function} failCallback - If setted, this function should be called instead sending res
 	 */
-	deleteImagesCollection(req : any, res : any) {
+	deleteImagesCollection(req : any, res : any, successCallback : Function = null, failCallback : Function = null) {
 
 		var originImagesCollectionFolder = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid();
 		var tmpImagesCollectionFolder = CMSConfig.getUploadDir() + "deletetmp/users_" + req.user.hashid() + "_" + req.imagesCollection.hashid();
 
+		var failCB = function(errString) {
+			if(failCallback != null) {
+				failCallback(errString);
+			} else {
+				res.status(500).send({ 'error': errString });
+			}
+		};
+
 		fs.rename(originImagesCollectionFolder, tmpImagesCollectionFolder, function(err) {
 			if(err) {
-				res.status(500).send({ 'error': "Error during deleting ImagesCollection." });
+				failCB("Error during deleting ImagesCollection.");
 			} else {
 				var success = function(deleteImagesCollectionId) {
 					rmdir(tmpImagesCollectionFolder, function ( err, dirs, files ){
-						res.json(deleteImagesCollectionId);
+						if(successCallback != null) {
+							successCallback(deleteImagesCollectionId);
+						} else {
+							res.json(deleteImagesCollectionId);
+						}
 					});
 				};
 
 				var fail = function(error) {
 					fs.rename(tmpImagesCollectionFolder, originImagesCollectionFolder , function(err) {
-						res.status(500).send({ 'error': error });
+						failCB(error);
 					});
 				};
 

@@ -8,6 +8,7 @@
 /// <reference path="../model/VideosCollection.ts" />
 
 /// <reference path="./VideosRouter.ts" />
+/// <reference path="./ImagesCollectionsRouter.ts" />
 
 declare var require : any;
 
@@ -49,16 +50,25 @@ class VideosCollectionsRouter extends RouterItf {
 			var success = function(videosCollection) {
 				req.videosCollection = videosCollection;
 
+				var successThumbnailsCollection = function(thumbnailsCollection) {
+					req.videosThumbnailsCollection = thumbnailsCollection;
+					next();
+				};
+
+				var retrieveThumbnailsCollection = function() {
+					ImagesCollection.findOneByHashid(id, successThumbnailsCollection, fail);
+				};
+
 				if(typeof(req.user) == "undefined") {
 
 					var successLoadUser = function() {
 						req.user = req.videosCollection.user();
-						next();
+						retrieveThumbnailsCollection();
 					};
 
 					req.videosCollection.user().loadAssociations(successLoadUser, fail);
 				} else {
-					next();
+					retrieveThumbnailsCollection();
 				}
 			};
 
@@ -153,18 +163,27 @@ class VideosCollectionsRouter extends RouterItf {
 
 				var successUserLink = function() {
 
+					var createThumbnailCollection = function() {
+
+						var successCreateThumbnailCollection = function(thumbnailCollection : ImagesCollection) {
+							res.json(videoCollection.toJSONObject());
+						};
+
+						ImagesCollectionsRouter.newImagesCollectionObject(req, hashid, videoCollection.name() + " (Videos Thumbnails)", "", successCreateThumbnailCollection, fail);
+					};
+
 					var createVideosCollectionFolder = function() {
 						fs.stat(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/videos/" + hashid + "/", function (err, stats) {
 							if (err || !stats.isDirectory()) {
 								mkdirp(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/videos/" + hashid + "/", function (err2) {
 									if (err2) {
-										res.status(500).send({'error': JSON.stringify(err2)});
+										fail(err2);
 									} else {
-										res.json(videoCollection.toJSONObject());
+										createThumbnailCollection();
 									}
 								});
 							} else {
-								res.json(videoCollection.toJSONObject());
+								createThumbnailCollection();
 							}
 						});
 					};
@@ -173,7 +192,7 @@ class VideosCollectionsRouter extends RouterItf {
 						if (errVideosFolder || !stats.isDirectory()) {
 							mkdirp(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/videos/", function (errVideosFolderCreation) {
 								if (errVideosFolderCreation) {
-									res.status(500).send({'error': JSON.stringify(errVideosFolderCreation)});
+									fail(errVideosFolderCreation);
 								} else {
 									createVideosCollectionFolder();
 								}
@@ -216,18 +235,23 @@ class VideosCollectionsRouter extends RouterItf {
 
 			if(typeof(req.body.name) != "undefined" && req.body.name != "") {
 				req.videosCollection.setName(req.body.name);
+				req.videosThumbnailsCollection.setName(req.body.name + " (Videos Thumbnails)");
 			}
 
 			if(typeof(req.body.description) != "undefined") {
 				req.videosCollection.setDescription(req.body.description);
 			}
 
-			var success = function(videosCollection) {
-				res.json(videosCollection.toJSONObject());
-			};
-
 			var fail = function(error) {
 				res.status(500).send({ 'error': error });
+			};
+
+			var success = function(videosCollection) {
+				var successThumbnailsUpdate = function() {
+					//Success even if Thumbnails collection update failed.
+					res.json(videosCollection.toJSONObject());
+				};
+				req.videosThumbnailsCollection.update(successThumbnailsUpdate, successThumbnailsUpdate);
 			};
 
 			req.videosCollection.update(success, fail);
@@ -242,23 +266,31 @@ class VideosCollectionsRouter extends RouterItf {
 	 * @param {Express.Response} res - Response object.
 	 */
 	deleteVideosCollection(req : any, res : any) {
-
 		var originVideosCollectionFolder = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/videos/" + req.videosCollection.hashid();
 		var tmpVideosCollectionFolder = CMSConfig.getUploadDir() + "deletetmp/users_" + req.user.hashid() + "_" + req.videosCollection.hashid();
 
+		var failCB = function(errString) {
+			res.status(500).send({ 'error': errString });
+		};
+
 		fs.rename(originVideosCollectionFolder, tmpVideosCollectionFolder, function(err) {
 			if(err) {
-				res.status(500).send({ 'error': "Error during deleting VideosCollection." });
+				failCB("Error during deleting VideosCollection.");
 			} else {
 				var success = function(deleteVideosCollectionId) {
 					rmdir(tmpVideosCollectionFolder, function ( err, dirs, files ){
-						res.json(deleteVideosCollectionId);
+
+						var imgCollRouter : ImagesCollectionsRouter = new ImagesCollectionsRouter();
+						req.imagesCollection = req.videosThumbnailsCollection;
+						imgCollRouter.deleteImagesCollection(req, res, function() {
+							res.json(deleteVideosCollectionId);
+						}, failCB);
 					});
 				};
 
 				var fail = function(error) {
 					fs.rename(tmpVideosCollectionFolder, originVideosCollectionFolder , function(err) {
-						res.status(500).send({ 'error': error });
+						failCB(error);
 					});
 				};
 
