@@ -377,7 +377,7 @@ class ImagesRouter extends RouterItf {
 										newHeight = originalHeight / ratio;
 									}
 
-									imgOriginal.resize(newWidth, newHeight, function (errResize, imgResized) {
+									imgOriginal.resize(newWidth, newHeight, "linear", function (errResize, imgResized) {
 										if (errResize) {
 											fail("Fail during resizing file");
 											return;
