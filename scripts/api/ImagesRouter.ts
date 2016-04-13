@@ -449,7 +449,6 @@ class ImagesRouter extends RouterItf {
 	 * @param {Function} failCallback - If setted, this function should be called instead sending res
 	 */
 	deleteImage(req : any, res : any, successCallback : Function = null, failCallback : Function = null) {
-
 		var failCB = function(errString) {
 			if(failCallback != null) {
 				failCallback(errString);
@@ -464,8 +463,8 @@ class ImagesRouter extends RouterItf {
 				extension = '.' + req.image.extension();
 			}
 
-			var originImageFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.image.collection().hashid() + "/" + req.image.hashid() + extension;
-			var tmpImageFile = CMSConfig.getUploadDir() + "deletetmp/users_" + req.user.hashid() + "_images_" + req.image.collection().hashid() + "_" + req.image.hashid() + extension;
+			var originImageFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid() + "/" + req.image.hashid() + extension;
+			var tmpImageFile = CMSConfig.getUploadDir() + "deletetmp/users_" + req.user.hashid() + "_images_" + req.imagesCollection.hashid() + "_" + req.image.hashid() + extension;
 
 			fs.rename(originImageFile, tmpImageFile, function(err) {
 				if(err) {

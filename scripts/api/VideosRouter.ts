@@ -359,8 +359,8 @@ class VideosRouter extends RouterItf {
 				extension = '.' + req.video.extension();
 			}
 
-			var originVideoFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/videos/" + req.video.collection().hashid() + "/" + req.video.hashid() + extension;
-			var tmpVideoFile = CMSConfig.getUploadDir() + "deletetmp/users_" + req.user.hashid() + "_videos_" + req.video.collection().hashid() + "_" + req.video.hashid() + extension;
+			var originVideoFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/videos/" + req.videosCollection.hashid() + "/" + req.video.hashid() + extension;
+			var tmpVideoFile = CMSConfig.getUploadDir() + "deletetmp/users_" + req.user.hashid() + "_videos_" + req.videosCollection.hashid() + "_" + req.video.hashid() + extension;
 
 			fs.rename(originVideoFile, tmpVideoFile, function(err) {
 				if(err) {
