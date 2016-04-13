@@ -127,7 +127,7 @@ class VideosRouter extends RouterItf {
 							} else {
 								var destThumbnailFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.videosThumbnailsCollection.hashid() + "/" + vidId + '.png';
 
-								Helper.makeSnapshot(destVideoFile, destThumbnailFile, '00:00:05', '200', '125', function(error){
+								Helper.makeSnapshot(destVideoFile, destThumbnailFile, '00:00:01', '200', '125', function(error){
 									if(error != null) {
 										Logger.debug(error);
 										failCB(error);
