@@ -85,16 +85,26 @@ class ImagesRouter extends RouterItf {
 	 * The structure if it is a fileb64 is the following: {'name': filename, 'file': base64file, 'description': description}
 	 *
 	 * @param {Express.Response} res - Response object.
+	 * @param {Function} successCallback - If setted, this function should be called instead sending res
+	 * @param {Function} failCallback - If setted, this function should be called instead sending res
 	 */
-	newImage(req : any, res : any) {
+	newImage(req : any, res : any, successCallback : Function = null, failCallback : Function = null) {
+		var failCB = function(errString) {
+			if(failCallback != null) {
+				failCallback(errString);
+			} else {
+				res.status(500).send({ 'error': errString });
+			}
+		};
+
 		if(Helper.isEmpty(req.files) && Helper.isEmpty(req.body.file)) {
 			Logger.error("Try to upload an image without any datas");
-			res.status(500).send({ 'error': 'Missing some information to create new Image.' });
+			failCB('Missing some information to create new Image.');
 		} else if (!Helper.isEmpty(req.files)) {
 
 			Logger.debug("Upload image using files property");
 
-			var addImageToCollection = function(imgId, imgName, imgDescription, imgFile, successCB, failCB) {
+			var addImageToCollection = function(imgId, imgName, imgDescription, imgFile, successCB, failFCB) {
 				var newImage = new ImageObject(imgId, imgName, imgDescription, imgFile.mimetype, imgFile.extension);
 
 				var successCreate = function(image:ImageObject) {
@@ -109,17 +119,17 @@ class ImagesRouter extends RouterItf {
 
 						fs.rename(originImageFile, destImageFile, function (err) {
 							if (err) {
-								failCB(new Error("Error during adding Image to ImagesCollection."));
+								failFCB(new Error("Error during adding Image to ImagesCollection."));
 							} else {
 								successCB(image);
 							}
 						});
 					};
 
-					req.imagesCollection.addImage(image, successImagesCollectionLink, failCB);
+					req.imagesCollection.addImage(image, successImagesCollectionLink, failFCB);
 				};
 
-				newImage.create(successCreate, failCB);
+				newImage.create(successCreate, failFCB);
 			};
 
 			if(typeof(req.files.file) == "undefined") {
@@ -142,9 +152,13 @@ class ImagesRouter extends RouterItf {
 
 							if(imagesDesc.length == filesKeys.length) {
 								if(nbFails == filesKeys.length) {
-									res.status(500).json(imagesDesc);
+									failCB(JSON.stringify(imagesDesc));
 								} else {
-									res.json(imagesDesc);
+									if(successCallback != null) {
+										successCallback(imagesDesc);
+									} else {
+										res.json(imagesDesc);
+									}
 								}
 							}
 						};
@@ -153,7 +167,11 @@ class ImagesRouter extends RouterItf {
 							imagesDesc.push(image.toJSONObject());
 
 							if(imagesDesc.length == filesKeys.length) {
-								res.json(imagesDesc);
+								if(successCallback != null) {
+									successCallback(imagesDesc);
+								} else {
+									res.json(imagesDesc);
+								}
 							}
 						};
 
@@ -162,7 +180,7 @@ class ImagesRouter extends RouterItf {
 						addImageToCollection(hashid, file.originalname, "", file, success, fail);
 					});
 				} else {
-					res.status(500).send({ 'error': 'Files is defined but missed information to create image.' });
+					failCB('Files is defined but missed information to create image.');
 				}
 			} else {
 				var hashid = uuid.v1();
@@ -174,11 +192,15 @@ class ImagesRouter extends RouterItf {
 				var imageDescription = req.body.description || "";
 
 				var fail = function (error) {
-					res.status(500).send({'error': error});
+					failCB(error);
 				};
 
 				var success = function(image:ImageObject) {
-					res.json(image.toJSONObject());
+					if(successCallback != null) {
+						successCallback(image.toJSONObject());
+					} else {
+						res.json(image.toJSONObject());
+					}
 				};
 
 				addImageToCollection(hashid, imageName, imageDescription, req.files.file, success, fail);
@@ -194,7 +216,7 @@ class ImagesRouter extends RouterItf {
 
 			var fail = function (error) {
 				Logger.error(error);
-				res.status(500).send({'error': error});
+				failCB(error);
 			};
 
 			if (extension == null) {
@@ -205,7 +227,11 @@ class ImagesRouter extends RouterItf {
 				var newImage = new ImageObject(hashid, imageName, description, type, extension);
 
 				var success = function(image:ImageObject) {
-					res.json(image.toJSONObject());
+					if(successCallback != null) {
+						successCallback(image.toJSONObject());
+					} else {
+						res.json(image.toJSONObject());
+					}
 				};
 
 				var successCreation = function (image : ImageObject) {

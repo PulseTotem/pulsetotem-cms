@@ -6,7 +6,12 @@
 /// <reference path="../core/CMSConfig.ts" />
 /// <reference path="../auth/CMSAuth.ts" />
 
+/// <reference path="../core/Helper.ts" />
+
 /// <reference path="../model/News.ts" />
+/// <reference path="../model/ImageObject.ts" />
+
+/// <reference path="./ImagesRouter.ts" />
 
 declare var require : any;
 
@@ -57,6 +62,10 @@ class NewsRouter extends RouterItf {
 		this.router.get('/:news_id', function(req, res) { self.showNews(req, res); });
 		this.router.put('/:news_id', CMSAuth.can('manage user news'), function(req, res) { self.updateNews(req, res); });
 		this.router.delete('/:news_id', CMSAuth.can('manage user news'), function(req, res) { self.deleteNews(req, res); });
+
+		// Define '/:news_id/picture' route.
+		this.router.post('/:news_id/picture', CMSAuth.can('manage user news'), function(req, res) { self.addPicture(req, res); });
+		this.router.delete('/:news_id/picture', CMSAuth.can('manage user news'), function(req, res) { self.deletePicture(req, res); });
 	}
 
 	/**
@@ -67,9 +76,27 @@ class NewsRouter extends RouterItf {
 	 * @param {Express.Response} res - Response object.
 	 */
 	listAllNewsOfCollection(req : any, res : any) {
-		var news_JSON = req.newsCollection.toJSONObject(true)["newsList"];
+		var news_JSON = [];
 
-		res.json(news_JSON);
+		if(req.newsCollection.newsList().length > 0) {
+			var fail = function(error) {
+				res.status(500).send({ 'error': error });
+			};
+
+			req.newsCollection.newsList().forEach(function (newsItem : News) {
+				var successLoadPicture = function() {
+					news_JSON.push(newsItem.toJSONObject(true));
+
+					if(news_JSON.length == req.newsCollection.newsList().length) {
+						res.json(news_JSON);
+					}
+				};
+
+				newsItem.loadPicture(successLoadPicture, fail);
+			});
+		} else {
+			res.json(news_JSON);
+		}
 	}
 
 	/**
@@ -129,6 +156,9 @@ class NewsRouter extends RouterItf {
 
 			if(typeof(req.body.title) != "undefined") {
 				req.news.setTitle(req.body.title);
+				if(req.news.picture() != null) {
+					req.news.picture().setName("[Picture] " + req.body.title)
+				}
 			}
 
 			if(typeof(req.body.content) != "undefined") {
@@ -144,7 +174,18 @@ class NewsRouter extends RouterItf {
 			}
 
 			var success = function(news) {
-				res.json(news.toJSONObject());
+
+
+				var successPictureUpdated = function() {
+					//Success even if picture update failed.
+					res.json(news.toJSONObject());
+				};
+
+				if(req.news.picture() != null) {
+					req.news.picture().update(successPictureUpdated, successPictureUpdated);
+				} else {
+					successPictureUpdated();
+				}
 			};
 
 			var fail = function(error) {
@@ -169,16 +210,96 @@ class NewsRouter extends RouterItf {
 
 		var successRemoveNews = function() {
 			var success = function(deleteNewId) {
-				res.json(deleteNewId);
-			};
-
-			var fail = function(error) {
-				res.status(500).send({ 'error': error });
+				if(req.news.picture() != null) {
+					var imgRouter:ImagesRouter = new ImagesRouter();
+					req.imagesCollection = req.newsPicturesCollection;
+					req.image = req.news.picture();
+					imgRouter.deleteImage(req, res, function () {
+						res.json(deleteNewId);
+					}, fail);
+				} else {
+					res.json(deleteNewId);
+				}
 			};
 
 			req.news.delete(success, fail);
 		};
 
 		req.newsCollection.removeNews(req.news, successRemoveNews, fail);
+	}
+
+	/**
+	 * Add a Picture to a News.
+	 *
+	 * @method addPicture
+	 * @param {Express.Request} req - Request object.
+	 * @param {Express.Response} res - Response object.
+	 */
+	addPicture(req : any, res : any) {
+		var fail = function(error) {
+			res.status(500).send({ 'error': error });
+		};
+
+		if(Helper.isEmpty(req.files) && Helper.isEmpty(req.body.file)) {
+			fail('Missing some information to add Picture to news.');
+		} else {
+
+			if(req.news.picture() != null) {
+				fail('News has already a Picture. Please delete this picture from news before to attach it a new one.');
+			} else {
+				var imgRouter:ImagesRouter = new ImagesRouter();
+				req.imagesCollection = req.newsPicturesCollection;
+				imgRouter.newImage(req, res, function (pictureDesc) {
+
+					var pictureId = null;
+
+					if(typeof(pictureDesc.id) != "undefined") {
+						pictureId = pictureDesc.id;
+					} else if(pictureDesc.length > 0 && typeof(pictureDesc[0].id) != "undefined") {
+						pictureId = pictureDesc[0].id;
+					}
+
+					if(pictureId != null) {
+
+						var successLinkPicture = function() {
+							res.json(req.news.toJSONObject());
+						};
+
+						var successRetrievePicture = function(image) {
+							req.news.setPicture(image, successLinkPicture, fail);
+						};
+
+						ImageObject.findOneByHashid(pictureId, successRetrievePicture, fail);
+					} else {
+						fail('An error occured during uploading file.');
+					}
+				}, fail);
+			}
+		}
+	}
+
+	/**
+	 * Delete a Picture from a News.
+	 *
+	 * @method deletePicture
+	 * @param {Express.Request} req - Request object.
+	 * @param {Express.Response} res - Response object.
+	 */
+	deletePicture(req : any, res : any) {
+		var fail = function(error) {
+			res.status(500).send({ 'error': error });
+		};
+
+		if(req.news.picture() == null) {
+			fail("News isn't attached to a Picture.");
+		} else {
+			var pictureId  = req.news.picture().hashid();
+
+			var successUnlinkPicture = function() {
+				res.json({"id" : pictureId });
+			};
+
+			req.news.unsetPicture(successUnlinkPicture, fail);
+		}
 	}
 }

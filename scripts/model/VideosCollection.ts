@@ -474,8 +474,9 @@ class VideosCollection extends ModelItf {
 			var deleteCollection = function() {
 				self.getSequelizeModel().destroy()
 					.then(function () {
-						var destroyId = self.getId();
+						var destroyId = self.hashid();
 						self._id = null;
+						self._hashid = null;
 
 						successCallback({"id" : destroyId});
 					})
