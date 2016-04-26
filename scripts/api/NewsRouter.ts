@@ -139,7 +139,7 @@ class NewsRouter extends RouterItf {
 	 * @param {Express.Response} res - Response object.
 	 */
 	showNews(req : any, res : any) {
-		res.json(req.news.toJSONObject());
+		res.json(req.news.toJSONObject(true));
 	}
 
 	/**
@@ -178,7 +178,7 @@ class NewsRouter extends RouterItf {
 
 				var successPictureUpdated = function() {
 					//Success even if picture update failed.
-					res.json(news.toJSONObject());
+					res.json(news.toJSONObject(true));
 				};
 
 				if(req.news.picture() != null) {
@@ -293,10 +293,15 @@ class NewsRouter extends RouterItf {
 		if(req.news.picture() == null) {
 			fail("News isn't attached to a Picture.");
 		} else {
-			var pictureId  = req.news.picture().hashid();
+			var picture  = req.news.picture();
 
 			var successUnlinkPicture = function() {
-				res.json({"id" : pictureId });
+				var imgRouter:ImagesRouter = new ImagesRouter();
+				req.imagesCollection = req.newsPicturesCollection;
+				req.image = picture;
+				imgRouter.deleteImage(req, res, function () {
+					res.json({"id" : picture.hashid() });
+				}, fail);
 			};
 
 			req.news.unsetPicture(successUnlinkPicture, fail);
