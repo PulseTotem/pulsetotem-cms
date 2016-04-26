@@ -8,6 +8,7 @@
 /// <reference path="../exceptions/ModelException.ts" />
 
 /// <reference path="./NewsCollection.ts" />
+/// <reference path="./ImageObject.ts" />
 
 var NewsSchema : any = db["News"];
 
@@ -68,6 +69,22 @@ class News extends ModelItf {
 	private _collection_loaded : boolean;
 
 	/**
+	 * Picture property
+	 *
+	 * @property _picture
+	 * @type ImageObject
+	 */
+	private _picture : ImageObject;
+
+	/**
+	 * Lazy loading for Picture property
+	 *
+	 * @property _picture_loaded
+	 * @type boolean
+	 */
+	private _picture_loaded : boolean;
+
+	/**
 	 * Constructor.
 	 *
 	 * @constructor
@@ -91,6 +108,9 @@ class News extends ModelItf {
 
 		this._collection = null;
 		this._collection_loaded = false;
+
+		this._picture = null;
+		this._picture_loaded = false;
 	}
 
 	/**
@@ -213,6 +233,50 @@ class News extends ModelItf {
 		}
 	}
 
+	/**
+	 * Return the News's Picture.
+	 *
+	 * @method picture
+	 */
+	picture() {
+		return this._picture;
+	}
+
+	/**
+	 * Load the News' Picture.
+	 *
+	 * @method loadPicture
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	loadPicture(successCallback : Function, failCallback : Function) {
+		if(! this._picture_loaded) {
+			var self = this;
+
+			this.getSequelizeModel().getImage()
+				.then(function(image) {
+					if(image != null) {
+						var iObject = ImageObject.fromJSONObject(image.dataValues);
+						iObject.setSequelizeModel(image, function () {
+							self._picture_loaded = true;
+							self._picture = iObject;
+							successCallback();
+						}, function (error) {
+							failCallback(error);
+						}, false);
+					} else {
+						self._picture_loaded = true;
+						successCallback();
+					}
+				})
+				.catch(function(error) {
+					failCallback(error);
+				});
+		} else {
+			successCallback();
+		}
+	}
+
 	//////////////////// Methods managing model. ///////////////////////////
 
 	/**
@@ -226,7 +290,7 @@ class News extends ModelItf {
 		var self = this;
 
 		var success : Function = function(models) {
-			if(self._collection_loaded) {
+			if(self._collection_loaded && self._picture_loaded) {
 				if (successCallback != null) {
 					successCallback();
 				} // else //Nothing to do ?
@@ -242,6 +306,7 @@ class News extends ModelItf {
 		};
 
 		this.loadCollection(success, fail);
+		this.loadPicture(success, fail);
 	}
 
 	/**
@@ -265,6 +330,10 @@ class News extends ModelItf {
 		if(complete) {
 			if(this._collection_loaded) {
 				newData["collection"] = (this.collection() !== null) ? this.collection().toJSONObject() : null;
+			}
+
+			if(this._picture_loaded) {
+				newData["picture"] = (this.picture() !== null) ? this.picture().toJSONObject() : null;
 			}
 		}
 
@@ -385,8 +454,9 @@ class News extends ModelItf {
 		if(this.getId() != null) {
 			self.getSequelizeModel().destroy()
 				.then(function () {
-					var destroyId = self.getId();
+					var destroyId = self.hashid();
 					self._id = null;
+					self._hashid = null;
 
 					successCallback({"id" : destroyId});
 				})
@@ -429,6 +499,62 @@ class News extends ModelItf {
 			.catch(function(e) {
 				failCallback(e);
 			});
+	}
+
+	/**
+	 * Set picture for News.
+	 *
+	 * @method setPicture
+	 * @param {ImageObject} image - Image to set as picture for news.
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	setPicture(image : ImageObject, successCallback : Function, failCallback : Function) {
+		var self = this;
+
+		if(this.getId() != null) {
+
+			if(image.getId() != null) {
+				self.getSequelizeModel().setImage(image.getSequelizeModel())
+					.then(function () {
+						self._picture = image;
+						self._picture_loaded = true;
+						successCallback(self);
+					})
+					.catch(function (error) {
+						failCallback(error);
+					});
+			} else {
+				failCallback(new ModelException("You need to create the Image before to set as picture for News."));
+			}
+		} else {
+			failCallback(new ModelException("You need to create News before to set an Image as picture."));
+		}
+	}
+
+	/**
+	 * Unset picture for News.
+	 *
+	 * @method unsetPicture
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	unsetPicture(successCallback : Function, failCallback : Function) {
+		var self = this;
+
+		if(this.getId() != null) {
+			self.getSequelizeModel().setImage(null)
+				.then(function () {
+					self._picture = null;
+					self._picture_loaded = true;
+					successCallback(self);
+				})
+				.catch(function (error) {
+					failCallback(error);
+				});
+		} else {
+			failCallback(new ModelException("You need to create News before to unset an Image as picture."));
+		}
 	}
 
 	/**

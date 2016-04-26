@@ -8,6 +8,7 @@
 /// <reference path="../model/NewsCollection.ts" />
 
 /// <reference path="./NewsRouter.ts" />
+/// <reference path="./ImagesCollectionsRouter.ts" />
 
 declare var require : any;
 
@@ -49,16 +50,25 @@ class NewsCollectionsRouter extends RouterItf {
 			var success = function(newsCollection) {
 				req.newsCollection = newsCollection;
 
+				var successPicturesCollection = function(picturesCollection) {
+					req.newsPicturesCollection = picturesCollection;
+					next();
+				};
+
+				var retrievePicturesCollection = function() {
+					ImagesCollection.findOneByHashid(id, successPicturesCollection, fail);
+				};
+
 				if(typeof(req.user) == "undefined") {
 
 					var successLoadUser = function() {
 						req.user = req.newsCollection.user();
-						next();
+						retrievePicturesCollection();
 					};
 
 					req.newsCollection.user().loadAssociations(successLoadUser, fail);
 				} else {
-					next();
+					retrievePicturesCollection();
 				}
 			};
 
@@ -135,7 +145,12 @@ class NewsCollectionsRouter extends RouterItf {
 			var success = function(newCollection : NewsCollection) {
 
 				var successUserLink = function() {
-					res.json(newCollection.toJSONObject());
+
+					var successCreatePictureCollection = function(pictureCollection : ImagesCollection) {
+						res.json(newCollection.toJSONObject());
+					};
+
+					ImagesCollectionsRouter.newImagesCollectionObject(req, hashid, newCollection.name() + " (News Pictures)", "", successCreatePictureCollection, fail);
 				};
 
 				req.user.addNewsCollection(newCollection, successUserLink, fail);
@@ -170,18 +185,23 @@ class NewsCollectionsRouter extends RouterItf {
 
 			if(typeof(req.body.name) != "undefined" && req.body.name != "") {
 				req.newsCollection.setName(req.body.name);
+				req.newsPicturesCollection.setName(req.body.name + " (News Pictures)");
 			}
 
 			if(typeof(req.body.description) != "undefined") {
 				req.newsCollection.setDescription(req.body.description);
 			}
 
-			var success = function(newsCollection) {
-				res.json(newsCollection.toJSONObject());
-			};
-
 			var fail = function(error) {
 				res.status(500).send({ 'error': error });
+			};
+
+			var success = function(newsCollection) {
+				var successPicturesUpdate = function() {
+					//Success even if Pictures collection update failed.
+					res.json(newsCollection.toJSONObject());
+				};
+				req.newsPicturesCollection.update(successPicturesUpdate, successPicturesUpdate);
 			};
 
 			req.newsCollection.update(success, fail);
@@ -196,12 +216,16 @@ class NewsCollectionsRouter extends RouterItf {
 	 * @param {Express.Response} res - Response object.
 	 */
 	deleteNewsCollection(req : any, res : any) {
-		var success = function(deleteNewsCollectionId) {
-			res.json(deleteNewsCollectionId);
-		};
-
 		var fail = function(error) {
 			res.status(500).send({ 'error': error });
+		};
+
+		var success = function(deleteNewsCollectionId) {
+			var imgCollRouter : ImagesCollectionsRouter = new ImagesCollectionsRouter();
+			req.imagesCollection = req.newsPicturesCollection;
+			imgCollRouter.deleteImagesCollection(req, res, function() {
+				res.json(deleteNewsCollectionId);
+			}, fail);
 		};
 
 		req.newsCollection.delete(success, fail);

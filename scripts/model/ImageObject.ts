@@ -385,8 +385,9 @@ class ImageObject extends ModelItf {
 		if(this.getId() != null) {
 			self.getSequelizeModel().destroy()
 				.then(function () {
-					var destroyId = self.getId();
+					var destroyId = self.hashid();
 					self._id = null;
+					self._hashid = null;
 
 					successCallback({"id" : destroyId});
 				})
