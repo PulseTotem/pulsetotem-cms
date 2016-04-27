@@ -252,7 +252,7 @@ describe('User', function() {
 
 			var success = function() {
 
-				var userId = user.getId();
+				var userId = user.hashid();
 
 				var userSequelizeModel = user.getSequelizeModel();
 				var spyDestroyAttributes = sinon.spy(userSequelizeModel, "destroy");
