@@ -17,10 +17,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true
     },
-    content: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
     begin: {
       type: DataTypes.STRING,
       allowNull: true
@@ -45,6 +41,10 @@ module.exports = function(sequelize, DataTypes) {
     },
     NewsCollectionId: {
       type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    content: {
+      type: DataTypes.TEXT,
       allowNull: true
     }
   }, {
