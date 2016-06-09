@@ -186,7 +186,7 @@ class VideosCollectionsRouter extends RouterItf {
 							res.json(videoCollection.toJSONObject());
 						};
 
-						ImagesCollectionsRouter.newImagesCollectionObject(req, hashid, videoCollection.name() + " (Videos Thumbnails)", "", successCreateThumbnailCollection, fail);
+						ImagesCollectionsRouter.newImagesCollectionObject(req, hashid, videoCollection.name() + " (Videos Thumbnails)", "", true, successCreateThumbnailCollection, fail);
 					};
 
 					var createVideosCollectionFolder = function() {

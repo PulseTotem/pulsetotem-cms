@@ -150,7 +150,7 @@ class NewsCollectionsRouter extends RouterItf {
 						res.json(newCollection.toJSONObject());
 					};
 
-					ImagesCollectionsRouter.newImagesCollectionObject(req, hashid, newCollection.name() + " (News Pictures)", "", successCreatePictureCollection, fail);
+					ImagesCollectionsRouter.newImagesCollectionObject(req, hashid, newCollection.name() + " (News Pictures)", "", true, successCreatePictureCollection, fail);
 				};
 
 				req.user.addNewsCollection(newCollection, successUserLink, fail);

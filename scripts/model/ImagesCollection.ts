@@ -36,6 +36,16 @@ class ImagesCollection extends ModelItf {
 	private _description : string;
 
 	/**
+	 * 'Autogenerate' status property.
+	 * Set 'false' if collection is not autogenerate, 'true' when it is autogenerate by CMS itself.
+	 * (for example, when thumbnails for video are created or photo in news are added)
+	 *
+	 * @property _autogenerate
+	 * @type boolean
+	 */
+	private _autogenerate : boolean;
+
+	/**
 	 * User property
 	 *
 	 * @property _user
@@ -90,16 +100,18 @@ class ImagesCollection extends ModelItf {
 	 * @param {string} hashid - The ImagesCollection's hashid.
 	 * @param {string} name - The ImagesCollection's name.
 	 * @param {string} description - The ImagesCollection's description.
+	 * @param {boolean} autogenerate - The ImagesCollection's autogenerate status.
 	 * @param {number} id - The ImagesCollection's id.
 	 * @param {string} createdAt - The ImagesCollection's createdAt.
 	 * @param {string} updatedAt - The ImagesCollection's updatedAt.
 	 */
-	constructor(hashid : string = "", name : string = "", description : string = "", id : number = null, createdAt : string = null, updatedAt : string = null) {
+	constructor(hashid : string = "", name : string = "", description : string = "", autogenerate : boolean = false, id : number = null, createdAt : string = null, updatedAt : string = null) {
 		super(id, createdAt, updatedAt);
 
 		this.setHashid(hashid);
 		this.setName(name);
 		this.setDescription(description);
+		this.setAutogenerate(autogenerate);
 
 		this._user = null;
 		this._user_loaded = false;
@@ -147,6 +159,25 @@ class ImagesCollection extends ModelItf {
 	 */
 	description() {
 		return this._description;
+	}
+
+	/**
+	 * Set the ImagesCollection's autogenerate status.
+	 *
+	 * @method setAutogenerate
+	 * @param {boolean} autogenerate - New autogenerate status
+	 */
+	setAutogenerate(autogenerate : boolean) {
+		this._autogenerate = autogenerate;
+	}
+
+	/**
+	 * Return the ImagesCollection's autogenerate status.
+	 *
+	 * @method autogenerate
+	 */
+	autogenerate() {
+		return this._autogenerate;
 	}
 
 	/**
@@ -338,7 +369,8 @@ class ImagesCollection extends ModelItf {
 		var newData = {
 			"id" : this.hashid(),
 			"name": this.name(),
-			"description": this.description()
+			"description": this.description(),
+			"autogenerate": this.autogenerate()
 		};
 
 		if(complete) {
@@ -749,7 +781,7 @@ class ImagesCollection extends ModelItf {
 	 * @return {SDI} The model instance.
 	 */
 	static fromJSONObject(jsonObject : any) : ImagesCollection {
-		var imagesCollection = new ImagesCollection(jsonObject.hashid, jsonObject.name, jsonObject.description, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
+		var imagesCollection = new ImagesCollection(jsonObject.hashid, jsonObject.name, jsonObject.description, jsonObject.autogenerate, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
 
 		return imagesCollection;
 	}

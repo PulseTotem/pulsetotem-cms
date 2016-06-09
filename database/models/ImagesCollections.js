@@ -38,6 +38,11 @@ module.exports = function(sequelize, DataTypes) {
     ImageId: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    autogenerate: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
   }, {
     tableName: 'ImagesCollections',

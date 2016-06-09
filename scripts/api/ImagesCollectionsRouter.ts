@@ -150,7 +150,7 @@ class ImagesCollectionsRouter extends RouterItf {
 			};
 
 			var hashid = uuid.v1();
-			ImagesCollectionsRouter.newImagesCollectionObject(req, hashid, req.body.name, req.body.description, success, fail);
+			ImagesCollectionsRouter.newImagesCollectionObject(req, hashid, req.body.name, req.body.description, false, success, fail);
 		}
 	}
 
@@ -163,11 +163,12 @@ class ImagesCollectionsRouter extends RouterItf {
 	 * @param {string} hashid - ImagesCollection's hashid.
 	 * @param {string} name - ImagesCollection's name.
 	 * @param {string} description - ImagesCollection's description.
+	 * @param {boolean} autogenerate - ImagesCollection's autogenerate.
 	 * @param {Function} successCallback - Success callback function.
 	 * @param {Function} failCallback - Fail callback function.
 	 */
-	static newImagesCollectionObject(req : any, hashid : string, name : string, description : string, successCallback : Function, failCallback : Function ) {
-		var newImagesCollection = new ImagesCollection(hashid, name, description);
+	static newImagesCollectionObject(req : any, hashid : string, name : string, description : string, autogenerate : boolean, successCallback : Function, failCallback : Function ) {
+		var newImagesCollection = new ImagesCollection(hashid, name, description, autogenerate);
 
 		var fail = function(error) {
 			failCallback(error);
