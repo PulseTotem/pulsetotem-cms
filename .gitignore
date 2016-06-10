@@ -1,4 +1,5 @@
 build/*
+buildTests/*
 buildDBInit/*
 dist/*
 tmp/*
@@ -9,7 +10,10 @@ src/**~
 database/connection_infos.json
 doc/
 scripts/core/cms_config.json
+scripts/core/cms_config_tests.json
 package-bak.json
 package-tmp.json
 database/config/config.json
+database/config/configTests.json
 uploads
+uploadsTests
