@@ -1,6 +1,6 @@
 {
   "name": "pulsetotem-cms",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "dependencies": {
     "pg": "<=3.4.1",
     "pg-hstore": "<=2.3.2",
