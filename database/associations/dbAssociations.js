@@ -1,4 +1,6 @@
 exports.hasMany = [
+  ["Teams", "Users"],
+  ["Users", "Teams"],
   ["Users", "ImagesCollections"],
   ["ImagesCollections", "Images"],
   ["Users", "NewsCollections"],
