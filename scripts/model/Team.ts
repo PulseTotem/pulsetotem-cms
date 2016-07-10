@@ -7,68 +7,45 @@
 /// <reference path="../core/Helper.ts" />
 /// <reference path="../exceptions/ModelException.ts" />
 
-/// <reference path="./Team.ts" />
+/// <reference path="./User.ts" />
 /// <reference path="./ImagesCollection.ts" />
 /// <reference path="./NewsCollection.ts" />
 /// <reference path="./VideosCollection.ts" />
 
-var UserSchema : any = db["Users"];
+
+var TeamSchema : any = db["Teams"];
 
 /**
- * Model : User
+ * Model : Team
  *
- * @class User
+ * @class Team
  * @extends ModelItf
  */
-class User extends ModelItf {
+class Team extends ModelItf {
 
 	/**
-	 * Username property.
+	 * Name property.
 	 *
-	 * @property _username
+	 * @property _name
 	 * @type string
 	 */
-	private _username : string;
+	private _name : string;
 
 	/**
-	 * Email property.
+	 * Users property.
 	 *
-	 * @property _email
-	 * @type string
+	 * @property _users
+	 * @type Array<User>
 	 */
-	private _email : string;
+	private _users : Array<User>;
 
 	/**
-	 * Authorization key property.
+	 * Lazy loading for _users property.
 	 *
-	 * @property _authkey
-	 * @type string
-	 */
-	private _authkey : string;
-
-	/**
-	 * 'IsAdmin' status property.
-	 *
-	 * @property _isAdmin
+	 * @property _users_loaded
 	 * @type boolean
 	 */
-	private _isAdmin : boolean;
-
-	/**
-	 * Teams property.
-	 *
-	 * @property _teams
-	 * @type Array<Team>
-	 */
-	private _teams : Array<Team>;
-
-	/**
-	 * Lazy loading for _teams property.
-	 *
-	 * @property _teams_loaded
-	 * @type boolean
-	 */
-	private _teams_loaded : boolean;
+	private _users_loaded : boolean;
 
 	/**
 	 * ImagesCollections property.
@@ -123,26 +100,20 @@ class User extends ModelItf {
 	 * Constructor.
 	 *
 	 * @constructor
-	 * @param {string} hashid - The User's hashid.
-	 * @param {string} username - The User's username.
-	 * @param {string} email - The User's email.
-	 * @param {string} authkey - The User's authkey.
-	 * @param {boolean} isAdmin - The User's 'isAdmin' status.
-	 * @param {number} id - The User's id.
-	 * @param {string} createdAt - The User's createdAt.
-	 * @param {string} updatedAt - The User's updatedAt.
+	 * @param {string} hashid - The Team's hashid.
+	 * @param {string} name - The Team's name.
+	 * @param {number} id - The Team's id.
+	 * @param {string} createdAt - The Team's createdAt.
+	 * @param {string} updatedAt - The Team's updatedAt.
 	 */
-	constructor(hashid : string = "", username : string = "", email : string = "", authkey : string = "", isAdmin : boolean = false, id : number = null, createdAt : string = null, updatedAt : string = null) {
+	constructor(hashid : string = "", name : string = "", id : number = null, createdAt : string = null, updatedAt : string = null) {
 		super(id, createdAt, updatedAt);
 
 		this.setHashid(hashid);
-		this.setUsername(username);
-		this.setEmail(email);
-		this.setAuthKey(authkey);
-		this.setIsAdmin(isAdmin);
+		this.setName(name);
 
-		this._teams = null;
-		this._teams_loaded = false;
+		this._users = null;
+		this._users_loaded = false;
 
 		this._imagesCollections = null;
 		this._imagesCollections_loaded = false;
@@ -155,115 +126,58 @@ class User extends ModelItf {
 	}
 
 	/**
-	 * Set the User's username.
+	 * Set the Team's name.
 	 *
-	 * @method setUsername
-	 * @param {string} username - New Username
+	 * @method setName
+	 * @param {string} name - New Name
 	 */
-	setUsername(username : string) {
-		this._username = username;
+	setName(name : string) {
+		this._name = name;
 	}
 
 	/**
-	 * Return the User's username.
+	 * Return the Team's name.
 	 *
-	 * @method username
+	 * @method name
 	 */
-	username() {
-		return this._username;
+	name() {
+		return this._name;
 	}
 
 	/**
-	 * Set the User's email.
+	 * Return the Team's Users.
 	 *
-	 * @method setEmail
-	 * @param {string} email - New Email
+	 * @method users
 	 */
-	setEmail(email : string) {
-		this._email = email;
+	users() {
+		return this._users;
 	}
 
 	/**
-	 * Return the User's email.
+	 * Load the Team's Users.
 	 *
-	 * @method email
-	 */
-	email() {
-		return this._email;
-	}
-
-	/**
-	 * Set the User's authorization Key.
-	 *
-	 * @method setAuthKey
-	 * @param {string} authkey - New Authorization Key
-	 */
-	setAuthKey(authkey : string) {
-		this._authkey = authkey;
-	}
-
-	/**
-	 * Return the User's authorization Key.
-	 *
-	 * @method authKey
-	 */
-	authKey() {
-		return this._authkey;
-	}
-
-	/**
-	 * Set the User's isAdmin status.
-	 *
-	 * @method setIsAdmin
-	 * @param {boolean} isAdmin - New isAdmin status
-	 */
-	setIsAdmin(isAdmin : boolean) {
-		this._isAdmin = isAdmin;
-	}
-
-	/**
-	 * Return the User's isAdmin status.
-	 *
-	 * @method isAdmin
-	 */
-	isAdmin() {
-		return this._isAdmin;
-	}
-
-	/**
-	 * Return the User's Teams.
-	 *
-	 * @method teams
-	 */
-	teams() {
-		return this._teams;
-	}
-
-	/**
-	 * Load the User's Teams.
-	 *
-	 * @method loadTeams
+	 * @method loadUsers
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
-	loadTeams(successCallback : Function, failCallback : Function) {
-		if(! this._teams_loaded) {
+	loadUsers(successCallback : Function, failCallback : Function) {
+		if(! this._users_loaded) {
 			var self = this;
 
-			this.getSequelizeModel().getTeams()
-				.then(function(teams) {
+			this.getSequelizeModel().getUsers()
+				.then(function(users) {
 
-					var allTeams : Array<Team> = new Array<Team>();
+					var allUsers : Array<User> = new Array<User>();
 
-					if(teams.length > 0) {
+					if(users.length > 0) {
 
-						teams.forEach(function (team : any) {
-							var tObject = Team.fromJSONObject(team.dataValues);
-							tObject.setSequelizeModel(team, function () {
-								allTeams.push(tObject);
-								if (allTeams.length == teams.length) {
-									self._teams_loaded = true;
-									self._teams = allTeams;
+						users.forEach(function(user : any) {
+							var uObject = User.fromJSONObject(user.dataValues);
+							uObject.setSequelizeModel(user, function () {
+								allUsers.push(uObject);
+								if (allUsers.length == users.length) {
+									self._users_loaded = true;
+									self._users = allUsers;
 									successCallback();
 								}
 							}, function (error) {
@@ -272,8 +186,8 @@ class User extends ModelItf {
 						});
 
 					} else {
-						self._teams_loaded = true;
-						self._teams = allTeams;
+						self._users_loaded = true;
+						self._users = allUsers;
 						successCallback();
 					}
 				})
@@ -286,7 +200,7 @@ class User extends ModelItf {
 	}
 
 	/**
-	 * Return the User's ImagesCollections.
+	 * Return the Team's ImagesCollections.
 	 *
 	 * @method imagesCollections
 	 */
@@ -295,7 +209,7 @@ class User extends ModelItf {
 	}
 
 	/**
-	 * Load the User's ImagesCollections.
+	 * Load the Team's ImagesCollections.
 	 *
 	 * @method loadImagesCollections
 	 * @param {Function} successCallback - The callback function when success.
@@ -313,9 +227,9 @@ class User extends ModelItf {
 					if(imagesCollections.length > 0) {
 
 						imagesCollections.forEach(function (imagesCollection : any) {
-							var uObject = ImagesCollection.fromJSONObject(imagesCollection.dataValues);
-							uObject.setSequelizeModel(imagesCollection, function () {
-								allImagesCollections.push(uObject);
+							var icObject = ImagesCollection.fromJSONObject(imagesCollection.dataValues);
+							icObject.setSequelizeModel(imagesCollection, function () {
+								allImagesCollections.push(icObject);
 								if (allImagesCollections.length == imagesCollections.length) {
 									self._imagesCollections_loaded = true;
 									self._imagesCollections = allImagesCollections;
@@ -341,7 +255,7 @@ class User extends ModelItf {
 	}
 
 	/**
-	 * Return the User's NewsCollections.
+	 * Return the Team's NewsCollections.
 	 *
 	 * @method newsCollections
 	 */
@@ -350,7 +264,7 @@ class User extends ModelItf {
 	}
 
 	/**
-	 * Load the User's NewsCollections.
+	 * Load the Team's NewsCollections.
 	 *
 	 * @method loadNewsCollections
 	 * @param {Function} successCallback - The callback function when success.
@@ -396,7 +310,7 @@ class User extends ModelItf {
 	}
 
 	/**
-	 * Return the User's VideosCollections.
+	 * Return the Team's VideosCollections.
 	 *
 	 * @method videosCollections
 	 */
@@ -405,7 +319,7 @@ class User extends ModelItf {
 	}
 
 	/**
-	 * Load the User's VideosCollections.
+	 * Load the Team's VideosCollections.
 	 *
 	 * @method loadVideosCollections
 	 * @param {Function} successCallback - The callback function when success.
@@ -463,7 +377,8 @@ class User extends ModelItf {
 		var self = this;
 
 		var success : Function = function(models) {
-			if(self._teams_loaded && self._imagesCollections_loaded && self._newsCollections_loaded && self._videosCollections_loaded) {
+			if(self._users_loaded) {
+			//if(self._imagesCollections_loaded && self._newsCollections_loaded && self._videosCollections_loaded) {
 				if (successCallback != null) {
 					successCallback();
 				} // else //Nothing to do ?
@@ -478,14 +393,15 @@ class User extends ModelItf {
 			}
 		};
 
-		this.loadTeams(success, fail);
-		this.loadImagesCollections(success, fail);
+		this.loadUsers(success, fail);
+
+		/*this.loadImagesCollections(success, fail);
 		this.loadNewsCollections(success, fail);
-		this.loadVideosCollections(success, fail);
+		this.loadVideosCollections(success, fail);*/
 	}
 
 	/**
-	 * Return a User instance as a JSON Object
+	 * Return a Team instance as a JSON Object
 	 *
 	 * @method toJSONObject
 	 * @param {boolean} complete - flag to obtain complete description of Model
@@ -496,20 +412,12 @@ class User extends ModelItf {
 
 		var newData = {
 			"id" : this.hashid(),
-			"username": this.username(),
-			"email": this.email(),
-			"isAdmin": this.isAdmin()
+			"name": this.name()
 		};
 
 		if(complete) {
-			var completeData = {
-				"authkey": this.authKey()
-			};
-
-			newData = Helper.mergeObjects(newData, completeData);
-
-			if (this._teams_loaded) {
-				newData["teams"] = (this.teams() !== null) ? this.serializeArray(this.teams()) : null;
+			if (this._users_loaded) {
+				newData["users"] = (this.users() !== null) ? this.serializeArray(this.users()) : null;
 			}
 
 			if (this._imagesCollections_loaded) {
@@ -540,18 +448,18 @@ class User extends ModelItf {
 
 		if(this.getId() == null) {
 
-			var newUserJSON = this.toJSONObject(true);
-			newUserJSON["hashid"] = this.hashid();
-			delete(newUserJSON["id"]);
-			delete(newUserJSON["createdAt"]);
-			delete(newUserJSON["updatedAt"]);
+			var newTeamJSON = this.toJSONObject(true);
+			newTeamJSON["hashid"] = this.hashid();
+			delete(newTeamJSON["id"]);
+			delete(newTeamJSON["createdAt"]);
+			delete(newTeamJSON["updatedAt"]);
 
-			UserSchema.create(newUserJSON)
-				.then(function (user) {
-					var uObject = User.fromJSONObject(user.dataValues);
-					self._id = uObject.getId();
+			TeamSchema.create(newTeamJSON)
+				.then(function (team) {
+					var tObject = Team.fromJSONObject(team.dataValues);
+					self._id = tObject.getId();
 
-					self.setSequelizeModel(user, function() {
+					self.setSequelizeModel(team, function() {
 						successCallback(self);
 					}, function(error) {
 						failCallback(error);
@@ -561,7 +469,7 @@ class User extends ModelItf {
 					failCallback(error);
 				});
 		} else {
-			failCallback(new ModelException("User already exists."));
+			failCallback(new ModelException("Team already exists."));
 		}
 	}
 
@@ -576,17 +484,17 @@ class User extends ModelItf {
 	 */
 	static read(id : number, successCallback : Function, failCallback : Function) {
 		// search for known ids
-		UserSchema.findById(id)
-			.then(function(user) {
-				if(user != null) {
-					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user, function() {
-						successCallback(uObject);
+		TeamSchema.findById(id)
+			.then(function(team) {
+				if(team != null) {
+					var tObject = Team.fromJSONObject(team.dataValues);
+					tObject.setSequelizeModel(team, function() {
+						successCallback(tObject);
 					}, function(error) {
 						failCallback(error);
 					}, false);
 				} else {
-					failCallback(new ModelException("User with given Id was not found."));
+					failCallback(new ModelException("Team with given Id was not found."));
 				}
 			})
 			.catch(function(error) {
@@ -606,13 +514,13 @@ class User extends ModelItf {
 
 		if(this.getId() != null) {
 
-			var newUserJSON = self.toJSONObject(true);
-			newUserJSON["hashid"] = this.hashid();
-			delete(newUserJSON["id"]);
-			delete(newUserJSON["createdAt"]);
-			delete(newUserJSON["updatedAt"]);
+			var newTeamJSON = self.toJSONObject(true);
+			newTeamJSON["hashid"] = this.hashid();
+			delete(newTeamJSON["id"]);
+			delete(newTeamJSON["createdAt"]);
+			delete(newTeamJSON["updatedAt"]);
 
-			self.getSequelizeModel().updateAttributes(newUserJSON)
+			self.getSequelizeModel().updateAttributes(newTeamJSON)
 				.then(function (sequelizeInstance) {
 					if(sequelizeInstance.getDataValue("updatedAt") == "now()") {
 						self.setUpdatedAt(moment().format());
@@ -625,7 +533,7 @@ class User extends ModelItf {
 					failCallback(error);
 				});
 		} else {
-			failCallback(new ModelException("You need to create User before to update it."));
+			failCallback(new ModelException("You need to create Team before to update it."));
 		}
 	}
 
@@ -652,99 +560,99 @@ class User extends ModelItf {
 					failCallback(error);
 				});
 		} else {
-			failCallback(new ModelException("You need to create User before to delete it..."));
+			failCallback(new ModelException("You need to create Team before to delete it..."));
 		}
 	}
 
 	/**
-	 * Add a Team to User.
+	 * Add a User to Team.
 	 *
-	 * @method addTeam
-	 * @param {Team} team - Team to add to user.
+	 * @method addUser
+	 * @param {User} user - User to add to team.
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
-	addTeam(team : Team, successCallback : Function, failCallback : Function) {
+	addUser(user : User, successCallback : Function, failCallback : Function) {
 		var self = this;
 
 		if(this.getId() != null) {
 
-			if(team.getId() != null) {
-				self.getSequelizeModel().addTeam(team.getSequelizeModel())
+			if(user.getId() != null) {
+				self.getSequelizeModel().addUser(user.getSequelizeModel())
 					.then(function () {
-						if(self._teams == null) {
-							self._teams = new Array<Team>();
+						if(self._users == null) {
+							self._users = new Array<User>();
 						}
 
-						self._teams.push(team);
+						self._users.push(user);
 						successCallback(self);
 					})
 					.catch(function (error) {
 						failCallback(error);
 					});
 			} else {
-				failCallback(new ModelException("You need to create the Team before to add to User."));
+				failCallback(new ModelException("You need to create the User before to add to Team."));
 			}
 		} else {
-			failCallback(new ModelException("You need to create User before to add a Team."));
+			failCallback(new ModelException("You need to create Team before to add a User."));
 		}
 	}
 
 	/**
-	 * Remove a Team from User.
+	 * Remove a User from Team.
 	 *
-	 * @method removeTeam
-	 * @param {Team} team - Team to add to user.
+	 * @method removeUser
+	 * @param {User} user - User to add to team.
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
-	removeTeam(team : Team, successCallback : Function, failCallback : Function) {
+	removeUser(user : User, successCallback : Function, failCallback : Function) {
 		var self = this;
 
 		if(this.getId() != null) {
 
-			if(team.getId() != null) {
+			if(user.getId() != null) {
 
-				if(self._teams == null) {
-					failCallback(new ModelException("Team doesn't belong to this User."));
+				if(self._users == null) {
+					failCallback(new ModelException("User doesn't belong to this Team."));
 				} else {
-					var teamToDelete = null;
+					var userToDelete = null;
 
-					self._teams = self._teams.filter(function(obj) {
-						var comp = obj.getId() != team.getId();
+					self._users = self._users.filter(function(obj) {
+						var comp = obj.getId() != user.getId();
 						if(!comp) {
-							teamToDelete = obj;
+							userToDelete = obj;
 						}
 
 						return comp;
 					});
 
-					if(teamToDelete == null) {
-						failCallback(new ModelException("Team doesn't belong to this User."));
+					if(userToDelete == null) {
+						failCallback(new ModelException("User doesn't belong to this Team."));
 					} else {
-						self.getSequelizeModel().removeTeam(team.getSequelizeModel())
+						self.getSequelizeModel().removeUser(user.getSequelizeModel())
 							.then(function () {
 								successCallback(self);
 							})
 							.catch(function (error) {
-								self._teams.push(teamToDelete);
+								self._users.push(userToDelete);
 								failCallback(error);
 							});
 					}
 				}
 			} else {
-				failCallback(new ModelException("Team doesn't exist. You can't remove a Team that doesn't exist from a User."));
+				failCallback(new ModelException("User doesn't exist. You can't remove a User that doesn't exist from a Team."));
 			}
 		} else {
-			failCallback(new ModelException("User doesn't exist. User must to exist before to remove something from it."));
+			failCallback(new ModelException("Team doesn't exist. Team must to exist before to remove something from it."));
 		}
 	}
 
 	/**
-	 * Add an ImagesCollection to User.
+	 * Add an ImagesCollection to Team.
 	 *
 	 * @method addImagesCollection
-	 * @param {ImagesCollection} imagesCollection - ImagesCollection to add to user.
+	 * @param {ImagesCollection} imagesCollection - ImagesCollection to add to team.
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
@@ -767,18 +675,18 @@ class User extends ModelItf {
 						failCallback(error);
 					});
 			} else {
-				failCallback(new ModelException("You need to create the ImagesCollection before to add to User."));
+				failCallback(new ModelException("You need to create the ImagesCollection before to add to Team."));
 			}
 		} else {
-			failCallback(new ModelException("You need to create User before to add an ImagesCollection."));
+			failCallback(new ModelException("You need to create Team before to add an ImagesCollection."));
 		}
 	}
 
 	/**
-	 * Remove an ImagesCollection from User.
+	 * Remove an ImagesCollection from Team.
 	 *
 	 * @method removeImagesCollection
-	 * @param {ImagesCollection} imagesCollection - ImagesCollection to add to user.
+	 * @param {ImagesCollection} imagesCollection - ImagesCollection to add to team.
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
@@ -790,7 +698,7 @@ class User extends ModelItf {
 			if(imagesCollection.getId() != null) {
 
 				if(self._imagesCollections == null) {
-					failCallback(new ModelException("ImagesCollection doesn't belong to this User."));
+					failCallback(new ModelException("ImagesCollection doesn't belong to this Team."));
 				} else {
 					var imagesCollectionToDelete = null;
 
@@ -804,7 +712,7 @@ class User extends ModelItf {
 					});
 
 					if(imagesCollectionToDelete == null) {
-						failCallback(new ModelException("ImagesCollection doesn't belong to this User."));
+						failCallback(new ModelException("ImagesCollection doesn't belong to this Team."));
 					} else {
 						self.getSequelizeModel().removeImagesCollection(imagesCollection.getSequelizeModel())
 							.then(function () {
@@ -817,18 +725,18 @@ class User extends ModelItf {
 					}
 				}
 			} else {
-				failCallback(new ModelException("ImagesCollection doesn't exist. You can't remove an ImagesCollection that doesn't exist from a User."));
+				failCallback(new ModelException("ImagesCollection doesn't exist. You can't remove an ImagesCollection that doesn't exist from a Team."));
 			}
 		} else {
-			failCallback(new ModelException("User doesn't exist. User must to exist before to remove something from it."));
+			failCallback(new ModelException("Team doesn't exist. Team must to exist before to remove something from it."));
 		}
 	}
 
 	/**
-	 * Add an NewsCollection to User.
+	 * Add an NewsCollection to Team.
 	 *
 	 * @method addNewsCollection
-	 * @param {NewsCollection} newsCollection - NewsCollection to add to user.
+	 * @param {NewsCollection} newsCollection - NewsCollection to add to team.
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
@@ -851,18 +759,18 @@ class User extends ModelItf {
 						failCallback(error);
 					});
 			} else {
-				failCallback(new ModelException("You need to create the NewsCollection before to add to User."));
+				failCallback(new ModelException("You need to create the NewsCollection before to add to Team."));
 			}
 		} else {
-			failCallback(new ModelException("You need to create User before to add an NewsCollection."));
+			failCallback(new ModelException("You need to create Team before to add an NewsCollection."));
 		}
 	}
 
 	/**
-	 * Remove an NewsCollection from User.
+	 * Remove an NewsCollection from Team.
 	 *
 	 * @method removeNewsCollection
-	 * @param {NewsCollection} newsCollection - NewsCollection to add to user.
+	 * @param {NewsCollection} newsCollection - NewsCollection to add to team.
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
@@ -874,7 +782,7 @@ class User extends ModelItf {
 			if(newsCollection.getId() != null) {
 
 				if(self._newsCollections == null) {
-					failCallback(new ModelException("NewsCollection doesn't belong to this User."));
+					failCallback(new ModelException("NewsCollection doesn't belong to this Team."));
 				} else {
 					var newsCollectionToDelete = null;
 
@@ -888,7 +796,7 @@ class User extends ModelItf {
 					});
 
 					if(newsCollectionToDelete == null) {
-						failCallback(new ModelException("NewsCollection doesn't belong to this User."));
+						failCallback(new ModelException("NewsCollection doesn't belong to this Team."));
 					} else {
 						self.getSequelizeModel().removeNewsCollection(newsCollection.getSequelizeModel())
 							.then(function () {
@@ -901,18 +809,18 @@ class User extends ModelItf {
 					}
 				}
 			} else {
-				failCallback(new ModelException("NewsCollection doesn't exist. You can't remove an NewsCollection that doesn't exist from a User."));
+				failCallback(new ModelException("NewsCollection doesn't exist. You can't remove an NewsCollection that doesn't exist from a Team."));
 			}
 		} else {
-			failCallback(new ModelException("User doesn't exist. User must to exist before to remove something from it."));
+			failCallback(new ModelException("Team doesn't exist. Team must to exist before to remove something from it."));
 		}
 	}
 
 	/**
-	 * Add an VideosCollection to User.
+	 * Add an VideosCollection to Team.
 	 *
 	 * @method addVideosCollection
-	 * @param {VideosCollection} videosCollection - VideosCollection to add to user.
+	 * @param {VideosCollection} videosCollection - VideosCollection to add to team.
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
@@ -935,18 +843,18 @@ class User extends ModelItf {
 						failCallback(error);
 					});
 			} else {
-				failCallback(new ModelException("You need to create the VideosCollection before to add to User."));
+				failCallback(new ModelException("You need to create the VideosCollection before to add to Team."));
 			}
 		} else {
-			failCallback(new ModelException("You need to create User before to add an VideosCollection."));
+			failCallback(new ModelException("You need to create Team before to add an VideosCollection."));
 		}
 	}
 
 	/**
-	 * Remove an VideosCollection from User.
+	 * Remove an VideosCollection from Team.
 	 *
 	 * @method removeVideosCollection
-	 * @param {VideosCollection} videosCollection - VideosCollection to add to user.
+	 * @param {VideosCollection} videosCollection - VideosCollection to add to team.
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
@@ -958,7 +866,7 @@ class User extends ModelItf {
 			if(videosCollection.getId() != null) {
 
 				if(self._videosCollections == null) {
-					failCallback(new ModelException("VideosCollection doesn't belong to this User."));
+					failCallback(new ModelException("VideosCollection doesn't belong to this Team."));
 				} else {
 					var videosCollectionToDelete = null;
 
@@ -972,7 +880,7 @@ class User extends ModelItf {
 					});
 
 					if(videosCollectionToDelete == null) {
-						failCallback(new ModelException("VideosCollection doesn't belong to this User."));
+						failCallback(new ModelException("VideosCollection doesn't belong to this Team."));
 					} else {
 						self.getSequelizeModel().removeVideosCollection(videosCollection.getSequelizeModel())
 							.then(function () {
@@ -985,10 +893,10 @@ class User extends ModelItf {
 					}
 				}
 			} else {
-				failCallback(new ModelException("VideosCollection doesn't exist. You can't remove an VideosCollection that doesn't exist from a User."));
+				failCallback(new ModelException("VideosCollection doesn't exist. You can't remove an VideosCollection that doesn't exist from a Team."));
 			}
 		} else {
-			failCallback(new ModelException("User doesn't exist. User must to exist before to remove something from it."));
+			failCallback(new ModelException("Team doesn't exist. Team must to exist before to remove something from it."));
 		}
 	}
 
@@ -1000,16 +908,16 @@ class User extends ModelItf {
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
 	static all(successCallback : Function, failCallback : Function) {
-		UserSchema.all()
-			.then(function(users) {
-				var allUsers : Array<User> = new Array<User>();
+		TeamSchema.all()
+			.then(function(teams) {
+				var allTeams : Array<Team> = new Array<Team>();
 
-				users.forEach(function(user : any) {
-					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user, function() {
-						allUsers.push(uObject);
-						if(allUsers.length == users.length) {
-							successCallback(allUsers);
+				teams.forEach(function(team : any) {
+					var tObject = Team.fromJSONObject(team.dataValues);
+					tObject.setSequelizeModel(team, function() {
+						allTeams.push(tObject);
+						if(allTeams.length == teams.length) {
+							successCallback(allTeams);
 						}
 					}, function(error) {
 						failCallback(error);
@@ -1023,25 +931,25 @@ class User extends ModelItf {
 	}
 
 	/**
-	 * Find One User by hashid.
+	 * Find One Team by hashid.
 	 *
 	 * @method findOneByHashid
-	 * @param {string} hashid - The User's hashid
+	 * @param {string} hashid - The Team's hashid
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
 	static findOneByHashid(hashid : string, successCallback : Function, failCallback : Function) {
-		UserSchema.findOne({ where: {"hashid": hashid} })
-			.then(function(user) {
-				if(user != null) {
-					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user, function() {
-						successCallback(uObject);
+		TeamSchema.findOne({ where: {"hashid": hashid} })
+			.then(function(team) {
+				if(team != null) {
+					var tObject = Team.fromJSONObject(team.dataValues);
+					tObject.setSequelizeModel(team, function() {
+						successCallback(tObject);
 					}, function(error) {
 						failCallback(error);
 					}, false);
 				} else {
-					failCallback(new ModelException("User with given Hashid was not found."));
+					failCallback(new ModelException("Team with given Hashid was not found."));
 				}
 			})
 			.catch(function(e) {
@@ -1050,26 +958,26 @@ class User extends ModelItf {
 	}
 
 	/**
-	 * Find One User by username.
+	 * Find One Team by name.
 	 *
-	 * @method findOneByUsername
-	 * @param {string} username - The User's username
+	 * @method findOneByName
+	 * @param {string} name - The Team's name
 	 * @param {Function} successCallback - The callback function when success.
 	 * @param {Function} failCallback - The callback function when fail.
 	 */
-	static findOneByUsername(username : string, successCallback : Function, failCallback : Function) {
-		UserSchema.findOne({ where: {"username": username} })
-			.then(function(user) {
+	static findOneByName(name : string, successCallback : Function, failCallback : Function) {
+		TeamSchema.findOne({ where: {"name": name} })
+			.then(function(team) {
 
-				if(user != null) {
-					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user, function() {
-						successCallback(uObject);
+				if(team != null) {
+					var tObject = Team.fromJSONObject(team.dataValues);
+					tObject.setSequelizeModel(team, function() {
+						successCallback(tObject);
 					}, function(error) {
 						failCallback(error);
 					}, false);
 				} else {
-					failCallback(new ModelException("User with given Username was not found."));
+					failCallback(new ModelException("Team with given Name was not found."));
 				}
 			})
 			.catch(function(e) {
@@ -1078,70 +986,16 @@ class User extends ModelItf {
 	}
 
 	/**
-	 * Find One User by email.
-	 *
-	 * @method findOneByEmail
-	 * @param {string} email - The User's email
-	 * @param {Function} successCallback - The callback function when success.
-	 * @param {Function} failCallback - The callback function when fail.
-	 */
-	static findOneByEmail(email : string, successCallback : Function, failCallback : Function) {
-		UserSchema.findOne({ where: {"email": email} })
-			.then(function(user) {
-				if(user != null) {
-					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user, function() {
-						successCallback(uObject);
-					}, function(error) {
-						failCallback(error);
-					}, false);
-				} else {
-					failCallback(new ModelException("User with given Email was not found."));
-				}
-			})
-			.catch(function(e) {
-				failCallback(e);
-			});
-	}
-
-	/**
-	 * Find One User by Authorization Key.
-	 *
-	 * @method findOneByAuthKey
-	 * @param {string} authKey - The User's Authorization Key
-	 * @param {Function} successCallback - The callback function when success.
-	 * @param {Function} failCallback - The callback function when fail.
-	 */
-	static findOneByAuthKey(authKey : string, successCallback : Function, failCallback : Function) {
-		UserSchema.findOne({ where: {"authkey": authKey} })
-			.then(function(user) {
-				if(user != null) {
-					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user, function() {
-						successCallback(uObject);
-					}, function(error) {
-						failCallback(error);
-					}, false);
-				} else {
-					failCallback(new ModelException("User with given Authorization Key was not found."));
-				}
-			})
-			.catch(function(e) {
-				failCallback(e);
-			});
-	}
-
-	/**
-	 * Return a User instance from a JSON Object.
+	 * Return a Team instance from a JSON Object.
 	 *
 	 * @method fromJSONObject
 	 * @static
 	 * @param {JSONObject} jsonObject - The JSON Object
 	 * @return {SDI} The model instance.
 	 */
-	static fromJSONObject(jsonObject : any) : User {
-		var user = new User(jsonObject.hashid, jsonObject.username, jsonObject.email, jsonObject.authkey, jsonObject.isAdmin, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
+	static fromJSONObject(jsonObject : any) : Team {
+		var team = new Team(jsonObject.hashid, jsonObject.name, jsonObject.id, jsonObject.createdAt, jsonObject.updatedAt);
 
-		return user;
+		return team;
 	}
 }
