@@ -4,6 +4,7 @@
 
 /// <reference path="../core/AuthManager.ts" />
 
+/// <reference path="../model/Team.ts" />
 /// <reference path="../model/User.ts" />
 
 /**
@@ -74,6 +75,32 @@ class CMSAuth extends AuthManager {
 						done(new Error('User was not found.'));
 					} else {
 						if(req.authUser.getId() == req.user.getId()) {
+							done();
+						} else {
+							done(new Error('Unauthorized.'));
+						}
+					}
+				} else { // An error occured.
+					done(error);
+				}
+			});
+		});
+
+		this.addRole("Team.In", function(req, res, done) {
+			self.can("perform action needing authentication")(req, res, function(error) {
+				if (typeof(error) == "undefined" || error == null) { // All is ok.
+					if(!req.team) {
+						done(new Error('Team was not found.'));
+					} else {
+						var isIn : boolean = false;
+
+						req.authUser.teams().forEach(function(team : Team) {
+							if(req.team.getId() == team.getId()) {
+								isIn = true;
+							}
+						});
+
+						if(isIn) {
 							done();
 						} else {
 							done(new Error('Unauthorized.'));
@@ -257,6 +284,7 @@ class CMSAuth extends AuthManager {
 	static initActions(){
 		this.addAction("perform action needing authentication", "Authenticated");
 		this.addAction("perform admin action", "Admin");
+		this.addAction("manage team information", ["Admin", "Team.In"]);
 		this.addAction("manage user information", ["Admin", "Profil.Owner"]);
 		this.addAction("manage user images collections", ["Admin", "ImagesCollection.Owner"]);
 		this.addAction("manage user images", ["Admin", "Image.Owner"]);
