@@ -7,6 +7,7 @@
 /// <reference path="../core/Helper.ts" />
 /// <reference path="../exceptions/ModelException.ts" />
 
+/// <reference path="./Team.ts" />
 /// <reference path="./News.ts" />
 
 var NewsCollectionSchema : any = db["NewsCollections"];
@@ -52,6 +53,22 @@ class NewsCollection extends ModelItf {
 	private _user_loaded : boolean;
 
 	/**
+	 * Team property
+	 *
+	 * @property _team
+	 * @type Team
+	 */
+	private _team : Team;
+
+	/**
+	 * Lazy loading for Team property
+	 *
+	 * @property _team_loaded
+	 * @type boolean
+	 */
+	private _team_loaded : boolean;
+
+	/**
 	 * NewsList property.
 	 *
 	 * @property _newsList
@@ -84,6 +101,9 @@ class NewsCollection extends ModelItf {
 		this.setHashid(hashid);
 		this.setName(name);
 		this.setDescription(description);
+
+		this._team = null;
+		this._team_loaded = false;
 
 		this._user = null;
 		this._user_loaded = false;
@@ -175,6 +195,50 @@ class NewsCollection extends ModelItf {
 	}
 
 	/**
+	 * Return the NewsCollection's Team.
+	 *
+	 * @method team
+	 */
+	team() {
+		return this._team;
+	}
+
+	/**
+	 * Load the NewsCollection's Team.
+	 *
+	 * @method loadTeam
+	 * @param {Function} successCallback - The callback function when success.
+	 * @param {Function} failCallback - The callback function when fail.
+	 */
+	loadTeam(successCallback : Function, failCallback : Function) {
+		if(! this._team_loaded) {
+			var self = this;
+
+			this.getSequelizeModel().getTeam()
+				.then(function(team) {
+					if(team != null) {
+						var tObject = Team.fromJSONObject(team.dataValues);
+						tObject.setSequelizeModel(team, function () {
+							self._team_loaded = true;
+							self._team = tObject;
+							successCallback();
+						}, function (error) {
+							failCallback(error);
+						}, false);
+					} else {
+						self._team_loaded = true;
+						successCallback();
+					}
+				})
+				.catch(function(error) {
+					failCallback(error);
+				});
+		} else {
+			successCallback();
+		}
+	}
+
+	/**
 	 * Return the NewsCollection's NewsList.
 	 *
 	 * @method newsList
@@ -242,7 +306,7 @@ class NewsCollection extends ModelItf {
 		var self = this;
 
 		var success : Function = function(models) {
-			if(self._user_loaded && self._newsList_loaded) {
+			if(self._user_loaded && self._team_loaded && self._newsList_loaded) {
 				if (successCallback != null) {
 					successCallback();
 				} // else //Nothing to do ?
@@ -258,6 +322,7 @@ class NewsCollection extends ModelItf {
 		};
 
 		this.loadUser(success, fail);
+		this.loadTeam(success, fail);
 		this.loadNewsList(success, fail);
 	}
 
@@ -280,6 +345,10 @@ class NewsCollection extends ModelItf {
 		if(complete) {
 			if (this._user_loaded) {
 				newData["user"] = (this.user() !== null) ? this.user().toJSONObject() : null;
+			}
+
+			if (this._team_loaded) {
+				newData["team"] = (this.team() !== null) ? this.team().toJSONObject() : null;
 			}
 
 			if (this._newsList_loaded) {
