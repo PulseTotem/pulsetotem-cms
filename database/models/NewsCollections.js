@@ -34,6 +34,10 @@ module.exports = function(sequelize, DataTypes) {
     UserId: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    TeamId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     }
   }, {
     tableName: 'NewsCollections',
