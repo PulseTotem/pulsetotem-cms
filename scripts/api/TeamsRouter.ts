@@ -104,11 +104,22 @@ class TeamsRouter extends RouterItf {
 		var success = function(teams) {
 			var teamsJSON = [];
 
-			teams.forEach(function (team : Team) {
-				teamsJSON.push(team.toJSONObject());
-			});
+			if(teams.length > 0) {
+				teams.forEach(function (team:Team) {
 
-			res.json(teamsJSON);
+					var successLoadUsers = function () {
+						teamsJSON.push(team.toJSONObject(true));
+
+						if (teamsJSON.length == teams.length) {
+							res.json(teamsJSON);
+						}
+					};
+
+					team.loadUsers(successLoadUsers, fail);
+				});
+			} else {
+				res.json(teamsJSON);
+			}
 		};
 
 		var fail = function(error) {
