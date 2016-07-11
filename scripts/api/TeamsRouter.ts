@@ -56,22 +56,40 @@ class TeamsRouter extends RouterItf {
 			Team.findOneByHashid(id, success, fail);
 		});
 
-		// Define '/' route.
+		this.router.param("user_id", function (req, res, next, id) {
+			var success = function(user) {
+				req.teamUser = user;
+				next();
+			};
+
+			var fail = function(error) {
+				next(error);
+			};
+
+			User.findOneByHashid(id, success, fail);
+		});
+
+		// Define '/' routes.
 		this.router.get('/', CMSAuth.can('perform admin action'), function(req, res) { self.listAllTeams(req, res); });
 		this.router.post('/', CMSAuth.can('perform admin action'), function(req, res) { self.newTeam(req, res); });
 
-		// Define '/:team_id' route.
+		// Define '/:team_id' routes.
 		this.router.get('/:team_id', CMSAuth.can('manage team information'), function(req, res) { self.showTeam(req, res); });
 		this.router.put('/:team_id', CMSAuth.can('manage team information'), function(req, res) { self.updateTeam(req, res); });
 		this.router.delete('/:team_id', CMSAuth.can('perform admin action'), function(req, res) { self.deleteTeam(req, res); });
 
-		// Define '/:team_id/images_collections' route.
+		// Define '/:team_id/users/[:user_id]' routes.
+		this.router.get('/:team_id/users', CMSAuth.can('manage team information'), function(req, res) { self.listTeamMembers(req, res); });
+		this.router.put('/:team_id/users/:user_id', CMSAuth.can('manage team information'), function(req, res) { self.addTeamMember(req, res); });
+		this.router.delete('/:team_id/users/:user_id', CMSAuth.can('manage team information'), function(req, res) { self.removeTeamMember(req, res); });
+
+		// Define '/:team_id/images_collections' routes.
 		this.router.use('/:team_id/images_collections', (new ImagesCollectionsRouter()).getRouter());
 
-		// Define '/:team_id/news_collections' route.
+		// Define '/:team_id/news_collections' routes.
 		this.router.use('/:team_id/news_collections', (new NewsCollectionsRouter()).getRouter());
 
-		// Define '/:team_id/videos_collections' route.
+		// Define '/:team_id/videos_collections' routes.
 		this.router.use('/:team_id/videos_collections', (new VideosCollectionsRouter()).getRouter());
 	}
 
@@ -207,5 +225,81 @@ class TeamsRouter extends RouterItf {
 				req.team.delete(success, fail);
 			}
 		});
+	}
+
+	/**
+	 * List all team's members.
+	 *
+	 * @method listTeamMembers
+	 * @param {Express.Request} req - Request object.
+	 * @param {Express.Response} res - Response object.
+	 */
+	listTeamMembers(req : any, res : any) {
+		var fail = function(error) {
+			res.status(500).send({ 'error': error });
+		};
+
+		var success = function() {
+			var usersJSON = [];
+
+			req.team.users().forEach(function (user:User) {
+				usersJSON.push(user.toJSONObject());
+			});
+
+			res.json(usersJSON);
+		};
+
+		req.team.loadUsers(success, fail);
+	}
+
+	/**
+	 * Add a new User to the Team.
+	 *
+	 * @method addTeamMember
+	 * @param {Express.Request} req - Request object.
+	 * @param {Express.Response} res - Response object.
+	 */
+	addTeamMember(req : any, res : any) {
+
+		var fail = function(error) {
+			res.status(500).send({ 'error': error });
+		};
+
+		var success = function() {
+			res.json(req.team.toJSONObject(true));
+		};
+
+		var afterRemove = function() {
+			req.team.addUser(req.teamUser, success, fail);
+		};
+
+		var successLoad = function() {
+			req.team.removeUser(req.teamUser, afterRemove, afterRemove);
+		};
+
+		req.team.loadUsers(successLoad, fail);
+	}
+
+	/**
+	 * Remove a User from the Team.
+	 *
+	 * @method removeTeamMember
+	 * @param {Express.Request} req - Request object.
+	 * @param {Express.Response} res - Response object.
+	 */
+	removeTeamMember(req : any, res : any) {
+		var fail = function(error) {
+			res.status(500).send({ 'error': error });
+		};
+
+		var success = function() {
+			res.json(req.team.toJSONObject(true));
+		};
+
+		var successLoad = function() {
+			req.team.removeUser(req.teamUser, success, fail);
+		};
+
+		req.team.loadUsers(successLoad, fail);
 	}
 }
