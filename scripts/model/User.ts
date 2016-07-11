@@ -1004,18 +1004,21 @@ class User extends ModelItf {
 			.then(function(users) {
 				var allUsers : Array<User> = new Array<User>();
 
-				users.forEach(function(user : any) {
-					var uObject = User.fromJSONObject(user.dataValues);
-					uObject.setSequelizeModel(user, function() {
-						allUsers.push(uObject);
-						if(allUsers.length == users.length) {
-							successCallback(allUsers);
-						}
-					}, function(error) {
-						failCallback(error);
-					}, false);
-
-				});
+				if(users.length > 0) {
+					users.forEach(function (user:any) {
+						var uObject = User.fromJSONObject(user.dataValues);
+						uObject.setSequelizeModel(user, function () {
+							allUsers.push(uObject);
+							if (allUsers.length == users.length) {
+								successCallback(allUsers);
+							}
+						}, function (error) {
+							failCallback(error);
+						}, false);
+					});
+				} else {
+					successCallback(allUsers);
+				}
 			})
 			.catch(function(e) {
 				failCallback(e);

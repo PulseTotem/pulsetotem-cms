@@ -912,18 +912,21 @@ class Team extends ModelItf {
 			.then(function(teams) {
 				var allTeams : Array<Team> = new Array<Team>();
 
-				teams.forEach(function(team : any) {
-					var tObject = Team.fromJSONObject(team.dataValues);
-					tObject.setSequelizeModel(team, function() {
-						allTeams.push(tObject);
-						if(allTeams.length == teams.length) {
-							successCallback(allTeams);
-						}
-					}, function(error) {
-						failCallback(error);
-					}, false);
-
-				});
+				if(teams.length > 0) {
+					teams.forEach(function (team:any) {
+						var tObject = Team.fromJSONObject(team.dataValues);
+						tObject.setSequelizeModel(team, function () {
+							allTeams.push(tObject);
+							if (allTeams.length == teams.length) {
+								successCallback(allTeams);
+							}
+						}, function (error) {
+							failCallback(error);
+						}, false);
+					});
+				} else {
+					successCallback(allTeams);
+				}
 			})
 			.catch(function(e) {
 				failCallback(e);
