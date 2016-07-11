@@ -1,6 +1,9 @@
+exports.belongsToMany = [
+  ["Teams", "Users", { through: 'TeamsUsers', foreignKey: 'TeamId' }],
+  ["Users", "Teams", { through: 'TeamsUsers', foreignKey: 'UserId' }]
+];
+
 exports.hasMany = [
-  ["Teams", "Users"],
-  ["Users", "Teams"],
   ["Teams", "ImagesCollections"],
   ["Users", "ImagesCollections"],
   ["ImagesCollections", "Images"],
