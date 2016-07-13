@@ -75,6 +75,19 @@ class NewsCollectionsRouter extends RouterItf {
 			NewsCollection.findOneByHashid(id, success, fail);
 		});
 
+		this.router.param("team_id", function (req, res, next, id) {
+			var success = function(team) {
+				req.team = team;
+				next();
+			};
+
+			var fail = function(error) {
+				next(error);
+			};
+
+			Team.findOneByHashid(id, success, fail);
+		});
+
 		// Define '/' route.
 		this.router.get('/', CMSAuth.can('manage user information'), function(req, res) {
 			if(typeof(req.user) != "undefined") {
@@ -98,6 +111,9 @@ class NewsCollectionsRouter extends RouterItf {
 
 		// Define '/:newscollection_id/news' route.
 		this.router.use('/:newscollection_id/news', (new NewsRouter()).getRouter());
+
+		// Define '/:newscollection_id/teams' route.
+		this.router.post('/:newscollection_id/teams/:team_id', function(req, res) { self.moveCollectionToTeam(req, res); });
 	}
 
 	/**
@@ -229,5 +245,28 @@ class NewsCollectionsRouter extends RouterItf {
 		};
 
 		req.newsCollection.delete(success, fail);
+	}
+
+	/**
+	 * Move collection to Team
+	 *
+	 * @method moveCollectionToTeam
+	 * @param {Express.Request} req - Request object.
+	 * @param {Express.Response} res - Response object.
+	 */
+	moveCollectionToTeam(req : any, res : any) {
+		var fail = function(errString) {
+			res.status(500).send({ 'error': errString });
+		};
+
+		var success = function() {
+			res.json(req.newsCollection.toJSONObject());
+		};
+
+		var successRemove = function() {
+			req.team.addNewsCollection(req.newsCollection, success, fail);
+		};
+
+		req.user.removeNewsCollection(req.newsCollection, successRemove, fail);
 	}
 }
