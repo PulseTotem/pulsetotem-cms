@@ -107,7 +107,7 @@ class TeamsRouter extends RouterItf {
 			if(teams.length > 0) {
 				teams.forEach(function (team:Team) {
 
-					var successLoadUsers = function () {
+					var successLoadAssociations = function () {
 						teamsJSON.push(team.toJSONObject(true));
 
 						if (teamsJSON.length == teams.length) {
@@ -115,7 +115,7 @@ class TeamsRouter extends RouterItf {
 						}
 					};
 
-					team.loadUsers(successLoadUsers, fail);
+					team.loadAssociations(successLoadAssociations, fail);
 				});
 			} else {
 				res.json(teamsJSON);
