@@ -377,8 +377,7 @@ class Team extends ModelItf {
 		var self = this;
 
 		var success : Function = function(models) {
-			if(self._users_loaded) {
-			//if(self._imagesCollections_loaded && self._newsCollections_loaded && self._videosCollections_loaded) {
+			if(self._users_loaded && self._imagesCollections_loaded && self._newsCollections_loaded && self._videosCollections_loaded) {
 				if (successCallback != null) {
 					successCallback();
 				} // else //Nothing to do ?
@@ -394,10 +393,9 @@ class Team extends ModelItf {
 		};
 
 		this.loadUsers(success, fail);
-
-		/*this.loadImagesCollections(success, fail);
+		this.loadImagesCollections(success, fail);
 		this.loadNewsCollections(success, fail);
-		this.loadVideosCollections(success, fail);*/
+		this.loadVideosCollections(success, fail);
 	}
 
 	/**
