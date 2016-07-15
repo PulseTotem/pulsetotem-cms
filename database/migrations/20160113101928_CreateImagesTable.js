@@ -1,5 +1,5 @@
 module.exports = {
-  up: function(migration, DataTypes) {
+  up: function(migration, DataTypes, done) {
     migration.createTable('Images', {
         id: {
           type: DataTypes.INTEGER,
@@ -34,10 +34,14 @@ module.exports = {
           allowNull: true
         }
       }
-    );
+    ).then(function(results) {
+        done();
+      });
   },
 
-  down: function(migration, DataTypes) {
-    migration.dropTable('Images');
+  down: function(migration, DataTypes, done) {
+    migration.dropTable('Images').then(function(results) {
+      done();
+    });
   }
 }

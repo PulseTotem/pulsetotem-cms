@@ -2,7 +2,7 @@ module.exports = {
   up: function(migration, DataTypes, done) {
     migration.addColumn(
       'ImagesCollections',
-      'ImageId',
+      'TeamId',
       {
         type: DataTypes.INTEGER,
         allowNull: true
@@ -13,7 +13,7 @@ module.exports = {
   },
 
   down: function(migration, DataTypes, done) {
-    migration.removeColumn('ImagesCollections', 'ImageId').then(function(results) {
+    migration.removeColumn('ImagesCollections', 'TeamId').then(function(results) {
       done();
     });
   }

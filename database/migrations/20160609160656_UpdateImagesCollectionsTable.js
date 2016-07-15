@@ -1,5 +1,5 @@
 module.exports = {
-  up: function(migration, DataTypes) {
+  up: function(migration, DataTypes, done) {
     migration.addColumn(
       'ImagesCollections',
       'autogenerate',
@@ -8,10 +8,14 @@ module.exports = {
         allowNull: false,
         defaultValue: false
       }
-    );
+    ).then(function(results) {
+        done();
+      });
   },
 
-  down: function(migration, DataTypes) {
-    migration.removeColumn('ImagesCollections', 'autogenerate');
+  down: function(migration, DataTypes, done) {
+    migration.removeColumn('ImagesCollections', 'autogenerate').then(function(results) {
+      done();
+    });
   }
 }
