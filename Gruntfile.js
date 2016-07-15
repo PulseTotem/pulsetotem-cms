@@ -14,6 +14,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-exec');
   grunt.loadNpmTasks('grunt-env');
   grunt.loadNpmTasks('grunt-mocha-istanbul');
+  grunt.loadNpmTasks('grunt-bumpup');
 
   // tasks
   grunt.initConfig({
@@ -210,7 +211,13 @@ module.exports = function (grunt) {
       test: ['buildTests/'],
       buildDBInit: ['buildDBInit/'],
       models: ["models/*.js", "!models/index.js"]
-    }
+    },
+// ---------------------------------------------
+
+// ---------------------------------------------
+//                                    bump task
+// ---------------------------------------------
+    bumpup: 'package.json'
 // ---------------------------------------------
   });
 
