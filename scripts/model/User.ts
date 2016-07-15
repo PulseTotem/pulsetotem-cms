@@ -640,19 +640,43 @@ class User extends ModelItf {
 		var self = this;
 
 		if(this.getId() != null) {
-			self.getSequelizeModel().destroy()
-				.then(function () {
-					var destroyId = self.hashid();
-					self._id = null;
-					self._hashid = null;
+			var deleteFromDB = function() {
+				self.getSequelizeModel().destroy()
+					.then(function () {
+						var destroyId = self.hashid();
+						self._id = null;
+						self._hashid = null;
 
-					successCallback({"id" : destroyId});
-				})
-				.catch(function (error) {
-					failCallback(error);
-				});
+						successCallback({"id": destroyId});
+					})
+					.catch(function (error) {
+						failCallback(error);
+					});
+			};
+
+			var successLoadAssociations = function() {
+				if(self.teams().length > 0) {
+					var nbTeams = 0;
+
+					var successRemoveTeam = function() {
+						nbTeams++;
+						if(nbTeams == self.teams().length) {
+							deleteFromDB();
+						}
+					};
+
+					self.teams().forEach(function(team) {
+						self.removeTeam(team, successRemoveTeam, failCallback);
+					});
+
+				} else {
+					deleteFromDB();
+				}
+			};
+
+			self.loadAssociations(successLoadAssociations, failCallback);
 		} else {
-			failCallback(new ModelException("You need to create User before to delete it..."));
+			failCallback(new ModelException("You need to create the User before to delete it..."));
 		}
 	}
 

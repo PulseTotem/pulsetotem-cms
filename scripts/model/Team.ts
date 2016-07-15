@@ -546,17 +546,126 @@ class Team extends ModelItf {
 		var self = this;
 
 		if(this.getId() != null) {
-			self.getSequelizeModel().destroy()
-				.then(function () {
-					var destroyId = self.hashid();
-					self._id = null;
-					self._hashid = null;
+			var deleteFromDB = function() {
+				self.getSequelizeModel().destroy()
+					.then(function () {
+						var destroyId = self.hashid();
+						self._id = null;
+						self._hashid = null;
 
-					successCallback({"id" : destroyId});
-				})
-				.catch(function (error) {
-					failCallback(error);
-				});
+						successCallback({"id": destroyId});
+					})
+					.catch(function (error) {
+						failCallback(error);
+					});
+			};
+			var checkUsers : boolean = false;
+			var checkImagesCollections : boolean = false;
+			var checkVideosCollections : boolean = false;
+			var checkNewsCollections : boolean = false;
+
+			var check = function() {
+				if(checkUsers && checkImagesCollections && checkVideosCollections && checkNewsCollections) {
+					deleteFromDB();
+				}
+			};
+
+			var manageUsers = function() {
+				if(self.users().length > 0) {
+					var nbUsers = 0;
+					var successRemoveUser = function () {
+						nbUsers++;
+
+						if (nbUsers == self.users().length) {
+							checkUsers = true;
+							check();
+						}
+					};
+
+					self.users().forEach(function (user:User) {
+						self.removeUser(user, successRemoveUser, failCallback);
+					});
+				} else {
+					checkUsers = true;
+					check();
+				}
+			};
+
+			var manageImagesCollections = function() {
+				if(self.imagesCollections().length > 0) {
+					var nbImagesCollections = 0;
+
+					var successRemoveImagesCollection = function () {
+						nbImagesCollections++;
+
+						if (nbImagesCollections == self.imagesCollections().length) {
+							checkImagesCollections = true;
+							check();
+						}
+					};
+
+					self.imagesCollections().forEach(function (imagesCollection : ImagesCollection) {
+						self.removeImagesCollection(imagesCollection, successRemoveImagesCollection, failCallback);
+					});
+				} else {
+					checkImagesCollections = true;
+					check();
+				}
+			};
+
+			var manageVideosCollections = function() {
+				if(self.videosCollections().length > 0) {
+					var nbVideosCollections = 0;
+
+					var successRemoveVideosCollection = function () {
+						nbVideosCollections++;
+
+						if (nbVideosCollections == self.videosCollections().length) {
+							checkVideosCollections = true;
+							check();
+						}
+					};
+
+					self.videosCollections().forEach(function (videosCollection : VideosCollection) {
+						self.removeVideosCollection(videosCollection, successRemoveVideosCollection, failCallback);
+					});
+				} else {
+					checkVideosCollections = true;
+					check();
+				}
+			};
+
+			var manageNewsCollections = function() {
+				if(self.newsCollections().length > 0) {
+					var nbNewsCollections = 0;
+
+					var successRemoveNewsCollection = function () {
+						nbNewsCollections++;
+
+						if (nbNewsCollections == self.newsCollections().length) {
+							checkNewsCollections = true;
+							check();
+						}
+					};
+
+					self.newsCollections().forEach(function (newsCollection : NewsCollection) {
+						self.removeNewsCollection(newsCollection, successRemoveNewsCollection, failCallback);
+					});
+				} else {
+					checkNewsCollections = true;
+					check();
+				}
+			};
+
+			var successLoadAssociations = function() {
+				manageUsers();
+				manageImagesCollections();
+				manageVideosCollections();
+				manageNewsCollections();
+			};
+
+			self.loadAssociations(successLoadAssociations, failCallback);
+
 		} else {
 			failCallback(new ModelException("You need to create Team before to delete it..."));
 		}
