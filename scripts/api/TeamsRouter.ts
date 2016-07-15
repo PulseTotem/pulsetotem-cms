@@ -190,7 +190,7 @@ class TeamsRouter extends RouterItf {
 			res.status(500).send({ 'error': 'Missing some information to update Team.' });
 		} else {
 
-			if(typeof(req.body.name) != "undefined" && req.body.name != "") {
+			if(req.body.name != "") {
 				req.team.setName(req.body.name);
 			}
 

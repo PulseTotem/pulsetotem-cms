@@ -15,8 +15,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     name: {
       type: DataTypes.STRING,
-      allowNull: true,
-      primaryKey: true
+      allowNull: true
     },
     createdAt: {
       type: DataTypes.DATE,
