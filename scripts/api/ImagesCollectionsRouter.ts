@@ -65,6 +65,19 @@ class ImagesCollectionsRouter extends RouterItf {
 			ImagesCollection.findOneByHashid(id, success, fail);
 		});
 
+		this.router.param("team_id", function (req, res, next, id) {
+			var success = function(team) {
+				req.team = team;
+				next();
+			};
+
+			var fail = function(error) {
+				next(error);
+			};
+
+			Team.findOneByHashid(id, success, fail);
+		});
+
 		// Define '/' route.
 		this.router.get('/', CMSAuth.can('manage user information'), function(req, res) {
 			if(typeof(req.user) != "undefined") {
@@ -88,6 +101,9 @@ class ImagesCollectionsRouter extends RouterItf {
 
 		// Define '/:imagescollection_id/images' route.
 		this.router.use('/:imagescollection_id/images', (new ImagesRouter()).getRouter());
+
+		// Define '/:imagescollection_id/teams' route.
+		this.router.post('/:imagescollection_id/teams/:team_id', function(req, res) { self.moveCollectionToTeam(req, res); });
 	}
 
 	/**
@@ -301,6 +317,54 @@ class ImagesCollectionsRouter extends RouterItf {
 				};
 
 				req.imagesCollection.delete(success, fail);
+			}
+		});
+	}
+
+	/**
+	 * Move collection to Team
+	 *
+	 * @method moveCollectionToTeam
+	 * @param {Express.Request} req - Request object.
+	 * @param {Express.Response} res - Response object.
+	 */
+	moveCollectionToTeam(req : any, res : any) {
+		var originImagesCollectionFolder = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid();
+		var teamImagesCollectionFolder = CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/images/" + req.imagesCollection.hashid();
+
+		var fail = function(errString) {
+			res.status(500).send({ 'error': errString });
+		};
+
+		var moveCollection = function() {
+			fs.rename(originImagesCollectionFolder, teamImagesCollectionFolder, function(err) {
+				if(err) {
+					fail("Error during moving ImagesCollection.");
+				} else {
+					var success = function() {
+						res.json(req.imagesCollection.toJSONObject());
+					};
+
+					var successRemove = function() {
+						req.team.addImagesCollection(req.imagesCollection, success, fail);
+					};
+
+					req.user.removeImagesCollection(req.imagesCollection, successRemove, fail);
+				}
+			});
+		};
+
+		fs.stat(CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/images/", function (errImagesFolder, stats) {
+			if (errImagesFolder || !stats.isDirectory()) {
+				mkdirp(CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/images/", function (errImagesFolderCreation) {
+					if (errImagesFolderCreation) {
+						fail(errImagesFolderCreation);
+					} else {
+						moveCollection();
+					}
+				});
+			} else {
+				moveCollection();
 			}
 		});
 	}

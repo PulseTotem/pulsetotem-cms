@@ -73,6 +73,17 @@ fs
     db[model.name] = model;
   });
 
+associations.belongsToMany.forEach(function(bTMAss) {
+  var modelA = db[bTMAss[0]];
+  var modelB = db[bTMAss[1]];
+
+  if(typeof(bTMAss[2]) != "undefined") {
+    modelA.belongsToMany(modelB, bTMAss[2]);
+  } else {
+    modelA.belongsToMany(modelB);
+  }
+});
+
 associations.hasMany.forEach(function(hMAss) {
   var modelA = db[hMAss[0]];
   var modelB = db[hMAss[1]];

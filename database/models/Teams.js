@@ -1,7 +1,7 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('ImagesCollections', {
+  return sequelize.define('Teams', {
     id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -17,10 +17,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true
     },
-    description: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -30,26 +26,9 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: 'now()'
-    },
-    UserId: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    ImageId: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    autogenerate: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false
-    },
-    TeamId: {
-      type: DataTypes.INTEGER,
-      allowNull: true
     }
   }, {
-    tableName: 'ImagesCollections',
+    tableName: 'Teams',
     freezeTableName: true
   });
 };

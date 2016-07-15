@@ -1,5 +1,5 @@
 module.exports = {
-  up: function(migration, DataTypes) {
+  up: function(migration, DataTypes, done) {
     migration.addColumn(
       'Images',
       'mimetype',
@@ -7,10 +7,14 @@ module.exports = {
         type: DataTypes.STRING,
         allowNull: true
       }
-    );
+    ).then(function(results) {
+        done();
+      });
   },
 
-  down: function(migration, DataTypes) {
-    migration.removeColumn('Images', 'mimetype');
+  down: function(migration, DataTypes, done) {
+    migration.removeColumn('Images', 'mimetype').then(function(results) {
+      done();
+    });
   }
 }

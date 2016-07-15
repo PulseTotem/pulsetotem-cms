@@ -75,6 +75,19 @@ class VideosCollectionsRouter extends RouterItf {
 			VideosCollection.findOneByHashid(id, success, fail);
 		});
 
+		this.router.param("team_id", function (req, res, next, id) {
+			var success = function(team) {
+				req.team = team;
+				next();
+			};
+
+			var fail = function(error) {
+				next(error);
+			};
+
+			Team.findOneByHashid(id, success, fail);
+		});
+
 		// Define '/' route.
 		this.router.get('/', CMSAuth.can('manage user information'), function(req, res) {
 			if(typeof(req.user) != "undefined") {
@@ -98,6 +111,9 @@ class VideosCollectionsRouter extends RouterItf {
 
 		// Define '/:videoscollection_id/videos' route.
 		this.router.use('/:videoscollection_id/videos', (new VideosRouter()).getRouter());
+
+		// Define '/:videoscollection_id/teams' route.
+		this.router.post('/:videoscollection_id/teams/:team_id', function(req, res) { self.moveCollectionToTeam(req, res); });
 	}
 
 	/**
@@ -312,6 +328,54 @@ class VideosCollectionsRouter extends RouterItf {
 				};
 
 				req.videosCollection.delete(success, fail);
+			}
+		});
+	}
+
+	/**
+	 * Move collection to Team
+	 *
+	 * @method moveCollectionToTeam
+	 * @param {Express.Request} req - Request object.
+	 * @param {Express.Response} res - Response object.
+	 */
+	moveCollectionToTeam(req : any, res : any) {
+		var originVideosCollectionFolder = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/videos/" + req.videosCollection.hashid();
+		var teamVideosCollectionFolder = CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/videos/" + req.videosCollection.hashid();
+
+		var fail = function(errString) {
+			res.status(500).send({ 'error': errString });
+		};
+
+		var moveCollection = function() {
+			fs.rename(originVideosCollectionFolder, teamVideosCollectionFolder, function(err) {
+				if(err) {
+					fail("Error during moving VideosCollection.");
+				} else {
+					var success = function() {
+						res.json(req.videosCollection.toJSONObject());
+					};
+
+					var successRemove = function() {
+						req.team.addVideosCollection(req.videosCollection, success, fail);
+					};
+
+					req.user.removeVideosCollection(req.videosCollection, successRemove, fail);
+				}
+			});
+		};
+
+		fs.stat(CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/videos/", function (errVideosFolder, stats) {
+			if (errVideosFolder || !stats.isDirectory()) {
+				mkdirp(CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/videos/", function (errVideosFolderCreation) {
+					if (errVideosFolderCreation) {
+						fail(errVideosFolderCreation);
+					} else {
+						moveCollection();
+					}
+				});
+			} else {
+				moveCollection();
 			}
 		});
 	}
