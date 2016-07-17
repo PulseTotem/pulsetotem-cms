@@ -59,14 +59,14 @@ class NewsCollectionsRouter extends RouterItf {
 					ImagesCollection.findOneByHashid(id, successPicturesCollection, fail);
 				};
 
-				if(typeof(req.user) == "undefined") {
+				if(typeof(req.team) == "undefined") {
 
-					var successLoadUser = function() {
-						req.user = req.newsCollection.user();
+					var successLoadTeam = function() {
+						req.team = req.newsCollection.team();
 						retrievePicturesCollection();
 					};
 
-					req.newsCollection.user().loadAssociations(successLoadUser, fail);
+					req.newsCollection.team().loadAssociations(successLoadTeam, fail);
 				} else {
 					retrievePicturesCollection();
 				}
@@ -89,15 +89,15 @@ class NewsCollectionsRouter extends RouterItf {
 		});
 
 		// Define '/' route.
-		this.router.get('/', CMSAuth.can('manage user information'), function(req, res) {
-			if(typeof(req.user) != "undefined") {
-				self.listAllNewsCollectionsOfUser(req, res);
+		this.router.get('/', CMSAuth.can('manage team information'), function(req, res) {
+			if(typeof(req.team) != "undefined") {
+				self.listAllNewsCollectionsOfTeam(req, res);
 			} else {
 				res.status(500).send({ 'error': 'Unauthorized.' });
 			}
 		});
-		this.router.post('/', CMSAuth.can('manage user information'), function(req, res) {
-			if(typeof(req.user) != "undefined") {
+		this.router.post('/', CMSAuth.can('manage team information'), function(req, res) {
+			if(typeof(req.team) != "undefined") {
 				self.newNewsCollection(req, res);
 			} else {
 				res.status(500).send({ 'error': 'Unauthorized.' });
@@ -105,9 +105,9 @@ class NewsCollectionsRouter extends RouterItf {
 		});
 
 		// Define '/:newscollection_id' route.
-		this.router.get('/:newscollection_id', CMSAuth.can('manage user news collections'), function(req, res) { self.showNewsCollection(req, res); });
-		this.router.put('/:newscollection_id', CMSAuth.can('manage user news collections'), function(req, res) { self.updateNewsCollection(req, res); });
-		this.router.delete('/:newscollection_id', CMSAuth.can('manage user news collections'), function(req, res) { self.deleteNewsCollection(req, res); });
+		this.router.get('/:newscollection_id', CMSAuth.can('manage team news collections'), function(req, res) { self.showNewsCollection(req, res); });
+		this.router.put('/:newscollection_id', CMSAuth.can('manage team news collections'), function(req, res) { self.updateNewsCollection(req, res); });
+		this.router.delete('/:newscollection_id', CMSAuth.can('manage team news collections'), function(req, res) { self.deleteNewsCollection(req, res); });
 
 		// Define '/:newscollection_id/news' route.
 		this.router.use('/:newscollection_id/news', (new NewsRouter()).getRouter());
@@ -117,30 +117,30 @@ class NewsCollectionsRouter extends RouterItf {
 	}
 
 	/**
-	 * List list all news collections of user in req.
+	 * List list all news collections of team in req.
 	 *
-	 * @method listAllNewsCollectionsOfUser
+	 * @method listAllNewsCollectionsOfTeam
 	 * @param {Express.Request} req - Request object.
 	 * @param {Express.Response} res - Response object.
 	 */
-	listAllNewsCollectionsOfUser(req : any, res : any) {
+	listAllNewsCollectionsOfTeam(req : any, res : any) {
 		var fail = function(error) {
 			res.status(500).send({ 'error': error });
 		};
 
 		var success = function() {
 
-			var newsCollections_JSON = req.user.toJSONObject(true)["newsCollections"];
+			var newsCollections_JSON = req.team.toJSONObject(true)["newsCollections"];
 
 			res.json(newsCollections_JSON);
 
 		};
 
-		req.user.loadNewsCollections(success, fail);
+		req.team.loadNewsCollections(success, fail);
 	}
 
 	/**
-	 * Add a new News Collection to User.
+	 * Add a new News Collection to Team.
 	 *
 	 * @method newNewsCollection
 	 * @param {Express.Request} req - Request object.
@@ -160,7 +160,7 @@ class NewsCollectionsRouter extends RouterItf {
 
 			var success = function(newCollection : NewsCollection) {
 
-				var successUserLink = function() {
+				var successTeamLink = function() {
 
 					var successCreatePictureCollection = function(pictureCollection : ImagesCollection) {
 						res.json(newCollection.toJSONObject());
@@ -169,7 +169,7 @@ class NewsCollectionsRouter extends RouterItf {
 					ImagesCollectionsRouter.newImagesCollectionObject(req, hashid, newCollection.name() + " (News Pictures)", "", true, successCreatePictureCollection, fail);
 				};
 
-				req.user.addNewsCollection(newCollection, successUserLink, fail);
+				req.team.addNewsCollection(newCollection, successTeamLink, fail);
 			};
 
 			newNewsCollection.create(success, fail);

@@ -37,22 +37,6 @@ class NewsCollection extends ModelItf {
 	private _description : string;
 
 	/**
-	 * User property
-	 *
-	 * @property _user
-	 * @type User
-	 */
-	private _user : User;
-
-	/**
-	 * Lazy loading for User property
-	 *
-	 * @property _user_loaded
-	 * @type boolean
-	 */
-	private _user_loaded : boolean;
-
-	/**
 	 * Team property
 	 *
 	 * @property _team
@@ -105,9 +89,6 @@ class NewsCollection extends ModelItf {
 		this._team = null;
 		this._team_loaded = false;
 
-		this._user = null;
-		this._user_loaded = false;
-
 		this._newsList = null;
 		this._newsList_loaded = false;
 	}
@@ -148,50 +129,6 @@ class NewsCollection extends ModelItf {
 	 */
 	description() {
 		return this._description;
-	}
-
-	/**
-	 * Return the NewsCollection's User.
-	 *
-	 * @method user
-	 */
-	user() {
-		return this._user;
-	}
-
-	/**
-	 * Load the NewsCollection's User.
-	 *
-	 * @method loadUser
-	 * @param {Function} successCallback - The callback function when success.
-	 * @param {Function} failCallback - The callback function when fail.
-	 */
-	loadUser(successCallback : Function, failCallback : Function) {
-		if(! this._user_loaded) {
-			var self = this;
-
-			this.getSequelizeModel().getUser()
-				.then(function(user) {
-					if(user != null) {
-						var uObject = User.fromJSONObject(user.dataValues);
-						uObject.setSequelizeModel(user, function () {
-							self._user_loaded = true;
-							self._user = uObject;
-							successCallback();
-						}, function (error) {
-							failCallback(error);
-						}, false);
-					} else {
-						self._user_loaded = true;
-						successCallback();
-					}
-				})
-				.catch(function(error) {
-					failCallback(error);
-				});
-		} else {
-			successCallback();
-		}
 	}
 
 	/**
@@ -306,7 +243,7 @@ class NewsCollection extends ModelItf {
 		var self = this;
 
 		var success : Function = function(models) {
-			if(self._user_loaded && self._team_loaded && self._newsList_loaded) {
+			if(self._team_loaded && self._newsList_loaded) {
 				if (successCallback != null) {
 					successCallback();
 				} // else //Nothing to do ?
@@ -321,7 +258,6 @@ class NewsCollection extends ModelItf {
 			}
 		};
 
-		this.loadUser(success, fail);
 		this.loadTeam(success, fail);
 		this.loadNewsList(success, fail);
 	}
@@ -343,10 +279,6 @@ class NewsCollection extends ModelItf {
 		};
 
 		if(complete) {
-			if (this._user_loaded) {
-				newData["user"] = (this.user() !== null) ? this.user().toJSONObject() : null;
-			}
-
 			if (this._team_loaded) {
 				newData["team"] = (this.team() !== null) ? this.team().toJSONObject() : null;
 			}

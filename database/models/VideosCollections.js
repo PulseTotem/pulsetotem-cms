@@ -31,10 +31,6 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       defaultValue: 'now()'
     },
-    UserId: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
     VideoId: {
       type: DataTypes.INTEGER,
       allowNull: true

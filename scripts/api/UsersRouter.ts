@@ -56,6 +56,19 @@ class UsersRouter extends RouterItf {
 			User.findOneByHashid(id, success, fail);
 		});
 
+		this.router.param("team_id", function (req, res, next, id) {
+			var success = function(team) {
+				req.team = team;
+				next();
+			};
+
+			var fail = function(error) {
+				next(error);
+			};
+
+			Team.findOneByHashid(id, success, fail);
+		});
+
 		// Define '/' route.
 		this.router.get('/', CMSAuth.can('perform admin action'), function(req, res) { self.listAllUsers(req, res); });
 		this.router.post('/', CMSAuth.can('perform admin action'), function(req, res) { self.newUser(req, res); });
@@ -74,6 +87,11 @@ class UsersRouter extends RouterItf {
 
 		// Define '/:user_id/videos_collections' route.
 		this.router.use('/:user_id/videos_collections', (new VideosCollectionsRouter()).getRouter());
+
+		// Define '/:user_id/teams/[:team_id]' routes.
+		this.router.get('/:user_id/teams', CMSAuth.can('manage user information'), function(req, res) { self.listTeams(req, res); });
+		this.router.put('/:user_id/teams/:team_id', CMSAuth.can('manage user information'), function(req, res) { self.addTeam(req, res); });
+		this.router.delete('/:user_id/teams/:team_id', CMSAuth.can('manage user information'), function(req, res) { self.removeTeam(req, res); });
 	}
 
 	/**
@@ -249,5 +267,81 @@ class UsersRouter extends RouterItf {
 				req.user.delete(success, fail);
 			}
 		});
+	}
+
+	/**
+	 * List all user's teams.
+	 *
+	 * @method listTeams
+	 * @param {Express.Request} req - Request object.
+	 * @param {Express.Response} res - Response object.
+	 */
+	listTeams(req : any, res : any) {
+		var fail = function(error) {
+			res.status(500).send({ 'error': error });
+		};
+
+		var success = function() {
+			var teamsJSON = [];
+
+			req.user.teams().forEach(function (team:Team) {
+				teamsJSON.push(team.toJSONObject());
+			});
+
+			res.json(teamsJSON);
+		};
+
+		req.user.loadTeams(success, fail);
+	}
+
+	/**
+	 * Add a new Team to the User.
+	 *
+	 * @method addTeam
+	 * @param {Express.Request} req - Request object.
+	 * @param {Express.Response} res - Response object.
+	 */
+	addTeam(req : any, res : any) {
+
+		var fail = function(error) {
+			res.status(500).send({ 'error': error });
+		};
+
+		var success = function() {
+			res.json(req.user.toJSONObject(true));
+		};
+
+		var afterRemove = function() {
+			req.user.addTeam(req.team, success, fail);
+		};
+
+		var successLoad = function() {
+			req.user.removeTeam(req.team, afterRemove, afterRemove);
+		};
+
+		req.user.loadTeams(successLoad, fail);
+	}
+
+	/**
+	 * Remove a Team from the User.
+	 *
+	 * @method removeTeam
+	 * @param {Express.Request} req - Request object.
+	 * @param {Express.Response} res - Response object.
+	 */
+	removeTeam(req : any, res : any) {
+		var fail = function(error) {
+			res.status(500).send({ 'error': error });
+		};
+
+		var success = function() {
+			res.json(req.user.toJSONObject(true));
+		};
+
+		var successLoad = function() {
+			req.user.removeTeam(req.team, success, fail);
+		};
+
+		req.user.loadTeams(successLoad, fail);
 	}
 }

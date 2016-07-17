@@ -55,17 +55,59 @@ class NewsRouter extends RouterItf {
 		});
 
 		// Define '/' route.
-		this.router.get('/', CMSAuth.can('manage user news collections'), function(req, res) { self.listAllNewsOfCollection(req, res); });
-		this.router.post('/', CMSAuth.can('manage user news collections'), function(req, res) { self.newNews(req, res); });
+		this.router.get('/', CMSAuth.can('manage team news collections'), function(req, res) {
+			if(typeof(req.newsCollection) != "undefined") {
+				self.listAllNewsOfCollection(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
+		this.router.post('/', CMSAuth.can('manage team news collections'), function(req, res) {
+			if(typeof(req.newsCollection) != "undefined") {
+				self.newNews(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
 
 		// Define '/:news_id' route.
-		this.router.get('/:news_id', function(req, res) { self.showNews(req, res); });
-		this.router.put('/:news_id', CMSAuth.can('manage user news'), function(req, res) { self.updateNews(req, res); });
-		this.router.delete('/:news_id', CMSAuth.can('manage user news'), function(req, res) { self.deleteNews(req, res); });
+		this.router.get('/:news_id', CMSAuth.can('manage team news'), function(req, res) {
+			if(typeof(req.newsCollection) != "undefined") {
+				self.showNews(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
+		this.router.put('/:news_id', CMSAuth.can('manage team news'), function(req, res) {
+			if(typeof(req.newsCollection) != "undefined") {
+				self.updateNews(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
+		this.router.delete('/:news_id', CMSAuth.can('manage team news'), function(req, res) {
+			if(typeof(req.newsCollection) != "undefined") {
+				self.deleteNews(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
 
 		// Define '/:news_id/picture' route.
-		this.router.post('/:news_id/picture', CMSAuth.can('manage user news'), function(req, res) { self.addPicture(req, res); });
-		this.router.delete('/:news_id/picture', CMSAuth.can('manage user news'), function(req, res) { self.deletePicture(req, res); });
+		this.router.post('/:news_id/picture', CMSAuth.can('manage team news'), function(req, res) {
+			if(typeof(req.newsCollection) != "undefined") {
+				self.addPicture(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
+		this.router.delete('/:news_id/picture', CMSAuth.can('manage team news'), function(req, res) {
+			if(typeof(req.newsCollection) != "undefined") {
+				self.deletePicture(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
 	}
 
 	/**

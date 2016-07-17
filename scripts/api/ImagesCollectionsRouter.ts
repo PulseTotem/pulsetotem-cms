@@ -49,14 +49,14 @@ class ImagesCollectionsRouter extends RouterItf {
 			var success = function(imagesCollection) {
 				req.imagesCollection = imagesCollection;
 
-				if(typeof(req.user) == "undefined") {
+				if(typeof(req.team) == "undefined") {
 
-					var successLoadUser = function() {
-						req.user = req.imagesCollection.user();
+					var successLoadTeam = function() {
+						req.team = req.imagesCollection.team();
 						next();
 					};
 
-					req.imagesCollection.user().loadAssociations(successLoadUser, fail);
+					req.imagesCollection.team().loadAssociations(successLoadTeam, fail);
 				} else {
 					next();
 				}
@@ -79,15 +79,15 @@ class ImagesCollectionsRouter extends RouterItf {
 		});
 
 		// Define '/' route.
-		this.router.get('/', CMSAuth.can('manage user information'), function(req, res) {
-			if(typeof(req.user) != "undefined") {
-				self.listAllImagesCollectionsOfUser(req, res);
+		this.router.get('/', CMSAuth.can('manage team information'), function(req, res) {
+			if(typeof(req.team) != "undefined") {
+				self.listAllImagesCollectionsOfTeam(req, res);
 			} else {
 				res.status(500).send({ 'error': 'Unauthorized.' });
 			}
 		});
-		this.router.post('/', CMSAuth.can('manage user information'), function(req, res) {
-			if(typeof(req.user) != "undefined") {
+		this.router.post('/', CMSAuth.can('manage team information'), function(req, res) {
+			if(typeof(req.team) != "undefined") {
 				self.newImagesCollection(req, res);
 			} else {
 				res.status(500).send({ 'error': 'Unauthorized.' });
@@ -95,9 +95,9 @@ class ImagesCollectionsRouter extends RouterItf {
 		});
 
 		// Define '/:imagescollection_id' route.
-		this.router.get('/:imagescollection_id', CMSAuth.can('manage user images collections'), function(req, res) { self.showImagesCollection(req, res); });
-		this.router.put('/:imagescollection_id', CMSAuth.can('manage user images collections'), function(req, res) { self.updateImagesCollection(req, res); });
-		this.router.delete('/:imagescollection_id', CMSAuth.can('manage user images collections'), function(req, res) { self.deleteImagesCollection(req, res); });
+		this.router.get('/:imagescollection_id', CMSAuth.can('manage team images collections'), function(req, res) { self.showImagesCollection(req, res); });
+		this.router.put('/:imagescollection_id', CMSAuth.can('manage team images collections'), function(req, res) { self.updateImagesCollection(req, res); });
+		this.router.delete('/:imagescollection_id', CMSAuth.can('manage team images collections'), function(req, res) { self.deleteImagesCollection(req, res); });
 
 		// Define '/:imagescollection_id/images' route.
 		this.router.use('/:imagescollection_id/images', (new ImagesRouter()).getRouter());
@@ -107,13 +107,13 @@ class ImagesCollectionsRouter extends RouterItf {
 	}
 
 	/**
-	 * List list all images collections of user in req.
+	 * List list all images collections of team in req.
 	 *
-	 * @method listAllImagesCollectionsOfUser
+	 * @method listAllImagesCollectionsOfTeam
 	 * @param {Express.Request} req - Request object.
 	 * @param {Express.Response} res - Response object.
 	 */
-	listAllImagesCollectionsOfUser(req : any, res : any) {
+	listAllImagesCollectionsOfTeam(req : any, res : any) {
 		var fail = function(error) {
 			res.status(500).send({ 'error': error });
 		};
@@ -122,13 +122,13 @@ class ImagesCollectionsRouter extends RouterItf {
 
 			var imagesCollections_JSON = [];
 
-			if(req.user.imagesCollections().length > 0) {
-				req.user.imagesCollections().forEach(function (imgCollection:ImagesCollection) {
+			if(req.team.imagesCollections().length > 0) {
+				req.team.imagesCollections().forEach(function (imgCollection:ImagesCollection) {
 
 					var successLoadCover = function() {
 						imagesCollections_JSON.push(imgCollection.toJSONObject(true));
 
-						if(imagesCollections_JSON.length == req.user.imagesCollections().length) {
+						if(imagesCollections_JSON.length == req.team.imagesCollections().length) {
 							res.json(imagesCollections_JSON);
 						}
 					};
@@ -136,18 +136,18 @@ class ImagesCollectionsRouter extends RouterItf {
 					imgCollection.loadCover(successLoadCover, fail);
 				});
 			} else {
-				imagesCollections_JSON = req.user.toJSONObject(true)["imagesCollections"];
+				imagesCollections_JSON = req.team.toJSONObject(true)["imagesCollections"];
 
 				res.json(imagesCollections_JSON);
 			}
 
 		};
 
-		req.user.loadImagesCollections(success, fail);
+		req.team.loadImagesCollections(success, fail);
 	}
 
 	/**
-	 * Add a new Images Collection to User.
+	 * Add a new Images Collection to Team.
 	 *
 	 * @method newImagesCollection
 	 * @param {Express.Request} req - Request object.
@@ -171,7 +171,7 @@ class ImagesCollectionsRouter extends RouterItf {
 	}
 
 	/**
-	 * Create new Images Collection and add it to User.
+	 * Create new Images Collection and add it to Team.
 	 *
 	 * @method newImagesCollectionObject
 	 * @static
@@ -192,12 +192,12 @@ class ImagesCollectionsRouter extends RouterItf {
 
 		var success = function(imageCollection : ImagesCollection) {
 
-			var successUserLink = function() {
+			var successTeamLink = function() {
 
 				var createImagesCollectionFolder = function() {
-					fs.stat(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + hashid + "/", function (err, stats) {
+					fs.stat(CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/images/" + hashid + "/", function (err, stats) {
 						if (err || !stats.isDirectory()) {
-							mkdirp(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + hashid + "/", function (err2) {
+							mkdirp(CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/images/" + hashid + "/", function (err2) {
 								if (err2) {
 									fail(err2);
 								} else {
@@ -210,9 +210,9 @@ class ImagesCollectionsRouter extends RouterItf {
 					});
 				};
 
-				fs.stat(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/", function (errImagesFolder, stats) {
+				fs.stat(CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/images/", function (errImagesFolder, stats) {
 					if (errImagesFolder || !stats.isDirectory()) {
-						mkdirp(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/", function (errImagesFolderCreation) {
+						mkdirp(CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/images/", function (errImagesFolderCreation) {
 							if (errImagesFolderCreation) {
 								fail(errImagesFolderCreation);
 							} else {
@@ -225,7 +225,7 @@ class ImagesCollectionsRouter extends RouterItf {
 				});
 			};
 
-			req.user.addImagesCollection(imageCollection, successUserLink, fail);
+			req.team.addImagesCollection(imageCollection, successTeamLink, fail);
 		};
 
 		newImagesCollection.create(success, fail);
@@ -285,8 +285,8 @@ class ImagesCollectionsRouter extends RouterItf {
 	 */
 	deleteImagesCollection(req : any, res : any, successCallback : Function = null, failCallback : Function = null) {
 
-		var originImagesCollectionFolder = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid();
-		var tmpImagesCollectionFolder = CMSConfig.getUploadDir() + "deletetmp/users_" + req.user.hashid() + "_" + req.imagesCollection.hashid();
+		var originImagesCollectionFolder = CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/images/" + req.imagesCollection.hashid();
+		var tmpImagesCollectionFolder = CMSConfig.getUploadDir() + "deletetmp/teams_" + req.team.hashid() + "_" + req.imagesCollection.hashid();
 
 		var failCB = function(errString) {
 			if(failCallback != null) {

@@ -57,14 +57,44 @@ class VideosRouter extends RouterItf {
 		});
 
 		// Define '/' route.
-		this.router.get('/', CMSAuth.can('manage user videos collections'), function(req, res) { self.listAllVideosOfCollection(req, res); });
-		this.router.post('/', CMSAuth.can('manage user videos collections'), function(req, res) { self.newVideo(req, res); });
+		this.router.get('/', CMSAuth.can('manage team videos collections'), function(req, res) {
+			if(typeof(req.videosCollection) != "undefined") {
+				self.listAllVideosOfCollection(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
+		this.router.post('/', CMSAuth.can('manage team videos collections'), function(req, res) {
+			if(typeof(req.videosCollection) != "undefined") {
+				self.newVideo(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
 
 		// Define '/:video_id' route.
-		this.router.get('/:video_id', CMSAuth.can('manage user videos'), function(req, res) { self.showVideo(req, res); });
+		this.router.get('/:video_id', CMSAuth.can('manage team videos'), function(req, res) {
+			if(typeof(req.videosCollection) != "undefined") {
+				self.showVideo(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
 		this.router.get('/:video_id/raw', function(req, res) { self.rawVideo(req, res); });
-		this.router.put('/:video_id', CMSAuth.can('manage user videos'), function(req, res) { self.updateVideo(req, res); });
-		this.router.delete('/:video_id', CMSAuth.can('manage user videos'), function(req, res) { self.deleteVideo(req, res); });
+		this.router.put('/:video_id', CMSAuth.can('manage team videos'), function(req, res) {
+			if(typeof(req.videosCollection) != "undefined") {
+				self.updateVideo(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
+		this.router.delete('/:video_id', CMSAuth.can('manage team videos'), function(req, res) {
+			if(typeof(req.videosCollection) != "undefined") {
+				self.deleteVideo(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
 	}
 
 	/**
@@ -119,13 +149,13 @@ class VideosRouter extends RouterItf {
 						if(vidFile.extension != '') {
 							extension = '.' + vidFile.extension;
 						}
-						var destVideoFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/videos/" + req.videosCollection.hashid() + "/" + vidId + extension;
+						var destVideoFile = CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/videos/" + req.videosCollection.hashid() + "/" + vidId + extension;
 
 						fs.rename(originVideoFile, destVideoFile, function (err) {
 							if (err) {
 								failCB(new Error("Error during adding Video to VideosCollection."));
 							} else {
-								var destThumbnailFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.videosThumbnailsCollection.hashid() + "/" + vidId + '.png';
+								var destThumbnailFile = CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/images/" + req.videosThumbnailsCollection.hashid() + "/" + vidId + '.png';
 
 								Helper.makeSnapshot(destVideoFile, destThumbnailFile, '00:00:01', '200', '125', function(error){
 									if(error != null) {
@@ -254,7 +284,7 @@ class VideosRouter extends RouterItf {
 				extension = '.' + req.video.extension();
 			}
 
-			var videoBasePath = CMSConfig.getUploadDir() + "users/" + req.video.collection().user().hashid() + "/videos/" + req.video.collection().hashid() + "/" + req.video.hashid();
+			var videoBasePath = CMSConfig.getUploadDir() + "teams/" + req.video.collection().team().hashid() + "/videos/" + req.video.collection().hashid() + "/" + req.video.hashid();
 
 			var renderVideo = function(vidPath) {
 				var contentType = 'video/mp4';
@@ -298,7 +328,7 @@ class VideosRouter extends RouterItf {
 			}
 		};
 
-		req.video.collection().loadUser(success, fail);
+		req.video.collection().loadTeam(success, fail);
 	}
 
 	/**
@@ -359,8 +389,8 @@ class VideosRouter extends RouterItf {
 				extension = '.' + req.video.extension();
 			}
 
-			var originVideoFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/videos/" + req.videosCollection.hashid() + "/" + req.video.hashid() + extension;
-			var tmpVideoFile = CMSConfig.getUploadDir() + "deletetmp/users_" + req.user.hashid() + "_videos_" + req.videosCollection.hashid() + "_" + req.video.hashid() + extension;
+			var originVideoFile = CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/videos/" + req.videosCollection.hashid() + "/" + req.video.hashid() + extension;
+			var tmpVideoFile = CMSConfig.getUploadDir() + "deletetmp/teams_" + req.team.hashid() + "_videos_" + req.videosCollection.hashid() + "_" + req.video.hashid() + extension;
 
 			fs.rename(originVideoFile, tmpVideoFile, function(err) {
 				if(err) {

@@ -59,14 +59,14 @@ class VideosCollectionsRouter extends RouterItf {
 					ImagesCollection.findOneByHashid(id, successThumbnailsCollection, fail);
 				};
 
-				if(typeof(req.user) == "undefined") {
+				if(typeof(req.team) == "undefined") {
 
-					var successLoadUser = function() {
-						req.user = req.videosCollection.user();
+					var successLoadTeam = function() {
+						req.team = req.videosCollection.team();
 						retrieveThumbnailsCollection();
 					};
 
-					req.videosCollection.user().loadAssociations(successLoadUser, fail);
+					req.videosCollection.team().loadAssociations(successLoadTeam, fail);
 				} else {
 					retrieveThumbnailsCollection();
 				}
@@ -89,15 +89,15 @@ class VideosCollectionsRouter extends RouterItf {
 		});
 
 		// Define '/' route.
-		this.router.get('/', CMSAuth.can('manage user information'), function(req, res) {
-			if(typeof(req.user) != "undefined") {
-				self.listAllVideosCollectionsOfUser(req, res);
+		this.router.get('/', CMSAuth.can('manage team information'), function(req, res) {
+			if(typeof(req.team) != "undefined") {
+				self.listAllVideosCollectionsOfTeam(req, res);
 			} else {
 				res.status(500).send({ 'error': 'Unauthorized.' });
 			}
 		});
-		this.router.post('/', CMSAuth.can('manage user information'), function(req, res) {
-			if(typeof(req.user) != "undefined") {
+		this.router.post('/', CMSAuth.can('manage team information'), function(req, res) {
+			if(typeof(req.team) != "undefined") {
 				self.newVideosCollection(req, res);
 			} else {
 				res.status(500).send({ 'error': 'Unauthorized.' });
@@ -105,9 +105,9 @@ class VideosCollectionsRouter extends RouterItf {
 		});
 
 		// Define '/:videoscollection_id' route.
-		this.router.get('/:videoscollection_id', CMSAuth.can('manage user videos collections'), function(req, res) { self.showVideosCollection(req, res); });
-		this.router.put('/:videoscollection_id', CMSAuth.can('manage user videos collections'), function(req, res) { self.updateVideosCollection(req, res); });
-		this.router.delete('/:videoscollection_id', CMSAuth.can('manage user videos collections'), function(req, res) { self.deleteVideosCollection(req, res); });
+		this.router.get('/:videoscollection_id', CMSAuth.can('manage team videos collections'), function(req, res) { self.showVideosCollection(req, res); });
+		this.router.put('/:videoscollection_id', CMSAuth.can('manage team videos collections'), function(req, res) { self.updateVideosCollection(req, res); });
+		this.router.delete('/:videoscollection_id', CMSAuth.can('manage team videos collections'), function(req, res) { self.deleteVideosCollection(req, res); });
 
 		// Define '/:videoscollection_id/videos' route.
 		this.router.use('/:videoscollection_id/videos', (new VideosRouter()).getRouter());
@@ -117,13 +117,13 @@ class VideosCollectionsRouter extends RouterItf {
 	}
 
 	/**
-	 * List list all videos collections of user in req.
+	 * List list all videos collections of team in req.
 	 *
-	 * @method listAllVideosCollectionsOfUser
+	 * @method listAllVideosCollectionsOfTeam
 	 * @param {Express.Request} req - Request object.
 	 * @param {Express.Response} res - Response object.
 	 */
-	listAllVideosCollectionsOfUser(req : any, res : any) {
+	listAllVideosCollectionsOfTeam(req : any, res : any) {
 		var fail = function(error) {
 			res.status(500).send({ 'error': error });
 		};
@@ -132,8 +132,8 @@ class VideosCollectionsRouter extends RouterItf {
 
 			var videosCollections_JSON = [];
 
-			if(req.user.videosCollections().length > 0) {
-				req.user.videosCollections().forEach(function (vidCollection:VideosCollection) {
+			if(req.team.videosCollections().length > 0) {
+				req.team.videosCollections().forEach(function (vidCollection:VideosCollection) {
 
 					var successLoadCover = function() {
 
@@ -144,7 +144,7 @@ class VideosCollectionsRouter extends RouterItf {
 								vidCollectionJSON["cover"] = vidCollection.cover().toJSONObject(true);
 								videosCollections_JSON.push(vidCollectionJSON);
 
-								if (videosCollections_JSON.length == req.user.videosCollections().length) {
+								if (videosCollections_JSON.length == req.team.videosCollections().length) {
 									res.json(videosCollections_JSON);
 								}
 							};
@@ -154,7 +154,7 @@ class VideosCollectionsRouter extends RouterItf {
 							var vidCollectionJSON = vidCollection.toJSONObject(true);
 							videosCollections_JSON.push(vidCollectionJSON);
 
-							if (videosCollections_JSON.length == req.user.videosCollections().length) {
+							if (videosCollections_JSON.length == req.team.videosCollections().length) {
 								res.json(videosCollections_JSON);
 							}
 						}
@@ -163,18 +163,18 @@ class VideosCollectionsRouter extends RouterItf {
 					vidCollection.loadCover(successLoadCover, fail);
 				});
 			} else {
-				videosCollections_JSON = req.user.toJSONObject(true)["videosCollections"];
+				videosCollections_JSON = req.team.toJSONObject(true)["videosCollections"];
 
 				res.json(videosCollections_JSON);
 			}
 
 		};
 
-		req.user.loadVideosCollections(success, fail);
+		req.team.loadVideosCollections(success, fail);
 	}
 
 	/**
-	 * Add a new Videos Collection to User.
+	 * Add a new Videos Collection to Team.
 	 *
 	 * @method newVideosCollection
 	 * @param {Express.Request} req - Request object.
@@ -194,7 +194,7 @@ class VideosCollectionsRouter extends RouterItf {
 
 			var success = function(videoCollection : VideosCollection) {
 
-				var successUserLink = function() {
+				var successTeamLink = function() {
 
 					var createThumbnailCollection = function() {
 
@@ -206,9 +206,9 @@ class VideosCollectionsRouter extends RouterItf {
 					};
 
 					var createVideosCollectionFolder = function() {
-						fs.stat(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/videos/" + hashid + "/", function (err, stats) {
+						fs.stat(CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/videos/" + hashid + "/", function (err, stats) {
 							if (err || !stats.isDirectory()) {
-								mkdirp(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/videos/" + hashid + "/", function (err2) {
+								mkdirp(CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/videos/" + hashid + "/", function (err2) {
 									if (err2) {
 										fail(err2);
 									} else {
@@ -221,9 +221,9 @@ class VideosCollectionsRouter extends RouterItf {
 						});
 					};
 
-					fs.stat(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/videos/", function (errVideosFolder, stats) {
+					fs.stat(CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/videos/", function (errVideosFolder, stats) {
 						if (errVideosFolder || !stats.isDirectory()) {
-							mkdirp(CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/videos/", function (errVideosFolderCreation) {
+							mkdirp(CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/videos/", function (errVideosFolderCreation) {
 								if (errVideosFolderCreation) {
 									fail(errVideosFolderCreation);
 								} else {
@@ -236,7 +236,7 @@ class VideosCollectionsRouter extends RouterItf {
 					});
 				};
 
-				req.user.addVideosCollection(videoCollection, successUserLink, fail);
+				req.team.addVideosCollection(videoCollection, successTeamLink, fail);
 			};
 
 			newVideosCollection.create(success, fail);
@@ -299,8 +299,8 @@ class VideosCollectionsRouter extends RouterItf {
 	 * @param {Express.Response} res - Response object.
 	 */
 	deleteVideosCollection(req : any, res : any) {
-		var originVideosCollectionFolder = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/videos/" + req.videosCollection.hashid();
-		var tmpVideosCollectionFolder = CMSConfig.getUploadDir() + "deletetmp/users_" + req.user.hashid() + "_" + req.videosCollection.hashid();
+		var originVideosCollectionFolder = CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/videos/" + req.videosCollection.hashid();
+		var tmpVideosCollectionFolder = CMSConfig.getUploadDir() + "deletetmp/teams_" + req.team.hashid() + "_" + req.videosCollection.hashid();
 
 		var failCB = function(errString) {
 			res.status(500).send({ 'error': errString });
