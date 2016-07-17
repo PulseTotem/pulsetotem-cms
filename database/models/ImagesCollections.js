@@ -31,10 +31,6 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       defaultValue: 'now()'
     },
-    UserId: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
     ImageId: {
       type: DataTypes.INTEGER,
       allowNull: true

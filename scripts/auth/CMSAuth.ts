@@ -113,16 +113,12 @@ class CMSAuth extends AuthManager {
 		});
 
 		this.addRole("ImagesCollection.Owner", function(req, res, done) {
-			self.can("manage user information")(req, res, function(error) {
+			self.can("manage team information")(req, res, function(error) {
 				if (typeof(error) == "undefined" || error == null) { // All is ok.
 					if(!req.imagesCollection) {
 						done(new Error('ImagesCollection was not found.'));
 					} else {
-						if(req.user.getId() == req.imagesCollection.user().getId()) {
-							done();
-						} else {
-							done(new Error('Unauthorized.'));
-						}
+						done();
 					}
 				} else { // An error occured.
 					done(error);
@@ -167,16 +163,12 @@ class CMSAuth extends AuthManager {
 		});
 
 		this.addRole("NewsCollection.Owner", function(req, res, done) {
-			self.can("manage user information")(req, res, function(error) {
+			self.can("manage team information")(req, res, function(error) {
 				if (typeof(error) == "undefined" || error == null) { // All is ok.
 					if(!req.newsCollection) {
 						done(new Error('NewsCollection was not found.'));
 					} else {
-						if(req.user.getId() == req.newsCollection.user().getId()) {
-							done();
-						} else {
-							done(new Error('Unauthorized.'));
-						}
+						done();
 					}
 				} else { // An error occured.
 					done(error);
@@ -221,16 +213,12 @@ class CMSAuth extends AuthManager {
 		});
 
 		this.addRole("VideosCollection.Owner", function(req, res, done) {
-			self.can("manage user information")(req, res, function(error) {
+			self.can("manage team information")(req, res, function(error) {
 				if (typeof(error) == "undefined" || error == null) { // All is ok.
 					if(!req.videosCollection) {
 						done(new Error('VideosCollection was not found.'));
 					} else {
-						if(req.user.getId() == req.videosCollection.user().getId()) {
-							done();
-						} else {
-							done(new Error('Unauthorized.'));
-						}
+						done();
 					}
 				} else { // An error occured.
 					done(error);
@@ -286,11 +274,11 @@ class CMSAuth extends AuthManager {
 		this.addAction("perform admin action", "Admin");
 		this.addAction("manage team information", ["Admin", "Team.In"]);
 		this.addAction("manage user information", ["Admin", "Profil.Owner"]);
-		this.addAction("manage user images collections", ["Admin", "ImagesCollection.Owner"]);
+		this.addAction("manage team images collections", ["Admin", "ImagesCollection.Owner"]);
 		this.addAction("manage user images", ["Admin", "Image.Owner"]);
-		this.addAction("manage user news collections", ["Admin", "NewsCollection.Owner"]);
+		this.addAction("manage team news collections", ["Admin", "NewsCollection.Owner"]);
 		this.addAction("manage user news", ["Admin", "News.Owner"]);
-		this.addAction("manage user videos collections", ["Admin", "VideosCollection.Owner"]);
+		this.addAction("manage team videos collections", ["Admin", "VideosCollection.Owner"]);
 		this.addAction("manage user videos", ["Admin", "Videos.Owner"]);
 	}
 }

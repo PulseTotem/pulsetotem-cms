@@ -53,14 +53,44 @@ class ImagesRouter extends RouterItf {
 		});
 
 		// Define '/' route.
-		this.router.get('/', CMSAuth.can('manage user images collections'), function(req, res) { self.listAllImagesOfCollection(req, res); });
-		this.router.post('/', CMSAuth.can('manage user images collections'), function(req, res) { self.newImage(req, res); });
+		this.router.get('/', CMSAuth.can('manage team images collections'), function(req, res) {
+			if(typeof(req.imagesCollection) != "undefined") {
+				self.listAllImagesOfCollection(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
+		this.router.post('/', CMSAuth.can('manage team images collections'), function(req, res) {
+			if(typeof(req.imagesCollection) != "undefined") {
+				self.newImage(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
 
 		// Define '/:image_id' route.
-		this.router.get('/:image_id', CMSAuth.can('manage user images'), function(req, res) { self.showImage(req, res); });
+		this.router.get('/:image_id', CMSAuth.can('manage team images'), function(req, res) {
+			if(typeof(req.imagesCollection) != "undefined") {
+				self.showImage(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
 		this.router.get('/:image_id/raw', function(req, res) { self.rawImage(req, res); });
-		this.router.put('/:image_id', CMSAuth.can('manage user images'), function(req, res) { self.updateImage(req, res); });
-		this.router.delete('/:image_id', CMSAuth.can('manage user images'), function(req, res) { self.deleteImage(req, res); });
+		this.router.put('/:image_id', CMSAuth.can('manage team images'), function(req, res) {
+			if(typeof(req.imagesCollection) != "undefined") {
+				self.updateImage(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
+		this.router.delete('/:image_id', CMSAuth.can('manage team images'), function(req, res) {
+			if(typeof(req.imagesCollection) != "undefined") {
+				self.deleteImage(req, res);
+			} else {
+				res.status(500).send({ 'error': 'Unauthorized.' });
+			}
+		});
 	}
 
 	/**
@@ -115,7 +145,7 @@ class ImagesRouter extends RouterItf {
 						if(imgFile.extension != '') {
 							extension = '.' + imgFile.extension;
 						}
-						var destImageFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid() + "/" + imgId + extension;
+						var destImageFile = CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/images/" + req.imagesCollection.hashid() + "/" + imgId + extension;
 
 						fs.rename(originImageFile, destImageFile, function (err) {
 							if (err) {
@@ -237,7 +267,7 @@ class ImagesRouter extends RouterItf {
 				var successCreation = function (image : ImageObject) {
 					var successImagesCollectionLink = function () {
 						var fileExtension = '.' + extension;
-						var destImageFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid() + "/" + hashid + fileExtension;
+						var destImageFile = CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/images/" + req.imagesCollection.hashid() + "/" + hashid + fileExtension;
 						var base64DrawContent = file.replace(/^data:image\/(jpeg|png|gif);base64,/, "");
 						var drawContentImg = new Buffer(base64DrawContent, 'base64');
 
@@ -294,7 +324,7 @@ class ImagesRouter extends RouterItf {
 				extension = '.' + req.image.extension();
 			}
 
-			var imageBasePath = CMSConfig.getUploadDir() + "users/" + req.image.collection().user().hashid() + "/images/" + req.image.collection().hashid() + "/" + req.image.hashid();
+			var imageBasePath = CMSConfig.getUploadDir() + "teams/" + req.image.collection().team().hashid() + "/images/" + req.image.collection().hashid() + "/" + req.image.hashid();
 
 			var renderImg = function(img, isLwipImg) {
 				var bufferType = 'jpg';
@@ -430,7 +460,7 @@ class ImagesRouter extends RouterItf {
 			}
 		};
 
-		req.image.collection().loadUser(success, fail);
+		req.image.collection().loadTeam(success, fail);
 	}
 
 	/**
@@ -489,8 +519,8 @@ class ImagesRouter extends RouterItf {
 				extension = '.' + req.image.extension();
 			}
 
-			var originImageFile = CMSConfig.getUploadDir() + "users/" + req.user.hashid() + "/images/" + req.imagesCollection.hashid() + "/" + req.image.hashid() + extension;
-			var tmpImageFile = CMSConfig.getUploadDir() + "deletetmp/users_" + req.user.hashid() + "_images_" + req.imagesCollection.hashid() + "_" + req.image.hashid() + extension;
+			var originImageFile = CMSConfig.getUploadDir() + "teams/" + req.team.hashid() + "/images/" + req.imagesCollection.hashid() + "/" + req.image.hashid() + extension;
+			var tmpImageFile = CMSConfig.getUploadDir() + "deletetmp/teams_" + req.team.hashid() + "_images_" + req.imagesCollection.hashid() + "_" + req.image.hashid() + extension;
 
 			fs.rename(originImageFile, tmpImageFile, function(err) {
 				if(err) {
