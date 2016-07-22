@@ -127,14 +127,14 @@ class CMSAuth extends AuthManager {
 		});
 
 		this.addRole("Image.Owner", function(req, res, done) {
-			self.can("manage user information")(req, res, function(error) {
+			self.can("manage team information")(req, res, function(error) {
 				if (typeof(error) == "undefined" || error == null) { // All is ok.
 					if(!req.image) {
 						done(new Error('Image was not found.'));
 					} else {
 
-						var successLoadUser = function() {
-							if(req.user.getId() == req.image.collection().user().getId()) {
+						var successLoadTeam = function() {
+							if(req.team.getId() == req.image.collection().team().getId()) {
 
 								if(!req.imagesCollection) {
 									done();
@@ -154,7 +154,7 @@ class CMSAuth extends AuthManager {
 							done(new Error('Unauthorized.'));
 						};
 
-						req.image.collection().loadUser(successLoadUser, fail);
+						req.image.collection().loadTeam(successLoadTeam, fail);
 					}
 				} else { // An error occured.
 					done(error);
@@ -177,14 +177,14 @@ class CMSAuth extends AuthManager {
 		});
 
 		this.addRole("News.Owner", function(req, res, done) {
-			self.can("manage user information")(req, res, function(error) {
+			self.can("manage team information")(req, res, function(error) {
 				if (typeof(error) == "undefined" || error == null) { // All is ok.
 					if(!req.news) {
 						done(new Error('News was not found.'));
 					} else {
 
-						var successLoadUser = function() {
-							if(req.user.getId() == req.news.collection().user().getId()) {
+						var successLoadTeam = function() {
+							if(req.team.getId() == req.news.collection().team().getId()) {
 
 								if(!req.newsCollection) {
 									done();
@@ -204,7 +204,7 @@ class CMSAuth extends AuthManager {
 							done(new Error('Unauthorized.'));
 						};
 
-						req.news.collection().loadUser(successLoadUser, fail);
+						req.news.collection().loadTeam(successLoadTeam, fail);
 					}
 				} else { // An error occured.
 					done(error);
@@ -227,14 +227,14 @@ class CMSAuth extends AuthManager {
 		});
 
 		this.addRole("Video.Owner", function(req, res, done) {
-			self.can("manage user information")(req, res, function(error) {
+			self.can("manage team information")(req, res, function(error) {
 				if (typeof(error) == "undefined" || error == null) { // All is ok.
 					if(!req.video) {
 						done(new Error('Video was not found.'));
 					} else {
 
-						var successLoadUser = function() {
-							if(req.user.getId() == req.video.collection().user().getId()) {
+						var successLoadTeam = function() {
+							if(req.team.getId() == req.video.collection().team().getId()) {
 
 								if(!req.videosCollection) {
 									done();
@@ -254,7 +254,7 @@ class CMSAuth extends AuthManager {
 							done(new Error('Unauthorized.'));
 						};
 
-						req.video.collection().loadUser(successLoadUser, fail);
+						req.video.collection().loadTeam(successLoadTeam, fail);
 					}
 				} else { // An error occured.
 					done(error);
@@ -275,10 +275,10 @@ class CMSAuth extends AuthManager {
 		this.addAction("manage team information", ["Admin", "Team.In"]);
 		this.addAction("manage user information", ["Admin", "Profil.Owner"]);
 		this.addAction("manage team images collections", ["Admin", "ImagesCollection.Owner"]);
-		this.addAction("manage user images", ["Admin", "Image.Owner"]);
+		this.addAction("manage team images", ["Admin", "Image.Owner"]);
 		this.addAction("manage team news collections", ["Admin", "NewsCollection.Owner"]);
-		this.addAction("manage user news", ["Admin", "News.Owner"]);
+		this.addAction("manage team news", ["Admin", "News.Owner"]);
 		this.addAction("manage team videos collections", ["Admin", "VideosCollection.Owner"]);
-		this.addAction("manage user videos", ["Admin", "Videos.Owner"]);
+		this.addAction("manage team videos", ["Admin", "Videos.Owner"]);
 	}
 }
