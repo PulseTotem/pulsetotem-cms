@@ -92,19 +92,28 @@ class CMSAuth extends AuthManager {
 					if(!req.team) {
 						done(new Error('Team was not found.'));
 					} else {
-						var isIn : boolean = false;
 
-						req.authUser.teams().forEach(function(team : Team) {
-							if(req.team.getId() == team.getId()) {
-								isIn = true;
+						var successLoadUserAssociations = function() {
+							var isIn : boolean = false;
+
+							req.authUser.teams().forEach(function(team : Team) {
+								if(req.team.getId() == team.getId()) {
+									isIn = true;
+								}
+							});
+
+							if(isIn) {
+								done();
+							} else {
+								done(new Error('Unauthorized.'));
 							}
-						});
+						};
 
-						if(isIn) {
-							done();
-						} else {
+						var failLoadUserAssociations = function(error) {
 							done(new Error('Unauthorized.'));
-						}
+						};
+
+						req.authUser.loadAssociations(successLoadUserAssociations, failLoadUserAssociations);
 					}
 				} else { // An error occured.
 					done(error);

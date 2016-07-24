@@ -70,54 +70,6 @@ class User extends ModelItf {
 	 */
 	private _teams_loaded : boolean;
 
-	/**
-	 * ImagesCollections property.
-	 *
-	 * @property _imagesCollections
-	 * @type Array<ImagesCollection>
-	 */
-	private _imagesCollections : Array<ImagesCollection>;
-
-	/**
-	 * Lazy loading for _imagesCollections property.
-	 *
-	 * @property _imagesCollections_loaded
-	 * @type boolean
-	 */
-	private _imagesCollections_loaded : boolean;
-
-	/**
-	 * NewsCollections property.
-	 *
-	 * @property _newsCollections
-	 * @type Array<NewsCollection>
-	 */
-	private _newsCollections : Array<NewsCollection>;
-
-	/**
-	 * Lazy loading for _newsCollections property.
-	 *
-	 * @property _newsCollections_loaded
-	 * @type boolean
-	 */
-	private _newsCollections_loaded : boolean;
-
-	/**
-	 * VideosCollections property.
-	 *
-	 * @property _videosCollections
-	 * @type Array<VideosCollection>
-	 */
-	private _videosCollections : Array<VideosCollection>;
-
-	/**
-	 * Lazy loading for _videosCollections property.
-	 *
-	 * @property _videosCollections_loaded
-	 * @type boolean
-	 */
-	private _videosCollections_loaded : boolean;
-
 
 	/**
 	 * Constructor.
@@ -143,15 +95,6 @@ class User extends ModelItf {
 
 		this._teams = null;
 		this._teams_loaded = false;
-
-		this._imagesCollections = null;
-		this._imagesCollections_loaded = false;
-
-		this._newsCollections = null;
-		this._newsCollections_loaded = false;
-
-		this._videosCollections = null;
-		this._videosCollections_loaded = false;
 	}
 
 	/**
@@ -252,7 +195,6 @@ class User extends ModelItf {
 
 			this.getSequelizeModel().getTeams()
 				.then(function(teams) {
-
 					var allTeams : Array<Team> = new Array<Team>();
 
 					if(teams.length > 0) {
@@ -285,171 +227,6 @@ class User extends ModelItf {
 		}
 	}
 
-	/**
-	 * Return the User's ImagesCollections.
-	 *
-	 * @method imagesCollections
-	 */
-	imagesCollections() {
-		return this._imagesCollections;
-	}
-
-	/**
-	 * Load the User's ImagesCollections.
-	 *
-	 * @method loadImagesCollections
-	 * @param {Function} successCallback - The callback function when success.
-	 * @param {Function} failCallback - The callback function when fail.
-	 */
-	loadImagesCollections(successCallback : Function, failCallback : Function) {
-		if(! this._imagesCollections_loaded) {
-			var self = this;
-
-			this.getSequelizeModel().getImagesCollections()
-				.then(function(imagesCollections) {
-
-					var allImagesCollections : Array<ImagesCollection> = new Array<ImagesCollection>();
-
-					if(imagesCollections.length > 0) {
-
-						imagesCollections.forEach(function (imagesCollection : any) {
-							var uObject = ImagesCollection.fromJSONObject(imagesCollection.dataValues);
-							uObject.setSequelizeModel(imagesCollection, function () {
-								allImagesCollections.push(uObject);
-								if (allImagesCollections.length == imagesCollections.length) {
-									self._imagesCollections_loaded = true;
-									self._imagesCollections = allImagesCollections;
-									successCallback();
-								}
-							}, function (error) {
-								failCallback(error);
-							}, false);
-						});
-
-					} else {
-						self._imagesCollections_loaded = true;
-						self._imagesCollections = allImagesCollections;
-						successCallback();
-					}
-				})
-				.catch(function(error) {
-					failCallback(error);
-				});
-		} else {
-			successCallback();
-		}
-	}
-
-	/**
-	 * Return the User's NewsCollections.
-	 *
-	 * @method newsCollections
-	 */
-	newsCollections() {
-		return this._newsCollections;
-	}
-
-	/**
-	 * Load the User's NewsCollections.
-	 *
-	 * @method loadNewsCollections
-	 * @param {Function} successCallback - The callback function when success.
-	 * @param {Function} failCallback - The callback function when fail.
-	 */
-	loadNewsCollections(successCallback : Function, failCallback : Function) {
-		if(! this._newsCollections_loaded) {
-			var self = this;
-
-			this.getSequelizeModel().getNewsCollections()
-				.then(function(newsCollections) {
-
-					var allNewsCollections : Array<NewsCollection> = new Array<NewsCollection>();
-
-					if(newsCollections.length > 0) {
-
-						newsCollections.forEach(function(newsCollection : any) {
-							var ncObject = NewsCollection.fromJSONObject(newsCollection.dataValues);
-							ncObject.setSequelizeModel(newsCollection, function () {
-								allNewsCollections.push(ncObject);
-								if (allNewsCollections.length == newsCollections.length) {
-									self._newsCollections_loaded = true;
-									self._newsCollections = allNewsCollections;
-									successCallback();
-								}
-							}, function (error) {
-								failCallback(error);
-							}, false);
-						});
-
-					} else {
-						self._newsCollections_loaded = true;
-						self._newsCollections = allNewsCollections;
-						successCallback();
-					}
-				})
-				.catch(function(error) {
-					failCallback(error);
-				});
-		} else {
-			successCallback();
-		}
-	}
-
-	/**
-	 * Return the User's VideosCollections.
-	 *
-	 * @method videosCollections
-	 */
-	videosCollections() {
-		return this._videosCollections;
-	}
-
-	/**
-	 * Load the User's VideosCollections.
-	 *
-	 * @method loadVideosCollections
-	 * @param {Function} successCallback - The callback function when success.
-	 * @param {Function} failCallback - The callback function when fail.
-	 */
-	loadVideosCollections(successCallback : Function, failCallback : Function) {
-		if(! this._videosCollections_loaded) {
-			var self = this;
-
-			this.getSequelizeModel().getVideosCollections()
-				.then(function(videosCollections) {
-
-					var allVideosCollections : Array<VideosCollection> = new Array<VideosCollection>();
-
-					if(videosCollections.length > 0) {
-
-						videosCollections.forEach(function (videosCollection : any) {
-							var vcObject = VideosCollection.fromJSONObject(videosCollection.dataValues);
-							vcObject.setSequelizeModel(videosCollection, function () {
-								allVideosCollections.push(vcObject);
-								if (allVideosCollections.length == videosCollections.length) {
-									self._videosCollections_loaded = true;
-									self._videosCollections = allVideosCollections;
-									successCallback();
-								}
-							}, function (error) {
-								failCallback(error);
-							}, false);
-						});
-
-					} else {
-						self._videosCollections_loaded = true;
-						self._videosCollections = allVideosCollections;
-						successCallback();
-					}
-				})
-				.catch(function(error) {
-					failCallback(error);
-				});
-		} else {
-			successCallback();
-		}
-	}
-
 	//////////////////// Methods managing model. ///////////////////////////
 
 	/**
@@ -463,7 +240,7 @@ class User extends ModelItf {
 		var self = this;
 
 		var success : Function = function(models) {
-			if(self._teams_loaded && self._imagesCollections_loaded && self._newsCollections_loaded && self._videosCollections_loaded) {
+			if(self._teams_loaded) {
 				if (successCallback != null) {
 					successCallback();
 				} // else //Nothing to do ?
@@ -479,9 +256,6 @@ class User extends ModelItf {
 		};
 
 		this.loadTeams(success, fail);
-		this.loadImagesCollections(success, fail);
-		this.loadNewsCollections(success, fail);
-		this.loadVideosCollections(success, fail);
 	}
 
 	/**
@@ -510,18 +284,6 @@ class User extends ModelItf {
 
 			if (this._teams_loaded) {
 				newData["teams"] = (this.teams() !== null) ? this.serializeArray(this.teams()) : null;
-			}
-
-			if (this._imagesCollections_loaded) {
-				newData["imagesCollections"] = (this.imagesCollections() !== null) ? this.serializeArray(this.imagesCollections()) : null;
-			}
-
-			if (this._newsCollections_loaded) {
-				newData["newsCollections"] = (this.newsCollections() !== null) ? this.serializeArray(this.newsCollections()) : null;
-			}
-
-			if (this._videosCollections_loaded) {
-				newData["videosCollections"] = (this.videosCollections() !== null) ? this.serializeArray(this.videosCollections()) : null;
 			}
 		}
 
@@ -758,258 +520,6 @@ class User extends ModelItf {
 				}
 			} else {
 				failCallback(new ModelException("Team doesn't exist. You can't remove a Team that doesn't exist from a User."));
-			}
-		} else {
-			failCallback(new ModelException("User doesn't exist. User must to exist before to remove something from it."));
-		}
-	}
-
-	/**
-	 * Add an ImagesCollection to User.
-	 *
-	 * @method addImagesCollection
-	 * @param {ImagesCollection} imagesCollection - ImagesCollection to add to user.
-	 * @param {Function} successCallback - The callback function when success.
-	 * @param {Function} failCallback - The callback function when fail.
-	 */
-	addImagesCollection(imagesCollection : ImagesCollection, successCallback : Function, failCallback : Function) {
-		var self = this;
-
-		if(this.getId() != null) {
-
-			if(imagesCollection.getId() != null) {
-				self.getSequelizeModel().addImagesCollection(imagesCollection.getSequelizeModel())
-					.then(function () {
-						if(self._imagesCollections == null) {
-							self._imagesCollections = new Array<ImagesCollection>();
-						}
-
-						self._imagesCollections.push(imagesCollection);
-						successCallback(self);
-					})
-					.catch(function (error) {
-						failCallback(error);
-					});
-			} else {
-				failCallback(new ModelException("You need to create the ImagesCollection before to add to User."));
-			}
-		} else {
-			failCallback(new ModelException("You need to create User before to add an ImagesCollection."));
-		}
-	}
-
-	/**
-	 * Remove an ImagesCollection from User.
-	 *
-	 * @method removeImagesCollection
-	 * @param {ImagesCollection} imagesCollection - ImagesCollection to add to user.
-	 * @param {Function} successCallback - The callback function when success.
-	 * @param {Function} failCallback - The callback function when fail.
-	 */
-	removeImagesCollection(imagesCollection : ImagesCollection, successCallback : Function, failCallback : Function) {
-		var self = this;
-
-		if(this.getId() != null) {
-
-			if(imagesCollection.getId() != null) {
-
-				if(self._imagesCollections == null) {
-					failCallback(new ModelException("ImagesCollection doesn't belong to this User."));
-				} else {
-					var imagesCollectionToDelete = null;
-
-					self._imagesCollections = self._imagesCollections.filter(function(obj) {
-						var comp = obj.getId() != imagesCollection.getId();
-						if(!comp) {
-							imagesCollectionToDelete = obj;
-						}
-
-						return comp;
-					});
-
-					if(imagesCollectionToDelete == null) {
-						failCallback(new ModelException("ImagesCollection doesn't belong to this User."));
-					} else {
-						self.getSequelizeModel().removeImagesCollection(imagesCollection.getSequelizeModel())
-							.then(function () {
-								successCallback(self);
-							})
-							.catch(function (error) {
-								self._imagesCollections.push(imagesCollectionToDelete);
-								failCallback(error);
-							});
-					}
-				}
-			} else {
-				failCallback(new ModelException("ImagesCollection doesn't exist. You can't remove an ImagesCollection that doesn't exist from a User."));
-			}
-		} else {
-			failCallback(new ModelException("User doesn't exist. User must to exist before to remove something from it."));
-		}
-	}
-
-	/**
-	 * Add an NewsCollection to User.
-	 *
-	 * @method addNewsCollection
-	 * @param {NewsCollection} newsCollection - NewsCollection to add to user.
-	 * @param {Function} successCallback - The callback function when success.
-	 * @param {Function} failCallback - The callback function when fail.
-	 */
-	addNewsCollection(newsCollection : NewsCollection, successCallback : Function, failCallback : Function) {
-		var self = this;
-
-		if(this.getId() != null) {
-
-			if(newsCollection.getId() != null) {
-				self.getSequelizeModel().addNewsCollection(newsCollection.getSequelizeModel())
-					.then(function () {
-						if(self._newsCollections == null) {
-							self._newsCollections = new Array<NewsCollection>();
-						}
-
-						self._newsCollections.push(newsCollection);
-						successCallback(self);
-					})
-					.catch(function (error) {
-						failCallback(error);
-					});
-			} else {
-				failCallback(new ModelException("You need to create the NewsCollection before to add to User."));
-			}
-		} else {
-			failCallback(new ModelException("You need to create User before to add an NewsCollection."));
-		}
-	}
-
-	/**
-	 * Remove an NewsCollection from User.
-	 *
-	 * @method removeNewsCollection
-	 * @param {NewsCollection} newsCollection - NewsCollection to add to user.
-	 * @param {Function} successCallback - The callback function when success.
-	 * @param {Function} failCallback - The callback function when fail.
-	 */
-	removeNewsCollection(newsCollection : NewsCollection, successCallback : Function, failCallback : Function) {
-		var self = this;
-
-		if(this.getId() != null) {
-
-			if(newsCollection.getId() != null) {
-
-				if(self._newsCollections == null) {
-					failCallback(new ModelException("NewsCollection doesn't belong to this User."));
-				} else {
-					var newsCollectionToDelete = null;
-
-					self._newsCollections = self._newsCollections.filter(function(obj) {
-						var comp = obj.getId() != newsCollection.getId();
-						if(!comp) {
-							newsCollectionToDelete = obj;
-						}
-
-						return comp;
-					});
-
-					if(newsCollectionToDelete == null) {
-						failCallback(new ModelException("NewsCollection doesn't belong to this User."));
-					} else {
-						self.getSequelizeModel().removeNewsCollection(newsCollection.getSequelizeModel())
-							.then(function () {
-								successCallback(self);
-							})
-							.catch(function (error) {
-								self._newsCollections.push(newsCollectionToDelete);
-								failCallback(error);
-							});
-					}
-				}
-			} else {
-				failCallback(new ModelException("NewsCollection doesn't exist. You can't remove an NewsCollection that doesn't exist from a User."));
-			}
-		} else {
-			failCallback(new ModelException("User doesn't exist. User must to exist before to remove something from it."));
-		}
-	}
-
-	/**
-	 * Add an VideosCollection to User.
-	 *
-	 * @method addVideosCollection
-	 * @param {VideosCollection} videosCollection - VideosCollection to add to user.
-	 * @param {Function} successCallback - The callback function when success.
-	 * @param {Function} failCallback - The callback function when fail.
-	 */
-	addVideosCollection(videosCollection : VideosCollection, successCallback : Function, failCallback : Function) {
-		var self = this;
-
-		if(this.getId() != null) {
-
-			if(videosCollection.getId() != null) {
-				self.getSequelizeModel().addVideosCollection(videosCollection.getSequelizeModel())
-					.then(function () {
-						if(self._videosCollections == null) {
-							self._videosCollections = new Array<VideosCollection>();
-						}
-
-						self._videosCollections.push(videosCollection);
-						successCallback(self);
-					})
-					.catch(function (error) {
-						failCallback(error);
-					});
-			} else {
-				failCallback(new ModelException("You need to create the VideosCollection before to add to User."));
-			}
-		} else {
-			failCallback(new ModelException("You need to create User before to add an VideosCollection."));
-		}
-	}
-
-	/**
-	 * Remove an VideosCollection from User.
-	 *
-	 * @method removeVideosCollection
-	 * @param {VideosCollection} videosCollection - VideosCollection to add to user.
-	 * @param {Function} successCallback - The callback function when success.
-	 * @param {Function} failCallback - The callback function when fail.
-	 */
-	removeVideosCollection(videosCollection : VideosCollection, successCallback : Function, failCallback : Function) {
-		var self = this;
-
-		if(this.getId() != null) {
-
-			if(videosCollection.getId() != null) {
-
-				if(self._videosCollections == null) {
-					failCallback(new ModelException("VideosCollection doesn't belong to this User."));
-				} else {
-					var videosCollectionToDelete = null;
-
-					self._videosCollections = self._videosCollections.filter(function(obj) {
-						var comp = obj.getId() != videosCollection.getId();
-						if(!comp) {
-							videosCollectionToDelete = obj;
-						}
-
-						return comp;
-					});
-
-					if(videosCollectionToDelete == null) {
-						failCallback(new ModelException("VideosCollection doesn't belong to this User."));
-					} else {
-						self.getSequelizeModel().removeVideosCollection(videosCollection.getSequelizeModel())
-							.then(function () {
-								successCallback(self);
-							})
-							.catch(function (error) {
-								self._videosCollections.push(videosCollectionToDelete);
-								failCallback(error);
-							});
-					}
-				}
-			} else {
-				failCallback(new ModelException("VideosCollection doesn't exist. You can't remove an VideosCollection that doesn't exist from a User."));
 			}
 		} else {
 			failCallback(new ModelException("User doesn't exist. User must to exist before to remove something from it."));
