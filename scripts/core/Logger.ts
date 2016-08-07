@@ -9,6 +9,7 @@ var winston : any = require('winston');
 var winston_amqp : any = require('winston-amqp');
 var path : any = require('path');
 var amqp : any = require('amqp');
+var moment : any = require('moment');
 
 /**
  * Represents a logger with a coloration option.
@@ -251,7 +252,8 @@ class Logger {
 
 		var data : any = {
 			"from" : Logger.from,
-			"version" : Logger.version
+			"version" : Logger.version,
+			"timestamp" : moment().format()
 		};
 
 		var s = stacklist[0];
@@ -283,7 +285,9 @@ class Logger {
 	 * @param {any} metadata - Metadata added to message
 	 */
 	static debug(msg : any, metadata : any = {}) {
-		Logger.getLogger().debug(msg, Logger.completeMetadata(metadata));
+		var completeMeta : any = Logger.completeMetadata(metadata);
+		completeMeta.logDetails["level"] = 'debug';
+		Logger.getLogger().log(completeMeta.logDetails["level"], msg, completeMeta);
 	}
 
 	/**
@@ -295,7 +299,9 @@ class Logger {
 	 * @param {any} metadata - Metadata added to message
 	 */
 	static verbose(msg : any, metadata : any = {}) {
-		Logger.getLogger().verbose(msg, Logger.completeMetadata(metadata));
+		var completeMeta : any = Logger.completeMetadata(metadata);
+		completeMeta.logDetails["level"] = 'verbose';
+		Logger.getLogger().log(completeMeta.logDetails["level"], msg, completeMeta);
 	}
 
 	/**
@@ -307,7 +313,9 @@ class Logger {
 	 * @param {any} metadata - Metadata added to message
 	 */
 	static info(msg : any, metadata : any = {}) {
-		Logger.getLogger().info(msg, Logger.completeMetadata(metadata));
+		var completeMeta : any = Logger.completeMetadata(metadata);
+		completeMeta.logDetails["level"] = 'info';
+		Logger.getLogger().log(completeMeta.logDetails["level"], msg, completeMeta);
 	}
 
 	/**
@@ -319,7 +327,9 @@ class Logger {
 	 * @param {any} metadata - Metadata added to message
 	 */
 	static warn(msg : any, metadata : any = {}) {
-		Logger.getLogger().warn(msg, Logger.completeMetadata(metadata));
+		var completeMeta : any = Logger.completeMetadata(metadata);
+		completeMeta.logDetails["level"] = 'warn';
+		Logger.getLogger().log(completeMeta.logDetails["level"], msg, completeMeta);
 	}
 
 	/**
@@ -331,7 +341,9 @@ class Logger {
 	 * @param {any} metadata - Metadata added to message
 	 */
 	static error(msg : any, metadata : any = {}) {
-		Logger.getLogger().error(msg, Logger.completeMetadata(metadata, true));
+		var completeMeta : any = Logger.completeMetadata(metadata, true);
+		completeMeta.logDetails["level"] = 'error';
+		Logger.getLogger().log(completeMeta.logDetails["level"], msg, completeMeta);
 	}
 
 }
