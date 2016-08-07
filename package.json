@@ -1,6 +1,6 @@
 {
   "name": "pulsetotem-cms",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "dependencies": {
     "pg": "<=3.4.1",
     "pg-hstore": "<=2.3.2",
@@ -16,9 +16,9 @@
     "mkdirp": "<=0.5.1",
     "rmdir": "<=1.1.0",
     "lwip": "<=0.0.8",
+    "amqp": "0.1.8",
     "winston": "2.2.0",
-    "winston-amqp": "0.0.3",
-    "amqp": "0.1.8"
+    "winston-amqp": "git://github.com/windu02/winston-amqp.git#v0.0.4"
   },
   "devDependencies": {
     "grunt": "<=0.4.5",
