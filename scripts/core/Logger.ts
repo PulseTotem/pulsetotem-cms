@@ -178,7 +178,15 @@ class Logger {
 			connection.end();
 
 			var options : any = {
-				level: 'debug'
+				level: 'debug',
+				exchange: {
+					name: 'pulsetotem.winston',
+					properties: {
+						type: 'fanout',
+						durable: false,
+						autoDelete: false
+					}
+				}
 			};
 
 			Logger.logger.add(winston_amqp.AMQP, options);
