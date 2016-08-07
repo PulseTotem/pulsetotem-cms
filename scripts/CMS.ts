@@ -19,25 +19,6 @@ declare var require : any;
 var fs : any = require("fs");
 var mkdirp : any = require('mkdirp');
 
-//////////////// BEGIN: MANAGE COLORS LIB FOR LOGGER ///////////////////
-
-var colors : any;
-
-try {
-	colors = require('colors');
-} catch(e) {
-	var returnFunc = function (str) {
-		return str;
-	};
-
-	String.prototype["green"] = returnFunc;
-	String.prototype["blue"] = returnFunc;
-	String.prototype["orange"] = returnFunc;
-	String.prototype["red"] = returnFunc;
-}
-
-//////////////// END:   MANAGE COLORS LIB FOR LOGGER ///////////////////
-
 /**
  * Represents CMS.
  *

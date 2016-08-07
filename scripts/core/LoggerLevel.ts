@@ -3,5 +3,5 @@
  */
 
 enum LoggerLevel {
-	Error, Warning, Info, Debug
+	Error, Warning, Info, Verbose, Debug
 }
