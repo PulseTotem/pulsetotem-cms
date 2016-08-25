@@ -14,6 +14,7 @@ var fs : any = require("fs");
 var lwip : any = require('lwip');
 
 var uuid : any = require('node-uuid');
+var moment : any = require('moment');
 
 /**
  * ImagesRouter class.
@@ -101,7 +102,22 @@ class ImagesRouter extends RouterItf {
 	 * @param {Express.Response} res - Response object.
 	 */
 	listAllImagesOfCollection(req : any, res : any) {
-		var images_JSON = req.imagesCollection.toJSONObject(true)["images"];
+		var images : Array<ImageObject> = req.imagesCollection.images();
+
+		var oldFirst : Function = function(img1 : ImageObject, img2 : ImageObject) {
+			var date1 = moment(img1.createdAt());
+			var date2 = moment(img2.createdAt());
+
+			return date1.diff(date2);
+		};
+
+		images.sort(oldFirst);
+
+		var images_JSON = [];
+
+		images.forEach(function(img : ImageObject) {
+			images_JSON.push(img.toJSONObject());
+		});
 
 		res.json(images_JSON);
 	}
