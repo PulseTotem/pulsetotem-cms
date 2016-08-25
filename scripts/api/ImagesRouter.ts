@@ -104,7 +104,7 @@ class ImagesRouter extends RouterItf {
 	listAllImagesOfCollection(req : any, res : any) {
 		var images : Array<ImageObject> = req.imagesCollection.images();
 
-		var oldFirst : Function = function(img1 : ImageObject, img2 : ImageObject) {
+		var oldFirst = function(img1, img2) {
 			var date1 = moment(img1.createdAt());
 			var date2 = moment(img2.createdAt());
 
